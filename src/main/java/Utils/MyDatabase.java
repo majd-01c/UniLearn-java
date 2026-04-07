@@ -1,30 +1,28 @@
-package Utils;
+package utils;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public final class DatabaseConnection {
-
+public final class MyDatabase {
     private static final String URL = "jdbc:mysql://localhost:3309/app?serverTimezone=UTC";
     private static final String USER = "app";
     private static final String PASSWORD = "!ChangeMe!";
 
-    private static DatabaseConnection instance;
-    private Connection connection;
+    private static MyDatabase instance;
+    private final Connection connection;
 
-    private DatabaseConnection() {
+    private MyDatabase() {
         try {
             connection = DriverManager.getConnection(URL, USER, PASSWORD);
-            System.out.println("Database connected");
         } catch (SQLException e) {
             throw new RuntimeException("Database connection failed: " + e.getMessage(), e);
         }
     }
 
-    public static DatabaseConnection getInstance() {
+    public static MyDatabase getInstance() {
         if (instance == null) {
-            instance = new DatabaseConnection();
+            instance = new MyDatabase();
         }
         return instance;
     }
