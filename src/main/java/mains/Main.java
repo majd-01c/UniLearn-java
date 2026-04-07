@@ -8,7 +8,9 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
+
         ServiceCourse serviceCourse = new ServiceCourse();
+
         Timestamp now = new Timestamp(System.currentTimeMillis());
         String baseTitle = "Java CRUD Demo " + now.getTime();
 
@@ -36,12 +38,10 @@ public class Main {
         serviceCourse.update(insertedCourse);
 
         Course updatedCourse = findCourseById(serviceCourse.getALL(), insertedCourse.getId());
+
         System.out.println("Updated course:");
         printCourse(updatedCourse);
-
-
-
-         }
+    }
 
     private static Course findCourseByTitle(List<Course> courses, String title) {
         for (Course course : courses) {

@@ -37,4 +37,7 @@ build/
 
 ### Mac OS ###
 .DS_Store
-.pom.xml
+
+### Local database config ###
+src/main/java/Utils/DatabaseConnection.java
+src/main/java/Utils/MyDatabase.java
