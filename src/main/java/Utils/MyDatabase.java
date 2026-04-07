@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public final class MyDatabase {
-    private static final String URL = "jdbc:mysql://localhost:3309/app?serverTimezone=UTC";
+    private static final String URL = "jdbc:mysql://localhost:3306/app?serverTimezone=UTC";
     private static final String USER = "app";
     private static final String PASSWORD = "!ChangeMe!";
 
