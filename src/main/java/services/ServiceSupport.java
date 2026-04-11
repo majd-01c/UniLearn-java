@@ -16,7 +16,7 @@ import entities.Assessment;
 import entities.TeacherClasse;
 import entities.User;
 import entities.UserAnswer;
-import utils.MyDatabase;
+import Utils.MyDatabase;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
