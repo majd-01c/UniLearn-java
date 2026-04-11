@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controller.UserDashboardController">
+    <top>
+        <VBox spacing="10.0">
+            <padding>
+                <Insets top="14.0" right="14.0" bottom="10.0" left="14.0"/>
+            </padding>
+            <children>
+                <Label text="User Management (Admin Only)" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+                <HBox spacing="8.0">
+                    <children>
+                        <TextField fx:id="searchField" promptText="Search by name or email" onAction="#handleSearch" prefWidth="280.0"/>
+                        <Button fx:id="searchButton" text="Search" onAction="#handleSearch"/>
+                        <Button fx:id="refreshButton" text="Refresh" onAction="#handleRefresh"/>
+                        <Button fx:id="newButton" text="New Account" onAction="#handleNew"/>
+                        <Button fx:id="myProfileButton" text="My Profile" onAction="#handleOpenMyProfile"/>
+                        <Button fx:id="logoutButton" text="Logout" onAction="#handleLogout"/>
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </top>
+    <center>
+        <TableView fx:id="userTable" prefHeight="330.0">
+            <columns>
+                <TableColumn fx:id="idColumn" text="ID" prefWidth="70.0"/>
+                <TableColumn fx:id="nameColumn" text="Name" prefWidth="170.0"/>
+                <TableColumn fx:id="emailColumn" text="Email" prefWidth="230.0"/>
+                <TableColumn fx:id="roleColumn" text="Role" prefWidth="130.0"/>
+                <TableColumn fx:id="statusColumn" text="Status" prefWidth="110.0"/>
+                <TableColumn fx:id="phoneColumn" text="Phone" prefWidth="140.0"/>
+            </columns>
+        </TableView>
+    </center>
+    <bottom>
+        <AnchorPane>
+            <children>
+                <VBox spacing="10.0" AnchorPane.topAnchor="10.0" AnchorPane.bottomAnchor="10.0"
+                      AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0">
+                    <children>
+                        <Label text="Create / Edit Account" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                        <GridPane hgap="10.0" vgap="10.0">
+                            <children>
+                                <Label text="ID" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                                <TextField fx:id="idField" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                                <Label text="Name" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                                <TextField fx:id="nameField" onAction="#handleSave" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+
+                                <Label text="Email" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                                <TextField fx:id="emailField" onAction="#handleSave" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                                <Label text="Password" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                                <PasswordField fx:id="passwordField" onAction="#handleSave" promptText="Required for create"
+                                               GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+
+                                <Label text="Phone" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                                <TextField fx:id="phoneField" onAction="#handleSave" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+                                <Label text="Location" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
+                                <TextField fx:id="locationField" onAction="#handleSave" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
+
+                                <Label text="Role" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                                <ComboBox fx:id="roleComboBox" onAction="#handleRoleChanged" prefWidth="180.0"
+                                          GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+                                <Label text="Status" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
+                                <ComboBox fx:id="statusComboBox" onAction="#handleStatusChanged" prefWidth="180.0"
+                                          GridPane.columnIndex="3" GridPane.rowIndex="3"/>
+                            </children>
+                        </GridPane>
+                        <HBox spacing="10.0">
+                            <children>
+                                <Button fx:id="saveButton" text="Save" onAction="#handleSave" prefWidth="140.0"/>
+                                <Button fx:id="deleteButton" text="Delete" onAction="#handleDelete" prefWidth="140.0"/>
+                            </children>
+                        </HBox>
+                        <Label fx:id="formMessageLabel" style="-fx-text-fill: #c0392b;"/>
+                    </children>
+                </VBox>
+            </children>
+        </AnchorPane>
+    </bottom>
+</BorderPane>

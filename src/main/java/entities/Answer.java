@@ -1,12 +1,10 @@
 package entities;
-// Generated Apr 7, 2026, 3:00:13 PM by Hibernate Tools 6.6.42.Final
+// Generated 11 avr. 2026, 15:58:41 by Hibernate Tools 6.6.42.Final
 
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import static jakarta.persistence.GenerationType.IDENTITY;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -21,45 +19,43 @@ import jakarta.persistence.Table;
 public class Answer  implements java.io.Serializable {
 
 
-     private Integer id;
+     private int id;
      private Choice choice;
      private UserAnswer userAnswer;
      private Question question;
      private String textAnswer;
      private byte isCorrect;
      private Integer pointsEarned;
-     private Double aiDetectionScore;
-     private String aiDetectionResult;
 
     public Answer() {
     }
 
 	
-    public Answer(UserAnswer userAnswer, Question question, byte isCorrect) {
+    public Answer(int id, UserAnswer userAnswer, Question question, byte isCorrect) {
+        this.id = id;
         this.userAnswer = userAnswer;
         this.question = question;
         this.isCorrect = isCorrect;
     }
-    public Answer(Choice choice, UserAnswer userAnswer, Question question, String textAnswer, byte isCorrect, Integer pointsEarned, Double aiDetectionScore, String aiDetectionResult) {
+    public Answer(int id, Choice choice, UserAnswer userAnswer, Question question, String textAnswer, byte isCorrect, Integer pointsEarned) {
+       this.id = id;
        this.choice = choice;
        this.userAnswer = userAnswer;
        this.question = question;
        this.textAnswer = textAnswer;
        this.isCorrect = isCorrect;
        this.pointsEarned = pointsEarned;
-       this.aiDetectionScore = aiDetectionScore;
-       this.aiDetectionResult = aiDetectionResult;
     }
    
-     @Id @GeneratedValue(strategy=IDENTITY)
+     @Id 
 
     
     @Column(name="id", unique=true, nullable=false)
-    public Integer getId() {
+    public int getId() {
         return this.id;
     }
     
-    public void setId(Integer id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -121,26 +117,6 @@ public class Answer  implements java.io.Serializable {
     
     public void setPointsEarned(Integer pointsEarned) {
         this.pointsEarned = pointsEarned;
-    }
-
-    
-    @Column(name="ai_detection_score", precision=22)
-    public Double getAiDetectionScore() {
-        return this.aiDetectionScore;
-    }
-    
-    public void setAiDetectionScore(Double aiDetectionScore) {
-        this.aiDetectionScore = aiDetectionScore;
-    }
-
-    
-    @Column(name="ai_detection_result")
-    public String getAiDetectionResult() {
-        return this.aiDetectionResult;
-    }
-    
-    public void setAiDetectionResult(String aiDetectionResult) {
-        this.aiDetectionResult = aiDetectionResult;
     }
 
 

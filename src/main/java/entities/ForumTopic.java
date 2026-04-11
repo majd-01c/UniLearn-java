@@ -1,12 +1,10 @@
 package entities;
-// Generated Apr 7, 2026, 3:00:13 PM by Hibernate Tools 6.6.42.Final
+// Generated 11 avr. 2026, 15:58:41 by Hibernate Tools 6.6.42.Final
 
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import static jakarta.persistence.GenerationType.IDENTITY;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -27,7 +25,7 @@ import java.util.Set;
 public class ForumTopic  implements java.io.Serializable {
 
 
-     private Integer id;
+     private int id;
      private User user;
      private ForumCategory forumCategory;
      private String title;
@@ -44,7 +42,8 @@ public class ForumTopic  implements java.io.Serializable {
     }
 
 	
-    public ForumTopic(User user, ForumCategory forumCategory, String title, String content, String status, byte isPinned, int viewCount, Timestamp createdAt, Timestamp updatedAt) {
+    public ForumTopic(int id, User user, ForumCategory forumCategory, String title, String content, String status, byte isPinned, int viewCount, Timestamp createdAt, Timestamp updatedAt) {
+        this.id = id;
         this.user = user;
         this.forumCategory = forumCategory;
         this.title = title;
@@ -55,7 +54,8 @@ public class ForumTopic  implements java.io.Serializable {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
-    public ForumTopic(User user, ForumCategory forumCategory, String title, String content, String status, byte isPinned, int viewCount, Timestamp createdAt, Timestamp updatedAt, Timestamp lastActivityAt, Set<ForumComment> forumComments) {
+    public ForumTopic(int id, User user, ForumCategory forumCategory, String title, String content, String status, byte isPinned, int viewCount, Timestamp createdAt, Timestamp updatedAt, Timestamp lastActivityAt, Set<ForumComment> forumComments) {
+       this.id = id;
        this.user = user;
        this.forumCategory = forumCategory;
        this.title = title;
@@ -69,15 +69,15 @@ public class ForumTopic  implements java.io.Serializable {
        this.forumComments = forumComments;
     }
    
-     @Id @GeneratedValue(strategy=IDENTITY)
+     @Id 
 
     
     @Column(name="id", unique=true, nullable=false)
-    public Integer getId() {
+    public int getId() {
         return this.id;
     }
     
-    public void setId(Integer id) {
+    public void setId(int id) {
         this.id = id;
     }
 

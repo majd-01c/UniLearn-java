@@ -1,12 +1,10 @@
 package entities;
-// Generated Apr 7, 2026, 3:00:13 PM by Hibernate Tools 6.6.42.Final
+// Generated 11 avr. 2026, 15:58:41 by Hibernate Tools 6.6.42.Final
 
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import static jakarta.persistence.GenerationType.IDENTITY;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -29,7 +27,7 @@ import java.util.Set;
 public class UserAnswer  implements java.io.Serializable {
 
 
-     private Integer id;
+     private int id;
      private User user;
      private Quiz quiz;
      private Integer score;
@@ -37,22 +35,20 @@ public class UserAnswer  implements java.io.Serializable {
      private Timestamp startedAt;
      private Timestamp completedAt;
      private byte isPassed;
-     private byte isCheated;
-     private int tabSwitchCount;
      private Set<Answer> answers = new HashSet<Answer>(0);
 
     public UserAnswer() {
     }
 
 	
-    public UserAnswer(User user, Quiz quiz, byte isPassed, byte isCheated, int tabSwitchCount) {
+    public UserAnswer(int id, User user, Quiz quiz, byte isPassed) {
+        this.id = id;
         this.user = user;
         this.quiz = quiz;
         this.isPassed = isPassed;
-        this.isCheated = isCheated;
-        this.tabSwitchCount = tabSwitchCount;
     }
-    public UserAnswer(User user, Quiz quiz, Integer score, Integer totalPoints, Timestamp startedAt, Timestamp completedAt, byte isPassed, byte isCheated, int tabSwitchCount, Set<Answer> answers) {
+    public UserAnswer(int id, User user, Quiz quiz, Integer score, Integer totalPoints, Timestamp startedAt, Timestamp completedAt, byte isPassed, Set<Answer> answers) {
+       this.id = id;
        this.user = user;
        this.quiz = quiz;
        this.score = score;
@@ -60,20 +56,18 @@ public class UserAnswer  implements java.io.Serializable {
        this.startedAt = startedAt;
        this.completedAt = completedAt;
        this.isPassed = isPassed;
-       this.isCheated = isCheated;
-       this.tabSwitchCount = tabSwitchCount;
        this.answers = answers;
     }
    
-     @Id @GeneratedValue(strategy=IDENTITY)
+     @Id 
 
     
     @Column(name="id", unique=true, nullable=false)
-    public Integer getId() {
+    public int getId() {
         return this.id;
     }
     
-    public void setId(Integer id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -145,26 +139,6 @@ public class UserAnswer  implements java.io.Serializable {
     
     public void setIsPassed(byte isPassed) {
         this.isPassed = isPassed;
-    }
-
-    
-    @Column(name="is_cheated", nullable=false)
-    public byte getIsCheated() {
-        return this.isCheated;
-    }
-    
-    public void setIsCheated(byte isCheated) {
-        this.isCheated = isCheated;
-    }
-
-    
-    @Column(name="tab_switch_count", nullable=false)
-    public int getTabSwitchCount() {
-        return this.tabSwitchCount;
-    }
-    
-    public void setTabSwitchCount(int tabSwitchCount) {
-        this.tabSwitchCount = tabSwitchCount;
     }
 
 @OneToMany(fetch=FetchType.LAZY, mappedBy="userAnswer")

@@ -1,12 +1,10 @@
 package entities;
-// Generated Apr 7, 2026, 3:00:13 PM by Hibernate Tools 6.6.42.Final
+// Generated 11 avr. 2026, 15:58:41 by Hibernate Tools 6.6.42.Final
 
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import static jakarta.persistence.GenerationType.IDENTITY;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -27,7 +25,7 @@ import java.util.Set;
 public class JobOffer  implements java.io.Serializable {
 
 
-     private Integer id;
+     private int id;
      private User user;
      private String title;
      private String type;
@@ -50,7 +48,8 @@ public class JobOffer  implements java.io.Serializable {
     }
 
 	
-    public JobOffer(User user, String title, String type, String description, String status, Timestamp createdAt, Timestamp updatedAt) {
+    public JobOffer(int id, User user, String title, String type, String description, String status, Timestamp createdAt, Timestamp updatedAt) {
+        this.id = id;
         this.user = user;
         this.title = title;
         this.type = type;
@@ -59,7 +58,8 @@ public class JobOffer  implements java.io.Serializable {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
-    public JobOffer(User user, String title, String type, String location, String description, String requirements, String status, Timestamp createdAt, Timestamp updatedAt, Timestamp publishedAt, Timestamp expiresAt, String requiredSkills, String preferredSkills, Integer minExperienceYears, String minEducation, String requiredLanguages, Set<JobApplication> jobApplications) {
+    public JobOffer(int id, User user, String title, String type, String location, String description, String requirements, String status, Timestamp createdAt, Timestamp updatedAt, Timestamp publishedAt, Timestamp expiresAt, String requiredSkills, String preferredSkills, Integer minExperienceYears, String minEducation, String requiredLanguages, Set<JobApplication> jobApplications) {
+       this.id = id;
        this.user = user;
        this.title = title;
        this.type = type;
@@ -79,15 +79,15 @@ public class JobOffer  implements java.io.Serializable {
        this.jobApplications = jobApplications;
     }
    
-     @Id @GeneratedValue(strategy=IDENTITY)
+     @Id 
 
     
     @Column(name="id", unique=true, nullable=false)
-    public Integer getId() {
+    public int getId() {
         return this.id;
     }
     
-    public void setId(Integer id) {
+    public void setId(int id) {
         this.id = id;
     }
 

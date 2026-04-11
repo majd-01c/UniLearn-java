@@ -1,10 +1,12 @@
 package entities;
-// Generated Apr 7, 2026, 3:00:13 PM by Hibernate Tools 6.6.42.Final
+// Generated 11 avr. 2026, 15:58:41 by Hibernate Tools 6.6.42.Final
 
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import static jakarta.persistence.GenerationType.IDENTITY;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -24,7 +26,7 @@ import java.sql.Timestamp;
 public class Grade  implements java.io.Serializable {
 
 
-     private int id;
+     private Integer id;
      private Assessment assessment;
      private User userByStudentId;
      private User userByTeacherId;
@@ -37,8 +39,7 @@ public class Grade  implements java.io.Serializable {
     }
 
 	
-    public Grade(int id, Assessment assessment, User userByStudentId, User userByTeacherId, double score, Timestamp createdAt, Timestamp updatedAt) {
-        this.id = id;
+    public Grade(Assessment assessment, User userByStudentId, User userByTeacherId, double score, Timestamp createdAt, Timestamp updatedAt) {
         this.assessment = assessment;
         this.userByStudentId = userByStudentId;
         this.userByTeacherId = userByTeacherId;
@@ -46,8 +47,7 @@ public class Grade  implements java.io.Serializable {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
-    public Grade(int id, Assessment assessment, User userByStudentId, User userByTeacherId, double score, String comment, Timestamp createdAt, Timestamp updatedAt) {
-       this.id = id;
+    public Grade(Assessment assessment, User userByStudentId, User userByTeacherId, double score, String comment, Timestamp createdAt, Timestamp updatedAt) {
        this.assessment = assessment;
        this.userByStudentId = userByStudentId;
        this.userByTeacherId = userByTeacherId;
@@ -57,15 +57,15 @@ public class Grade  implements java.io.Serializable {
        this.updatedAt = updatedAt;
     }
    
-     @Id 
+     @Id @GeneratedValue(strategy=IDENTITY)
 
     
     @Column(name="id", unique=true, nullable=false)
-    public int getId() {
+    public Integer getId() {
         return this.id;
     }
     
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

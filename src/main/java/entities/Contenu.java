@@ -1,12 +1,10 @@
 package entities;
-// Generated Apr 7, 2026, 3:00:13 PM by Hibernate Tools 6.6.42.Final
+// Generated 11 avr. 2026, 15:58:41 by Hibernate Tools 6.6.42.Final
 
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import static jakarta.persistence.GenerationType.IDENTITY;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -25,7 +23,7 @@ import java.util.Set;
 public class Contenu  implements java.io.Serializable {
 
 
-     private Integer id;
+     private int id;
      private String title;
      private String fileName;
      private String fileType;
@@ -44,14 +42,16 @@ public class Contenu  implements java.io.Serializable {
     }
 
 	
-    public Contenu(String title, String type, byte published, Timestamp createdAt, Timestamp updatedAt) {
+    public Contenu(int id, String title, String type, byte published, Timestamp createdAt, Timestamp updatedAt) {
+        this.id = id;
         this.title = title;
         this.type = type;
         this.published = published;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
-    public Contenu(String title, String fileName, String fileType, String type, byte published, Timestamp createdAt, Timestamp updatedAt, Integer fileSize, Set<BuildProgramContenu> buildProgramContenus, Set<ClasseContenu> classeContenus, Set<Assessment> assessments, Set<Quiz> quizs, Set<CourseContenu> courseContenus) {
+    public Contenu(int id, String title, String fileName, String fileType, String type, byte published, Timestamp createdAt, Timestamp updatedAt, Integer fileSize, Set<BuildProgramContenu> buildProgramContenus, Set<ClasseContenu> classeContenus, Set<Assessment> assessments, Set<Quiz> quizs, Set<CourseContenu> courseContenus) {
+       this.id = id;
        this.title = title;
        this.fileName = fileName;
        this.fileType = fileType;
@@ -67,15 +67,15 @@ public class Contenu  implements java.io.Serializable {
        this.courseContenus = courseContenus;
     }
    
-     @Id @GeneratedValue(strategy=IDENTITY)
+     @Id 
 
     
     @Column(name="id", unique=true, nullable=false)
-    public Integer getId() {
+    public int getId() {
         return this.id;
     }
     
-    public void setId(Integer id) {
+    public void setId(int id) {
         this.id = id;
     }
 
