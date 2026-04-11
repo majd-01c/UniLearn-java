@@ -6,7 +6,10 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
@@ -16,8 +19,12 @@ import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Region;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import service.UserService;
+import util.AppNavigator;
 
+import java.io.IOException;
 import java.net.URL;
 import java.sql.Timestamp;
 import java.time.format.DateTimeFormatter;
@@ -74,7 +81,7 @@ public class UserListController implements Initializable {
 
     @FXML
     public void onCreateUser() {
-        showInfo("Create User", "Open user creation form from this action.");
+        openUserForm(null);
     }
 
     @FXML
@@ -85,7 +92,7 @@ public class UserListController implements Initializable {
             return;
         }
 
-        showInfo("Edit User", "Open edit form for: " + selectedUser.getEmail());
+        openUserForm(selectedUser);
     }
 
     @FXML
@@ -134,6 +141,40 @@ public class UserListController implements Initializable {
     @FXML
     public void onRefreshUsers() {
         refreshUsers();
+    }
+
+    @FXML
+    public void onChangeMyPassword() {
+        AppNavigator.showChangePassword();
+    }
+
+    private void openUserForm(User userToEdit) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/user/user-form.fxml"));
+            Parent root = loader.load();
+
+            UserFormController formController = loader.getController();
+            formController.setOnSaveSuccess(this::refreshUsers);
+
+            if (userToEdit == null) {
+                formController.setCreateMode();
+            } else {
+                formController.setEditMode(userToEdit);
+            }
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle(userToEdit == null ? "Create User" : "Edit User");
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
+
+            if (userTable.getScene() != null && userTable.getScene().getWindow() != null) {
+                dialogStage.initOwner(userTable.getScene().getWindow());
+            }
+
+            dialogStage.setScene(new Scene(root));
+            dialogStage.showAndWait();
+        } catch (IOException exception) {
+            showWarning("Open form failed", "Could not open user form view: " + exception.getMessage());
+        }
     }
 
     private void configureTableColumns() {
@@ -218,7 +259,11 @@ public class UserListController implements Initializable {
     }
 
     private void onViewUserDetails(User user) {
-        showInfo("User Details", "Open details view for: " + user.getEmail());
+        openUserDetails(user);
+    }
+
+    private void openUserDetails(User user) {
+        AppNavigator.showUserDetails(user);
     }
 
     private String normalizeRoleFilter(String selectedRole) {
@@ -290,14 +335,6 @@ public class UserListController implements Initializable {
 
         Optional<ButtonType> result = alert.showAndWait();
         return result.isPresent() && result.get() == ButtonType.OK;
-    }
-
-    private void showInfo(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 
     private void showWarning(String title, String message) {

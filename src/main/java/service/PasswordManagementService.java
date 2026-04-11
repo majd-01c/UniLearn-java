@@ -1,5 +1,7 @@
 package service;
 
+import de.mkammerer.argon2.Argon2;
+import de.mkammerer.argon2.Argon2Factory;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.security.SecureRandom;
@@ -60,7 +62,18 @@ public class PasswordManagementService {
         }
 
         try {
-            return BCrypt.checkpw(rawPassword, hashedPassword);
+            String normalizedHash = hashedPassword.trim();
+
+            if (isBcryptHash(normalizedHash)) {
+                return verifyBcrypt(rawPassword, normalizedHash);
+            }
+
+            if (isArgon2Hash(normalizedHash)) {
+                return verifyArgon2(rawPassword, normalizedHash);
+            }
+
+            // Compatibility fallback for legacy plain-text rows.
+            return rawPassword.equals(normalizedHash);
         } catch (IllegalArgumentException exception) {
             return false;
         }
@@ -79,5 +92,37 @@ public class PasswordManagementService {
 
     private char randomChar(String source) {
         return source.charAt(secureRandom.nextInt(source.length()));
+    }
+
+    private boolean isBcryptHash(String hash) {
+        return hash.startsWith("$2a$")
+                || hash.startsWith("$2b$")
+                || hash.startsWith("$2y$");
+    }
+
+    private boolean isArgon2Hash(String hash) {
+        return hash.startsWith("$argon2");
+    }
+
+    private boolean verifyBcrypt(String rawPassword, String hash) {
+        String compatibleHash = hash;
+
+        // jBCrypt expects $2a$/$2b$ and may reject PHP-style $2y$ hashes.
+        if (hash.startsWith("$2y$")) {
+            compatibleHash = "$2a$" + hash.substring(4);
+        }
+
+        return BCrypt.checkpw(rawPassword, compatibleHash);
+    }
+
+    private boolean verifyArgon2(String rawPassword, String hash) {
+        Argon2 argon2 = Argon2Factory.create();
+        char[] passwordChars = rawPassword.toCharArray();
+
+        try {
+            return argon2.verify(hash, passwordChars);
+        } finally {
+            argon2.wipeArray(passwordChars);
+        }
     }
 }

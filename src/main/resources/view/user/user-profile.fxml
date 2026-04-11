@@ -42,7 +42,7 @@
                 <HBox spacing="10.0">
                     <children>
                         <Button fx:id="saveProfileButton" text="Save Profile" onAction="#handleSaveProfile" prefWidth="130.0"/>
-                        <Button fx:id="backToDashboardButton" text="Admin Dashboard" onAction="#handleBackToDashboard" prefWidth="140.0"/>
+                        <Button fx:id="backToDashboardButton" text="Back to Home" onAction="#handleBackToDashboard" prefWidth="140.0"/>
                         <Button fx:id="logoutButton" text="Logout" onAction="#handleLogout" prefWidth="110.0"/>
                     </children>
                 </HBox>

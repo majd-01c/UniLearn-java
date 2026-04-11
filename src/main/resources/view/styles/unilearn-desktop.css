@@ -1,0 +1,144 @@
+.root {
+    -fx-font-family: "Segoe UI", "Noto Sans", "Arial";
+}
+
+.app-shell-root {
+    -fx-background-color: linear-gradient(to bottom, #f7fbff 0%, #eef3f9 100%);
+}
+
+.app-side-rail {
+    -fx-background-color: linear-gradient(to bottom, #0f2f4d 0%, #123a5d 45%, #0f2f4d 100%);
+    -fx-border-color: #0b243c;
+    -fx-border-width: 0 1 0 0;
+}
+
+.brand-title {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+}
+
+.brand-subtitle {
+    -fx-text-fill: #c7dbef;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+}
+
+.side-button {
+    -fx-background-color: #1c4f79;
+    -fx-text-fill: #e8f2fb;
+    -fx-background-radius: 10;
+    -fx-padding: 10 12;
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
+}
+
+.side-button:hover {
+    -fx-background-color: #256496;
+}
+
+.side-danger-button {
+    -fx-background-color: #8f2d2d;
+}
+
+.side-danger-button:hover {
+    -fx-background-color: #b03838;
+}
+
+.app-header {
+    -fx-background-color: rgba(255, 255, 255, 0.92);
+    -fx-border-color: #d9e4f2;
+    -fx-border-width: 0 0 1 0;
+}
+
+.header-title {
+    -fx-text-fill: #10243c;
+    -fx-font-size: 20px;
+    -fx-font-weight: 700;
+}
+
+.header-subtitle {
+    -fx-text-fill: #5a6f85;
+    -fx-font-size: 12px;
+}
+
+.user-badge {
+    -fx-background-color: #dcecfb;
+    -fx-text-fill: #144a76;
+    -fx-background-radius: 999;
+    -fx-padding: 8 12;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+}
+
+.app-content-host {
+    -fx-padding: 16;
+}
+
+.home-root {
+    -fx-background-color: transparent;
+}
+
+.home-card {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d7e4f2;
+    -fx-border-width: 1;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-padding: 16;
+    -fx-effect: dropshadow(gaussian, rgba(10, 34, 56, 0.08), 10, 0.25, 0, 4);
+}
+
+.home-title {
+    -fx-text-fill: #0f2740;
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+}
+
+.home-role {
+    -fx-text-fill: #1f5f92;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+}
+
+.home-summary {
+    -fx-text-fill: #4f6277;
+    -fx-font-size: 13px;
+}
+
+.card-title {
+    -fx-text-fill: #10243c;
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+}
+
+.card-text {
+    -fx-text-fill: #556b81;
+    -fx-font-size: 12px;
+}
+
+.primary-button {
+    -fx-background-color: #1d6fa5;
+    -fx-text-fill: #ffffff;
+    -fx-background-radius: 10;
+    -fx-padding: 9 12;
+    -fx-font-weight: 700;
+    -fx-cursor: hand;
+}
+
+.primary-button:hover {
+    -fx-background-color: #2482bf;
+}
+
+.ghost-button {
+    -fx-background-color: #edf4fb;
+    -fx-text-fill: #12446f;
+    -fx-background-radius: 10;
+    -fx-padding: 9 12;
+    -fx-font-weight: 700;
+    -fx-cursor: hand;
+}
+
+.ghost-button:hover {
+    -fx-background-color: #dcecf9;
+}
