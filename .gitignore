@@ -39,5 +39,5 @@ build/
 .DS_Store
 
 ### Local database config ###
-src/main/java/Utils/DatabaseConnection.java
-src/main/java/Utils/MyDatabase.java
+#src/main/java/Utils/DatabaseConnection.java
+#src/main/java/Utils/MyDatabase.java
