@@ -1,12 +1,10 @@
 package entities;
-// Generated Apr 7, 2026, 3:00:13 PM by Hibernate Tools 6.6.42.Final
+// Generated 11 avr. 2026, 15:58:41 by Hibernate Tools 6.6.42.Final
 
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import static jakarta.persistence.GenerationType.IDENTITY;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -27,12 +25,12 @@ import java.util.Set;
 public class Classe  implements java.io.Serializable {
 
 
-     private Integer id;
+     private int id;
      private Program program;
      private String name;
      private Date startDate;
      private Date endDate;
-     private String imageFilename;
+     private String imageUrl;
      private String status;
      private int capacity;
      private String level;
@@ -48,7 +46,8 @@ public class Classe  implements java.io.Serializable {
     }
 
 	
-    public Classe(Program program, String name, Date startDate, Date endDate, String status, int capacity, String level, String specialty) {
+    public Classe(int id, Program program, String name, Date startDate, Date endDate, String status, int capacity, String level, String specialty) {
+        this.id = id;
         this.program = program;
         this.name = name;
         this.startDate = startDate;
@@ -58,12 +57,13 @@ public class Classe  implements java.io.Serializable {
         this.level = level;
         this.specialty = specialty;
     }
-    public Classe(Program program, String name, Date startDate, Date endDate, String imageFilename, String status, int capacity, String level, String specialty, Set<CourseDocument> courseDocuments, Set<Schedule> schedules, Set<StudentClasse> studentClasses, Set<TeacherClasse> teacherClasses, Set<ClasseModule> classeModules, Set<Assessment> assessments) {
+    public Classe(int id, Program program, String name, Date startDate, Date endDate, String imageUrl, String status, int capacity, String level, String specialty, Set<CourseDocument> courseDocuments, Set<Schedule> schedules, Set<StudentClasse> studentClasses, Set<TeacherClasse> teacherClasses, Set<ClasseModule> classeModules, Set<Assessment> assessments) {
+       this.id = id;
        this.program = program;
        this.name = name;
        this.startDate = startDate;
        this.endDate = endDate;
-       this.imageFilename = imageFilename;
+       this.imageUrl = imageUrl;
        this.status = status;
        this.capacity = capacity;
        this.level = level;
@@ -76,15 +76,15 @@ public class Classe  implements java.io.Serializable {
        this.assessments = assessments;
     }
    
-     @Id @GeneratedValue(strategy=IDENTITY)
+     @Id 
 
     
     @Column(name="id", unique=true, nullable=false)
-    public Integer getId() {
+    public int getId() {
         return this.id;
     }
     
-    public void setId(Integer id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -129,13 +129,13 @@ public class Classe  implements java.io.Serializable {
     }
 
     
-    @Column(name="image_filename", length=255)
-    public String getImageFilename() {
-        return this.imageFilename;
+    @Column(name="image_url", length=255)
+    public String getImageUrl() {
+        return this.imageUrl;
     }
     
-    public void setImageFilename(String imageFilename) {
-        this.imageFilename = imageFilename;
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     

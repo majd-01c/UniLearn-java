@@ -1,12 +1,10 @@
 package entities;
-// Generated Apr 7, 2026, 3:00:13 PM by Hibernate Tools 6.6.42.Final
+// Generated 11 avr. 2026, 15:58:41 by Hibernate Tools 6.6.42.Final
 
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import static jakarta.persistence.GenerationType.IDENTITY;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -24,7 +22,7 @@ import java.util.Set;
 public class Question  implements java.io.Serializable {
 
 
-     private Integer id;
+     private int id;
      private Quiz quiz;
      private String type;
      private String questionText;
@@ -38,14 +36,16 @@ public class Question  implements java.io.Serializable {
     }
 
 	
-    public Question(Quiz quiz, String type, String questionText, int points, int position) {
+    public Question(int id, Quiz quiz, String type, String questionText, int points, int position) {
+        this.id = id;
         this.quiz = quiz;
         this.type = type;
         this.questionText = questionText;
         this.points = points;
         this.position = position;
     }
-    public Question(Quiz quiz, String type, String questionText, int points, int position, String explanation, Set<Answer> answers, Set<Choice> choices) {
+    public Question(int id, Quiz quiz, String type, String questionText, int points, int position, String explanation, Set<Answer> answers, Set<Choice> choices) {
+       this.id = id;
        this.quiz = quiz;
        this.type = type;
        this.questionText = questionText;
@@ -56,15 +56,15 @@ public class Question  implements java.io.Serializable {
        this.choices = choices;
     }
    
-     @Id @GeneratedValue(strategy=IDENTITY)
+     @Id 
 
     
     @Column(name="id", unique=true, nullable=false)
-    public Integer getId() {
+    public int getId() {
         return this.id;
     }
     
-    public void setId(Integer id) {
+    public void setId(int id) {
         this.id = id;
     }
 

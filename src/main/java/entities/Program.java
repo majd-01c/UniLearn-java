@@ -1,12 +1,10 @@
 package entities;
-// Generated Apr 7, 2026, 3:00:13 PM by Hibernate Tools 6.6.42.Final
+// Generated 11 avr. 2026, 15:58:41 by Hibernate Tools 6.6.42.Final
 
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import static jakarta.persistence.GenerationType.IDENTITY;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -25,7 +23,7 @@ import java.util.Set;
 public class Program  implements java.io.Serializable {
 
 
-     private Integer id;
+     private int id;
      private String name;
      private byte published;
      private Timestamp createdAt;
@@ -39,13 +37,15 @@ public class Program  implements java.io.Serializable {
     }
 
 	
-    public Program(String name, byte published, Timestamp createdAt, Timestamp updatedAt) {
+    public Program(int id, String name, byte published, Timestamp createdAt, Timestamp updatedAt) {
+        this.id = id;
         this.name = name;
         this.published = published;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
-    public Program(String name, byte published, Timestamp createdAt, Timestamp updatedAt, Set<BuildProgram> buildPrograms, Set<ProgramChatMessage> programChatMessages, Set<ProgramModule> programModules, Set<Classe> classes) {
+    public Program(int id, String name, byte published, Timestamp createdAt, Timestamp updatedAt, Set<BuildProgram> buildPrograms, Set<ProgramChatMessage> programChatMessages, Set<ProgramModule> programModules, Set<Classe> classes) {
+       this.id = id;
        this.name = name;
        this.published = published;
        this.createdAt = createdAt;
@@ -56,15 +56,15 @@ public class Program  implements java.io.Serializable {
        this.classes = classes;
     }
    
-     @Id @GeneratedValue(strategy=IDENTITY)
+     @Id 
 
     
     @Column(name="id", unique=true, nullable=false)
-    public Integer getId() {
+    public int getId() {
         return this.id;
     }
     
-    public void setId(Integer id) {
+    public void setId(int id) {
         this.id = id;
     }
 

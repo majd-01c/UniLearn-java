@@ -12,7 +12,7 @@ public class ServiceAnswer extends ServiceSupport implements IService<Answer> {
 
     @Override
     public void add(Answer answer) {
-        String sql = "INSERT INTO answer (selected_choice_id, user_answer_id, question_id, text_answer, is_correct, points_earned, ai_detection_score, ai_detection_result) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO answer (selected_choice_id, user_answer_id, question_id, text_answer, is_correct, points_earned) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             setNullableInteger(statement, 1, answer.getChoice() == null ? null : answer.getChoice().getId());
             statement.setInt(2, answer.getUserAnswer().getId());
@@ -20,12 +20,6 @@ public class ServiceAnswer extends ServiceSupport implements IService<Answer> {
             setNullableString(statement, 4, answer.getTextAnswer());
             statement.setByte(5, answer.getIsCorrect());
             setNullableInteger(statement, 6, answer.getPointsEarned());
-            if (answer.getAiDetectionScore() == null) {
-                statement.setNull(7, java.sql.Types.DOUBLE);
-            } else {
-                statement.setDouble(7, answer.getAiDetectionScore());
-            }
-            setNullableString(statement, 8, answer.getAiDetectionResult());
             statement.executeUpdate();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -34,7 +28,7 @@ public class ServiceAnswer extends ServiceSupport implements IService<Answer> {
 
     @Override
     public void update(Answer answer) {
-        String sql = "UPDATE answer SET selected_choice_id = ?, user_answer_id = ?, question_id = ?, text_answer = ?, is_correct = ?, points_earned = ?, ai_detection_score = ?, ai_detection_result = ? WHERE id = ?";
+        String sql = "UPDATE answer SET selected_choice_id = ?, user_answer_id = ?, question_id = ?, text_answer = ?, is_correct = ?, points_earned = ? WHERE id = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             setNullableInteger(statement, 1, answer.getChoice() == null ? null : answer.getChoice().getId());
             statement.setInt(2, answer.getUserAnswer().getId());
@@ -42,13 +36,7 @@ public class ServiceAnswer extends ServiceSupport implements IService<Answer> {
             setNullableString(statement, 4, answer.getTextAnswer());
             statement.setByte(5, answer.getIsCorrect());
             setNullableInteger(statement, 6, answer.getPointsEarned());
-            if (answer.getAiDetectionScore() == null) {
-                statement.setNull(7, java.sql.Types.DOUBLE);
-            } else {
-                statement.setDouble(7, answer.getAiDetectionScore());
-            }
-            setNullableString(statement, 8, answer.getAiDetectionResult());
-            statement.setInt(9, answer.getId());
+            statement.setInt(7, answer.getId());
             statement.executeUpdate();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -68,7 +56,7 @@ public class ServiceAnswer extends ServiceSupport implements IService<Answer> {
 
     @Override
     public List<Answer> getALL() {
-        String sql = "SELECT id, selected_choice_id, user_answer_id, question_id, text_answer, is_correct, points_earned, ai_detection_score, ai_detection_result FROM answer";
+        String sql = "SELECT id, selected_choice_id, user_answer_id, question_id, text_answer, is_correct, points_earned FROM answer";
         List<Answer> answers = new ArrayList<>();
 
         try (PreparedStatement statement = connection.prepareStatement(sql);
@@ -84,9 +72,6 @@ public class ServiceAnswer extends ServiceSupport implements IService<Answer> {
                 answer.setTextAnswer(resultSet.getString("text_answer"));
                 answer.setIsCorrect(resultSet.getByte("is_correct"));
                 answer.setPointsEarned(getNullableInteger(resultSet, "points_earned"));
-                double aiDetectionScore = resultSet.getDouble("ai_detection_score");
-                answer.setAiDetectionScore(resultSet.wasNull() ? null : aiDetectionScore);
-                answer.setAiDetectionResult(resultSet.getString("ai_detection_result"));
                 answers.add(answer);
             }
         } catch (SQLException e) {
