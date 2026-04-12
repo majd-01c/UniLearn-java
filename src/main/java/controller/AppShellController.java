@@ -111,17 +111,17 @@ public class AppShellController implements Initializable {
         boolean teacher = RoleGuard.isTeacher(currentUser);
         boolean student = RoleGuard.isStudent(currentUser);
 
-        // Admin section
+        // Admin section: Programs, Classes, Users
         setNodeVisible(adminSectionLabel, admin);
         setNodeVisible(navProgramsButton, admin);
-        setNodeVisible(navModulesButton, admin);
-        setNodeVisible(navCoursesButton, admin);
-        setNodeVisible(navContenuButton, admin);
         setNodeVisible(navClassesButton, admin);
         setNodeVisible(navUsersButton, admin);
 
-        // Teacher section
+        // Teacher section: My Classes only (Modules/Courses/Content managed in workspace)
         setNodeVisible(teacherSectionLabel, teacher);
+        setNodeVisible(navModulesButton, false);
+        setNodeVisible(navCoursesButton, false);
+        setNodeVisible(navContenuButton, false);
         setNodeVisible(navMyClassesButton, teacher);
 
         // Student section
@@ -198,6 +198,7 @@ public class AppShellController implements Initializable {
 
     public void showProgramForm(entities.Program program) {
         if (!ensureAuthenticated()) return;
+        if (!RoleGuard.isAdmin(currentUser)) { showWarning("Access Denied", "You do not have permission to access this page."); showHomeView(); return; }
         setHeader(program == null ? "New Program" : "Edit Program", "Program form");
         loadCenter("/view/lms/admin/program-form.fxml", controller -> {
             if (controller instanceof AdminProgramFormController fc) fc.setProgram(program);
@@ -206,6 +207,7 @@ public class AppShellController implements Initializable {
 
     public void showProgramDetail(entities.Program program) {
         if (!ensureAuthenticated()) return;
+        if (!RoleGuard.isAdmin(currentUser)) { showWarning("Access Denied", "You do not have permission to access this page."); showHomeView(); return; }
         setHeader("Program: " + program.getName(), "Manage modules and settings");
         loadCenter("/view/lms/admin/program-detail.fxml", controller -> {
             if (controller instanceof AdminProgramDetailController dc) dc.setProgram(program);
@@ -214,13 +216,14 @@ public class AppShellController implements Initializable {
 
     public void showModulesView() {
         if (!ensureAuthenticated()) return;
-        RoleGuard.requireAdmin(currentUser);
+        if (!RoleGuard.isTeacher(currentUser)) { showWarning("Access Denied", "Only teachers can manage modules."); showHomeView(); return; }
         setHeader("Module Management", "Create and manage modules");
         loadCenter("/view/lms/admin/module-list.fxml", null);
     }
 
     public void showModuleForm(entities.Module module) {
         if (!ensureAuthenticated()) return;
+        if (!RoleGuard.isTeacher(currentUser)) { showWarning("Access Denied", "Only teachers can manage modules."); showHomeView(); return; }
         setHeader(module == null ? "New Module" : "Edit Module", "Module form");
         loadCenter("/view/lms/admin/module-form.fxml", controller -> {
             if (controller instanceof AdminModuleFormController fc) fc.setModule(module);
@@ -229,13 +232,14 @@ public class AppShellController implements Initializable {
 
     public void showCoursesView() {
         if (!ensureAuthenticated()) return;
-        RoleGuard.requireAdmin(currentUser);
+        if (!RoleGuard.isTeacher(currentUser)) { showWarning("Access Denied", "Only teachers can manage courses."); showHomeView(); return; }
         setHeader("Course Management", "Create and manage courses");
         loadCenter("/view/lms/admin/course-list.fxml", null);
     }
 
     public void showCourseForm(entities.Course course) {
         if (!ensureAuthenticated()) return;
+        if (!RoleGuard.isTeacher(currentUser)) { showWarning("Access Denied", "Only teachers can manage courses."); showHomeView(); return; }
         setHeader(course == null ? "New Course" : "Edit Course", "Course form");
         loadCenter("/view/lms/admin/course-form.fxml", controller -> {
             if (controller instanceof AdminCourseFormController fc) fc.setCourse(course);
@@ -244,13 +248,14 @@ public class AppShellController implements Initializable {
 
     public void showContenuView() {
         if (!ensureAuthenticated()) return;
-        RoleGuard.requireAdmin(currentUser);
+        if (!RoleGuard.isTeacher(currentUser)) { showWarning("Access Denied", "Only teachers can manage content."); showHomeView(); return; }
         setHeader("Content Management", "Create and manage learning content");
         loadCenter("/view/lms/admin/contenu-list.fxml", null);
     }
 
     public void showContenuForm(entities.Contenu contenu) {
         if (!ensureAuthenticated()) return;
+        if (!RoleGuard.isTeacher(currentUser)) { showWarning("Access Denied", "Only teachers can manage content."); showHomeView(); return; }
         setHeader(contenu == null ? "New Content" : "Edit Content", "Content form");
         loadCenter("/view/lms/admin/contenu-form.fxml", controller -> {
             if (controller instanceof AdminContenuFormController fc) fc.setContenu(contenu);
@@ -266,6 +271,7 @@ public class AppShellController implements Initializable {
 
     public void showClasseForm(entities.Classe classe) {
         if (!ensureAuthenticated()) return;
+        if (!RoleGuard.isAdmin(currentUser)) { showWarning("Access Denied", "You do not have permission to access this page."); showHomeView(); return; }
         setHeader(classe == null ? "New Class" : "Edit Class", "Class form");
         loadCenter("/view/lms/admin/classe-form.fxml", controller -> {
             if (controller instanceof AdminClasseFormController fc) fc.setClasse(classe);
@@ -274,6 +280,7 @@ public class AppShellController implements Initializable {
 
     public void showClasseDetail(entities.Classe classe) {
         if (!ensureAuthenticated()) return;
+        if (!RoleGuard.isAdmin(currentUser)) { showWarning("Access Denied", "You do not have permission to access this page."); showHomeView(); return; }
         setHeader("Class: " + classe.getName(), "Students, teachers, and program assignment");
         loadCenter("/view/lms/admin/classe-detail.fxml", controller -> {
             if (controller instanceof AdminClasseDetailController dc) dc.setClasse(classe);
@@ -283,6 +290,7 @@ public class AppShellController implements Initializable {
     // ==================== Teacher Navigation ====================
     public void showTeacherClasses() {
         if (!ensureAuthenticated()) return;
+        if (!RoleGuard.isTeacher(currentUser)) { showWarning("Access Denied", "Only teachers can access this page."); showHomeView(); return; }
         setHeader("My Classes", "Manage your assigned classes");
         loadCenter("/view/lms/teacher/teacher-classe-list.fxml", controller -> {
             if (controller instanceof TeacherClasseListController tc) tc.setTeacher(currentUser);
@@ -291,6 +299,7 @@ public class AppShellController implements Initializable {
 
     public void showTeacherWorkspace(dto.lms.TeacherAssignmentRowDto tc) {
         if (!ensureAuthenticated()) return;
+        if (!RoleGuard.isTeacher(currentUser)) { showWarning("Access Denied", "Only teachers can access this page."); showHomeView(); return; }
         setHeader("Class Workspace", "Manage your module, courses, and content");
         loadCenter("/view/lms/teacher/teacher-classe-workspace.fxml", controller -> {
             if (controller instanceof TeacherClasseWorkspaceController wc) wc.setTeacherClasse(tc);
@@ -300,6 +309,7 @@ public class AppShellController implements Initializable {
     // ==================== Student Navigation ====================
     public void showStudentLearning() {
         if (!ensureAuthenticated()) return;
+        if (!RoleGuard.isStudent(currentUser)) { showWarning("Access Denied", "Only students can access this page."); showHomeView(); return; }
         setHeader("My Learning", "Your enrolled classes and learning progress");
         loadCenter("/view/lms/student/student-learning.fxml", controller -> {
             if (controller instanceof StudentLearningController sc) sc.setStudent(currentUser);
