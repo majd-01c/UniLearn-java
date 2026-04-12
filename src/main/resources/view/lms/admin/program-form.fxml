@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controller.lms.AdminProgramFormController"
+      styleClass="lms-root" spacing="16" maxWidth="600">
+    <padding><Insets top="8" right="8" bottom="8" left="8"/></padding>
+
+    <HBox styleClass="breadcrumb-bar" spacing="0">
+        <Button text="Programs" onAction="#onBackToList" styleClass="breadcrumb-link"/>
+        <Label text=" › " styleClass="breadcrumb-sep"/>
+        <Label fx:id="breadcrumbCurrent" text="New Program" styleClass="breadcrumb-current"/>
+    </HBox>
+
+    <VBox styleClass="lms-card" spacing="16">
+        <Label fx:id="formTitle" text="Create New Program" styleClass="card-title"/>
+
+        <VBox spacing="4" styleClass="lms-form">
+            <Label text="Program Name" styleClass="form-label"/>
+            <TextField fx:id="nameField" promptText="Enter program name" styleClass="lms-input"/>
+            <Label fx:id="nameError" styleClass="field-error" visible="false" managed="false"/>
+        </VBox>
+
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <CheckBox fx:id="publishedCheck" text="Published"/>
+        </HBox>
+
+        <Label fx:id="formError" styleClass="field-error" visible="false" managed="false" wrapText="true"/>
+
+        <HBox spacing="12" alignment="CENTER_RIGHT">
+            <Button text="Cancel" onAction="#onBackToList" styleClass="ghost-button"/>
+            <Button text="Save" onAction="#onSave" styleClass="primary-button"/>
+        </HBox>
+    </VBox>
+</VBox>

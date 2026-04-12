@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?><?import javafx.scene.control.*?><?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.lms.AdminCourseFormController" styleClass="lms-root" spacing="16" maxWidth="600">
+    <padding><Insets top="8" right="8" bottom="8" left="8"/></padding>
+    <HBox styleClass="breadcrumb-bar"><Button text="Courses" onAction="#onBack" styleClass="breadcrumb-link"/><Label text=" › " styleClass="breadcrumb-sep"/><Label fx:id="breadcrumb" text="New Course" styleClass="breadcrumb-current"/></HBox>
+    <VBox styleClass="lms-card" spacing="12">
+        <Label fx:id="formTitle" text="Create New Course" styleClass="card-title"/>
+        <VBox spacing="4" styleClass="lms-form"><Label text="Title" styleClass="form-label"/><TextField fx:id="titleField" styleClass="lms-input"/></VBox>
+        <Label fx:id="errorLabel" styleClass="field-error" visible="false" managed="false" wrapText="true"/>
+        <HBox spacing="12" alignment="CENTER_RIGHT"><Button text="Cancel" onAction="#onBack" styleClass="ghost-button"/><Button text="Save" onAction="#onSave" styleClass="primary-button"/></HBox>
+    </VBox>
+</VBox>

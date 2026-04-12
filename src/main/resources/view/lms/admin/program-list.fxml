@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controller.lms.AdminProgramController"
+      styleClass="lms-root" spacing="16">
+    <padding><Insets top="8" right="8" bottom="8" left="8"/></padding>
+
+    <!-- Header Bar -->
+    <HBox spacing="12" alignment="CENTER_LEFT">
+        <Label text="Programs" styleClass="lms-page-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <TextField fx:id="searchField" promptText="Search by name..." prefWidth="220" styleClass="lms-input"/>
+        <ComboBox fx:id="statusFilter" promptText="All" prefWidth="130"/>
+        <Button text="+ New Program" onAction="#onNewProgram" styleClass="primary-button"/>
+    </HBox>
+
+    <!-- Stats Row -->
+    <HBox fx:id="statsRow" spacing="12">
+        <VBox styleClass="stat-card" spacing="2"><Label fx:id="totalLabel" text="0" styleClass="stat-value"/><Label text="Total Programs" styleClass="stat-label"/></VBox>
+        <VBox styleClass="stat-card" spacing="2"><Label fx:id="publishedLabel" text="0" styleClass="stat-value"/><Label text="Published" styleClass="stat-label"/></VBox>
+        <VBox styleClass="stat-card" spacing="2"><Label fx:id="draftLabel" text="0" styleClass="stat-value"/><Label text="Draft" styleClass="stat-label"/></VBox>
+    </HBox>
+
+    <!-- Table -->
+    <TableView fx:id="programTable" VBox.vgrow="ALWAYS" styleClass="lms-table">
+        <columns>
+            <TableColumn fx:id="colId" text="ID" prefWidth="60"/>
+            <TableColumn fx:id="colName" text="Name" prefWidth="280"/>
+            <TableColumn fx:id="colPublished" text="Status" prefWidth="100"/>
+            <TableColumn fx:id="colCreated" text="Created" prefWidth="160"/>
+            <TableColumn fx:id="colActions" text="Actions" prefWidth="200"/>
+        </columns>
+        <placeholder><Label text="No programs found" styleClass="empty-state"/></placeholder>
+    </TableView>
+</VBox>

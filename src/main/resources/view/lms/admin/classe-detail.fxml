@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?><?import javafx.scene.control.*?><?import javafx.scene.layout.*?>
+<ScrollPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.lms.AdminClasseDetailController" styleClass="lms-scroll" fitToWidth="true">
+<VBox styleClass="lms-root" spacing="16"><padding><Insets top="8" right="8" bottom="8" left="8"/></padding>
+    <HBox styleClass="breadcrumb-bar"><Button text="Classes" onAction="#onBackToList" styleClass="breadcrumb-link"/><Label text=" › " styleClass="breadcrumb-sep"/><Label fx:id="breadcrumb" text="" styleClass="breadcrumb-current"/></HBox>
+    <!-- Info Card -->
+    <VBox styleClass="lms-card" spacing="8">
+        <HBox spacing="12" alignment="CENTER_LEFT"><Label fx:id="className" styleClass="card-title"/><Region HBox.hgrow="ALWAYS"/><Label fx:id="statusBadge" styleClass="badge"/></HBox>
+        <HBox spacing="16"><Label fx:id="programLabel" styleClass="card-text"/><Label fx:id="capacityLabel" styleClass="card-text"/><Label fx:id="datesLabel" styleClass="card-text"/></HBox>
+        <ProgressBar fx:id="capacityBar" maxWidth="1.7976931348623157E308" styleClass="capacity-bar"/>
+    </VBox>
+    <!-- Students Tab -->
+    <VBox styleClass="lms-card" spacing="12"><Label text="Enrolled Students" styleClass="card-title"/>
+        <HBox spacing="8"><ComboBox fx:id="studentSelector" promptText="Select student..." prefWidth="300"/><Button text="+ Enroll" onAction="#onEnrollStudent" styleClass="primary-button"/></HBox>
+        <TableView fx:id="studentTable" prefHeight="200" styleClass="lms-table"><columns><TableColumn fx:id="colStudentName" text="Student" prefWidth="250"/><TableColumn fx:id="colStudentEnrolled" text="Enrolled At" prefWidth="160"/><TableColumn fx:id="colStudentActive" text="Active" prefWidth="80"/><TableColumn fx:id="colStudentActions" text="" prefWidth="150"/></columns><placeholder><Label text="No students enrolled" styleClass="empty-state"/></placeholder></TableView>
+    </VBox>
+    <!-- Teachers Tab -->
+    <VBox styleClass="lms-card" spacing="12"><Label text="Assigned Teachers" styleClass="card-title"/>
+        <HBox spacing="8"><ComboBox fx:id="teacherSelector" promptText="Select teacher..." prefWidth="300"/><Button text="+ Assign" onAction="#onAssignTeacher" styleClass="primary-button"/></HBox>
+        <TableView fx:id="teacherTable" prefHeight="200" styleClass="lms-table"><columns><TableColumn fx:id="colTeacherName" text="Teacher" prefWidth="200"/><TableColumn fx:id="colTeacherModule" text="Module" prefWidth="150"/><TableColumn fx:id="colTeacherActive" text="Active" prefWidth="80"/><TableColumn fx:id="colTeacherCreated" text="Module Created" prefWidth="100"/><TableColumn fx:id="colTeacherActions" text="" prefWidth="120"/></columns><placeholder><Label text="No teachers assigned" styleClass="empty-state"/></placeholder></TableView>
+    </VBox>
+    <!-- Modules Section -->
+    <VBox styleClass="lms-card" spacing="12"><Label text="Class Modules" styleClass="card-title"/>
+        <TableView fx:id="moduleTable" prefHeight="180" styleClass="lms-table"><columns><TableColumn fx:id="colModName" text="Module" prefWidth="300"/><TableColumn fx:id="colModTeacher" text="Created By" prefWidth="200"/></columns><placeholder><Label text="No modules yet" styleClass="empty-state"/></placeholder></TableView>
+    </VBox>
+</VBox>
+</ScrollPane>

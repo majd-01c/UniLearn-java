@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?><?import javafx.scene.control.*?><?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.lms.AdminContenuController" styleClass="lms-root" spacing="16">
+    <padding><Insets top="8" right="8" bottom="8" left="8"/></padding>
+    <HBox spacing="12" alignment="CENTER_LEFT"><Label text="Content" styleClass="lms-page-title"/><Region HBox.hgrow="ALWAYS"/><ComboBox fx:id="typeFilter" promptText="All Types" prefWidth="150"/><TextField fx:id="searchField" promptText="Search..." prefWidth="200" styleClass="lms-input"/><Button text="+ New Content" onAction="#onNew" styleClass="primary-button"/></HBox>
+    <TableView fx:id="table" VBox.vgrow="ALWAYS" styleClass="lms-table"><columns><TableColumn fx:id="colId" text="ID" prefWidth="50"/><TableColumn fx:id="colTitle" text="Title" prefWidth="240"/><TableColumn fx:id="colType" text="Type" prefWidth="100"/><TableColumn fx:id="colPublished" text="Status" prefWidth="90"/><TableColumn fx:id="colFile" text="File" prefWidth="150"/><TableColumn fx:id="colActions" text="Actions" prefWidth="160"/></columns><placeholder><Label text="No content found" styleClass="empty-state"/></placeholder></TableView>
+</VBox>

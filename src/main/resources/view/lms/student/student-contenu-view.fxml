@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?><?import javafx.scene.control.*?><?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.lms.StudentContenuViewController" styleClass="lms-root" spacing="16">
+    <padding><Insets top="8" right="8" bottom="8" left="8"/></padding>
+    <HBox styleClass="breadcrumb-bar"><Button text="Back to Course" onAction="#onBackToCourse" styleClass="breadcrumb-link"/></HBox>
+    <VBox styleClass="lms-card" spacing="12" VBox.vgrow="ALWAYS">
+        <HBox spacing="12" alignment="CENTER_LEFT"><Label fx:id="contenuTitle" styleClass="card-title"/><Label fx:id="typeBadge" styleClass="badge"/></HBox>
+        <Separator/>
+        <VBox fx:id="fileSection" spacing="8" visible="false" managed="false">
+            <Label fx:id="fileInfo" styleClass="card-text"/>
+            <Button fx:id="downloadBtn" text="Download File" onAction="#onDownload" styleClass="primary-button"/>
+        </VBox>
+        <Label fx:id="noFileLabel" text="No file attached to this content." styleClass="card-text"/>
+    </VBox>
+    <!-- Prev / Next Navigation -->
+    <HBox spacing="12" alignment="CENTER">
+        <Button fx:id="prevBtn" text="← Previous" onAction="#onPrev" styleClass="nav-button"/>
+        <Label fx:id="positionLabel" styleClass="card-text"/>
+        <Button fx:id="nextBtn" text="Next →" onAction="#onNext" styleClass="nav-button"/>
+    </HBox>
+</VBox>
