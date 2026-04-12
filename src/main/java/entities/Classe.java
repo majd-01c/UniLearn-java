@@ -5,6 +5,8 @@ package entities;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import static jakarta.persistence.GenerationType.IDENTITY;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -25,7 +27,7 @@ import java.util.Set;
 public class Classe  implements java.io.Serializable {
 
 
-     private int id;
+     private Integer id;
      private Program program;
      private String name;
      private Date startDate;
@@ -46,7 +48,7 @@ public class Classe  implements java.io.Serializable {
     }
 
 	
-    public Classe(int id, Program program, String name, Date startDate, Date endDate, String status, int capacity, String level, String specialty) {
+    public Classe(Integer id, Program program, String name, Date startDate, Date endDate, String status, int capacity, String level, String specialty) {
         this.id = id;
         this.program = program;
         this.name = name;
@@ -57,7 +59,7 @@ public class Classe  implements java.io.Serializable {
         this.level = level;
         this.specialty = specialty;
     }
-    public Classe(int id, Program program, String name, Date startDate, Date endDate, String imageUrl, String status, int capacity, String level, String specialty, Set<CourseDocument> courseDocuments, Set<Schedule> schedules, Set<StudentClasse> studentClasses, Set<TeacherClasse> teacherClasses, Set<ClasseModule> classeModules, Set<Assessment> assessments) {
+    public Classe(Integer id, Program program, String name, Date startDate, Date endDate, String imageUrl, String status, int capacity, String level, String specialty, Set<CourseDocument> courseDocuments, Set<Schedule> schedules, Set<StudentClasse> studentClasses, Set<TeacherClasse> teacherClasses, Set<ClasseModule> classeModules, Set<Assessment> assessments) {
        this.id = id;
        this.program = program;
        this.name = name;
@@ -76,15 +78,15 @@ public class Classe  implements java.io.Serializable {
        this.assessments = assessments;
     }
    
-     @Id 
+     @Id @GeneratedValue(strategy=IDENTITY)
 
     
     @Column(name="id", unique=true, nullable=false)
-    public int getId() {
+    public Integer getId() {
         return this.id;
     }
     
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

@@ -5,6 +5,8 @@ package entities;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import static jakarta.persistence.GenerationType.IDENTITY;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -23,7 +25,7 @@ import java.util.Set;
 public class Contenu  implements java.io.Serializable {
 
 
-     private int id;
+     private Integer id;
      private String title;
      private String fileName;
      private String fileType;
@@ -42,7 +44,7 @@ public class Contenu  implements java.io.Serializable {
     }
 
 	
-    public Contenu(int id, String title, String type, byte published, Timestamp createdAt, Timestamp updatedAt) {
+    public Contenu(Integer id, String title, String type, byte published, Timestamp createdAt, Timestamp updatedAt) {
         this.id = id;
         this.title = title;
         this.type = type;
@@ -50,7 +52,7 @@ public class Contenu  implements java.io.Serializable {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
-    public Contenu(int id, String title, String fileName, String fileType, String type, byte published, Timestamp createdAt, Timestamp updatedAt, Integer fileSize, Set<BuildProgramContenu> buildProgramContenus, Set<ClasseContenu> classeContenus, Set<Assessment> assessments, Set<Quiz> quizs, Set<CourseContenu> courseContenus) {
+    public Contenu(Integer id, String title, String fileName, String fileType, String type, byte published, Timestamp createdAt, Timestamp updatedAt, Integer fileSize, Set<BuildProgramContenu> buildProgramContenus, Set<ClasseContenu> classeContenus, Set<Assessment> assessments, Set<Quiz> quizs, Set<CourseContenu> courseContenus) {
        this.id = id;
        this.title = title;
        this.fileName = fileName;
@@ -67,15 +69,15 @@ public class Contenu  implements java.io.Serializable {
        this.courseContenus = courseContenus;
     }
    
-     @Id 
+     @Id @GeneratedValue(strategy=IDENTITY)
 
     
     @Column(name="id", unique=true, nullable=false)
-    public int getId() {
+    public Integer getId() {
         return this.id;
     }
     
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
