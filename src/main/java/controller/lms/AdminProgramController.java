@@ -1,14 +1,15 @@
 package controller.lms;
 
 import entities.Program;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
+import javafx.scene.layout.*;
 import service.lms.ProgramService;
 import util.AppNavigator;
 
@@ -20,12 +21,7 @@ public class AdminProgramController implements Initializable {
 
     @FXML private TextField searchField;
     @FXML private ComboBox<String> statusFilter;
-    @FXML private TableView<Program> programTable;
-    @FXML private TableColumn<Program, String> colId;
-    @FXML private TableColumn<Program, String> colName;
-    @FXML private TableColumn<Program, String> colPublished;
-    @FXML private TableColumn<Program, String> colCreated;
-    @FXML private TableColumn<Program, String> colActions;
+    @FXML private FlowPane cardsContainer;
     @FXML private Label totalLabel;
     @FXML private Label publishedLabel;
     @FXML private Label draftLabel;
@@ -40,48 +36,19 @@ public class AdminProgramController implements Initializable {
         statusFilter.setItems(FXCollections.observableArrayList("All", "Published", "Draft"));
         statusFilter.setValue("All");
 
-        colId.setCellValueFactory(c -> new SimpleStringProperty(String.valueOf(c.getValue().getId())));
-        colName.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getName()));
-        colPublished.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getPublished() == 1 ? "Published" : "Draft"));
-        colPublished.setCellFactory(col -> new TableCell<>() {
-            @Override protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) { setGraphic(null); setText(null); return; }
-                Label badge = new Label(item);
-                badge.getStyleClass().addAll("badge", "Published".equals(item) ? "badge-published" : "badge-draft");
-                setGraphic(badge); setText(null);
-            }
-        });
-        colCreated.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getCreatedAt() != null ? sdf.format(c.getValue().getCreatedAt()) : ""));
-        colActions.setCellFactory(col -> new TableCell<>() {
-            private final Button viewBtn = new Button("View");
-            private final Button editBtn = new Button("Edit");
-            private final Button deleteBtn = new Button("Delete");
-            private final HBox box = new HBox(6, viewBtn, editBtn, deleteBtn);
-            {
-                viewBtn.getStyleClass().add("ghost-button");
-                editBtn.getStyleClass().add("ghost-button");
-                deleteBtn.getStyleClass().add("danger-button");
-                viewBtn.setOnAction(e -> { Program p = getTableView().getItems().get(getIndex()); AppNavigator.showProgramDetail(p); });
-                editBtn.setOnAction(e -> { Program p = getTableView().getItems().get(getIndex()); AppNavigator.showProgramForm(p); });
-                deleteBtn.setOnAction(e -> { Program p = getTableView().getItems().get(getIndex()); onDelete(p); });
-            }
-            @Override protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                setGraphic(empty ? null : box); setText(null);
-            }
-        });
-
         searchField.textProperty().addListener((o, ov, nv) -> applyFilter());
         statusFilter.valueProperty().addListener((o, ov, nv) -> applyFilter());
+        
         loadData();
     }
 
     private void loadData() {
         allPrograms = FXCollections.observableArrayList(programService.listAll());
         filteredPrograms = new FilteredList<>(allPrograms, p -> true);
-        programTable.setItems(filteredPrograms);
+        
+        filteredPrograms.predicateProperty().addListener((o, ov, nv) -> populateCards());
         updateStats();
+        populateCards();
     }
 
     private void applyFilter() {
@@ -102,14 +69,85 @@ public class AdminProgramController implements Initializable {
         publishedLabel.setText(String.valueOf(allPrograms.stream().filter(p -> p.getPublished() == 1).count()));
         draftLabel.setText(String.valueOf(allPrograms.stream().filter(p -> p.getPublished() == 0).count()));
     }
+    
+    private void populateCards() {
+        cardsContainer.getChildren().clear();
+        for (Program p : filteredPrograms) {
+            cardsContainer.getChildren().add(buildCard(p));
+        }
+    }
+
+    private VBox buildCard(Program p) {
+        VBox card = new VBox(12);
+        card.getStyleClass().add("lms-card");
+        card.setMinWidth(280);
+        card.setPrefWidth(280);
+        card.setPadding(new Insets(16));
+
+        // Header: Name & Status
+        HBox header = new HBox(8);
+        header.setAlignment(Pos.CENTER_LEFT);
+        
+        Label name = new Label(p.getName());
+        name.getStyleClass().add("card-title");
+        name.setWrapText(true);
+        name.setMaxWidth(160);
+        
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        
+        String statusStr = p.getPublished() == 1 ? "Published" : "Draft";
+        Label status = new Label(statusStr);
+        status.getStyleClass().addAll("badge", statusStr.equals("Published") ? "badge-published" : "badge-draft");
+        
+        header.getChildren().addAll(name, spacer, status);
+
+        // Info block
+        VBox infoBox = new VBox(4);
+        Label created = new Label("Created: " + (p.getCreatedAt() != null ? sdf.format(p.getCreatedAt()) : "—"));
+        created.getStyleClass().add("card-text");
+        infoBox.getChildren().addAll(created);
+        
+        Separator sep = new Separator();
+        
+        // Actions
+        HBox actions = new HBox(8);
+        actions.setAlignment(Pos.CENTER);
+        
+        Button detail = new Button("Detail");
+        detail.getStyleClass().add("ghost-button");
+        detail.setOnAction(e -> AppNavigator.showProgramDetail(p));
+        
+        Button edit = new Button("Edit");
+        edit.getStyleClass().add("ghost-button");
+        edit.setOnAction(e -> AppNavigator.showProgramForm(p));
+        
+        Button delete = new Button("Delete");
+        delete.getStyleClass().add("danger-button");
+        delete.setOnAction(e -> onDelete(p));
+        
+        actions.getChildren().addAll(detail, edit, delete);
+        
+        card.getChildren().addAll(header, infoBox, sep, actions);
+        return card;
+    }
 
     @FXML
-    private void onNewProgram() { AppNavigator.showProgramForm(null); }
+    private void onNewProgram() { 
+        AppNavigator.showProgramForm(null); 
+    }
 
     private void onDelete(Program p) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Delete program '" + p.getName() + "'?", ButtonType.YES, ButtonType.NO);
         alert.showAndWait().ifPresent(bt -> {
-            if (bt == ButtonType.YES) { programService.deleteProgram(p.getId()); loadData(); }
+            if (bt == ButtonType.YES) { 
+                try {
+                    programService.deleteProgram(p.getId()); 
+                    loadData(); 
+                } catch (Exception ex) {
+                    new Alert(Alert.AlertType.ERROR, "Cannot delete program: " + ex.getMessage()).showAndWait();
+                }
+            }
         });
     }
 }

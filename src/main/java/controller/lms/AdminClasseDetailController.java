@@ -1,13 +1,12 @@
 package controller.lms;
 
 import entities.Classe;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
-import javafx.util.StringConverter;
+import javafx.scene.layout.*;
 import service.UserService;
 import service.lms.*;
 import util.AppNavigator;
@@ -23,16 +22,18 @@ public class AdminClasseDetailController implements Initializable {
     @FXML private Label breadcrumb, className, statusBadge, programLabel, capacityLabel, datesLabel;
     @FXML private ProgressBar capacityBar;
 
-    @FXML private ComboBox<UserOptionDto> studentSelector, teacherSelector;
+    @FXML private Label studentCountBadge, teacherCountBadge, moduleCountBadge;
+    @FXML private Label noStudentsLabel, noAvailableStudentsLabel;
+    @FXML private Label noTeachersLabel, noAvailableTeachersLabel;
+    @FXML private Label noModulesLabel;
 
-    @FXML private TableView<StudentEnrollmentRowDto> studentTable;
-    @FXML private TableColumn<StudentEnrollmentRowDto, String> colStudentName, colStudentEnrolled, colStudentActive, colStudentActions;
+    @FXML private VBox enrolledStudentsContainer;
+    @FXML private FlowPane availableStudentsContainer;
 
-    @FXML private TableView<TeacherAssignmentRowDto> teacherTable;
-    @FXML private TableColumn<TeacherAssignmentRowDto, String> colTeacherName, colTeacherModule, colTeacherActive, colTeacherCreated, colTeacherActions;
+    @FXML private VBox assignedTeachersContainer;
+    @FXML private FlowPane availableTeachersContainer;
 
-    @FXML private TableView<ModuleRowDto> moduleTable;
-    @FXML private TableColumn<ModuleRowDto, String> colModName, colModTeacher;
+    @FXML private VBox modulesContainer;
 
     private final ClasseService classeSvc = new ClasseService();
     private final EnrollmentService enrollSvc = new EnrollmentService();
@@ -42,75 +43,12 @@ public class AdminClasseDetailController implements Initializable {
 
     private Integer classeId;
     
+    // Cache teachers for module display
+    private List<TeacherAssignmentRowDto> currentAssignedTeachers = new ArrayList<>();
+
     @Override
     public void initialize(URL u, ResourceBundle r) {
-        // --- Student Table ---
-        colStudentName.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getEmail()));
-        colStudentEnrolled.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getEnrolledAt()));
-        colStudentActive.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getActive()));
-        colStudentActive.setCellFactory(col -> new TableCell<>() {
-            @Override protected void updateItem(String i, boolean e) {
-                super.updateItem(i, e);
-                if (e || i == null) { setGraphic(null); setText(null); return; }
-                Label b = new Label(i);
-                b.getStyleClass().addAll("badge", "Yes".equals(i) ? "badge-active" : "badge-inactive");
-                setGraphic(b); setText(null);
-            }
-        });
-        colStudentActions.setCellFactory(col -> new TableCell<>() {
-            final Button tog = new Button("Toggle"), rem = new Button("Remove");
-            final HBox bx = new HBox(4, tog, rem);
-            {
-                tog.getStyleClass().add("ghost-button");
-                rem.getStyleClass().add("danger-button");
-                tog.setOnAction(e -> toggleStudent(getTableView().getItems().get(getIndex())));
-                rem.setOnAction(e -> removeStudent(getTableView().getItems().get(getIndex())));
-            }
-            @Override protected void updateItem(String i, boolean e) {
-                super.updateItem(i, e);
-                setGraphic(e ? null : bx); setText(null);
-            }
-        });
-
-        // --- Teacher Table ---
-        colTeacherName.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getEmail()));
-        colTeacherModule.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getModuleName()));
-        colTeacherActive.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getActive()));
-        colTeacherCreated.setCellValueFactory(c -> new SimpleStringProperty("Yes".equals(c.getValue().getHasCreatedModule()) ? "✓" : "✗"));
-        colTeacherActions.setCellFactory(col -> new TableCell<>() {
-            final Button tog = new Button("Toggle"), rem = new Button("Remove");
-            final HBox bx = new HBox(4, tog, rem);
-            {
-                tog.getStyleClass().add("ghost-button");
-                rem.getStyleClass().add("danger-button");
-                tog.setOnAction(e -> toggleTeacher(getTableView().getItems().get(getIndex())));
-                rem.setOnAction(e -> removeTeacher(getTableView().getItems().get(getIndex())));
-            }
-            @Override protected void updateItem(String i, boolean e) {
-                super.updateItem(i, e);
-                setGraphic(e ? null : bx); setText(null);
-            }
-        });
-
-        // --- Module Table ---
-        colModName.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getModuleName()));
-        colModTeacher.setCellValueFactory(c -> {
-            Integer modId = c.getValue().getModuleId();
-            if (modId == null) return new SimpleStringProperty("?");
-            String teacherEmail = teacherTable.getItems().stream()
-                    .filter(tc -> modId.equals(tc.getModuleId()))
-                    .map(TeacherAssignmentRowDto::getEmail)
-                    .findFirst().orElse("—");
-            return new SimpleStringProperty(teacherEmail);
-        });
-
-        // --- Selectors ---
-        StringConverter<UserOptionDto> uc = new StringConverter<>() {
-            @Override public String toString(UserOptionDto u) { return u == null ? "" : u.getEmail(); }
-            @Override public UserOptionDto fromString(String s) { return null; }
-        };
-        studentSelector.setConverter(uc);
-        teacherSelector.setConverter(uc);
+        // Nothing complex in init, everything happens when class is set
     }
 
     public void setClasse(Classe c) {
@@ -126,63 +64,284 @@ public class AdminClasseDetailController implements Initializable {
         double ratio = c.getCapacity() > 0 ? (double) active / c.getCapacity() : 0;
         capacityBar.setProgress(ratio);
         if (ratio >= 1.0) capacityBar.getStyleClass().add("capacity-bar-full");
+        else capacityBar.getStyleClass().remove("capacity-bar-full");
 
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         datesLabel.setText((c.getStartDate() != null ? df.format(c.getStartDate()) : "?") + " - " + 
                            (c.getEndDate() != null ? df.format(c.getEndDate()) : "?"));
 
-        loadTeachers(); // load teachers first so mod col works
+        loadAllData();
+    }
+
+    private void loadAllData() {
+        // Teachers first so modules can match them
+        currentAssignedTeachers = taSvc.getTeachersForClasseDto(classeId);
+        
+        loadTeachers();
         loadStudents();
         loadModules();
-        loadSelectors();
     }
+
+    // ==========================================
+    // STUDENTS
+    // ==========================================
 
     private void loadStudents() {
-        studentTable.setItems(FXCollections.observableArrayList(enrollSvc.getStudentsForClasseDto(classeId)));
+        List<StudentEnrollmentRowDto> enrolled = enrollSvc.getStudentsForClasseDto(classeId);
+        studentCountBadge.setText(String.valueOf(enrolled.size()));
+        
+        enrolledStudentsContainer.getChildren().clear();
+        if (enrolled.isEmpty()) {
+            noStudentsLabel.setVisible(true); noStudentsLabel.setManaged(true);
+        } else {
+            noStudentsLabel.setVisible(false); noStudentsLabel.setManaged(false);
+            for (StudentEnrollmentRowDto s : enrolled) {
+                enrolledStudentsContainer.getChildren().add(buildStudentRow(s));
+            }
+        }
+
+        // Available to enroll
+        Set<Integer> enrolledIds = enrolled.stream().map(StudentEnrollmentRowDto::getStudentId).collect(Collectors.toSet());
+        List<UserOptionDto> available = userSvc.getAllUsers(1, 1000).stream()
+            .filter(u -> {
+                String r = u.getRole();
+                if (r == null) return false;
+                r = r.toUpperCase();
+                if (r.startsWith("ROLE_")) r = r.substring(5);
+                return "STUDENT".equals(r) && !enrolledIds.contains(u.getId());
+            })
+            .map(u -> new UserOptionDto(u.getId(), u.getEmail()))
+            .collect(Collectors.toList());
+
+        availableStudentsContainer.getChildren().clear();
+        if (available.isEmpty()) {
+            noAvailableStudentsLabel.setVisible(true); noAvailableStudentsLabel.setManaged(true);
+        } else {
+            noAvailableStudentsLabel.setVisible(false); noAvailableStudentsLabel.setManaged(false);
+            for (UserOptionDto s : available) {
+                availableStudentsContainer.getChildren().add(buildAvailableStudentCard(s));
+            }
+        }
     }
+
+    private HBox buildStudentRow(StudentEnrollmentRowDto s) {
+        HBox row = new HBox(12);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setPadding(new Insets(12, 0, 12, 0));
+        row.setStyle("-fx-border-color: transparent transparent #e0e0e0 transparent; -fx-border-width: 0 0 1 0;");
+
+        // Avatar
+        Label avatar = new Label(s.getEmail().substring(0, 1).toUpperCase());
+        avatar.setStyle("-fx-background-color: #1976D2; -fx-text-fill: white; -fx-font-weight: bold; -fx-alignment: center; -fx-background-radius: 50; -fx-min-width: 36; -fx-min-height: 36;");
+        
+        Label email = new Label(s.getEmail());
+        email.getStyleClass().add("card-text");
+        email.setPrefWidth(250);
+
+        Label enrolledAt = new Label(s.getEnrolledAt());
+        enrolledAt.getStyleClass().add("card-text");
+        enrolledAt.setPrefWidth(180);
+
+        Label status = new Label("Yes".equals(s.getActive()) ? "ACTIVE" : "INACTIVE");
+        status.getStyleClass().addAll("badge", "Yes".equals(s.getActive()) ? "badge-active" : "badge-inactive");
+        status.setPrefWidth(100);
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        Button toggleBtn = new Button("Yes".equals(s.getActive()) ? "⏸" : "▶");
+        toggleBtn.getStyleClass().add("ghost-button");
+        toggleBtn.setTooltip(new Tooltip("Toggle active status"));
+        toggleBtn.setOnAction(e -> toggleStudent(s));
+
+        Button removeBtn = new Button("👤x");
+        removeBtn.getStyleClass().add("ghost-button");
+        removeBtn.setStyle("-fx-text-fill: #d32f2f; -fx-border-color: #ef9a9a; -fx-border-radius: 4;");
+        removeBtn.setTooltip(new Tooltip("Remove from class"));
+        removeBtn.setOnAction(e -> removeStudent(s));
+
+        HBox actions = new HBox(8, toggleBtn, removeBtn);
+        actions.setAlignment(Pos.CENTER_RIGHT);
+
+        row.getChildren().addAll(avatar, email, enrolledAt, status, spacer, actions);
+        return row;
+    }
+
+    private HBox buildAvailableStudentCard(UserOptionDto u) {
+        HBox card = new HBox(12);
+        card.setAlignment(Pos.CENTER_LEFT);
+        card.setStyle("-fx-background-color: white; -fx-padding: 8 16 8 8; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 4, 0, 0, 2);");
+
+        Label avatar = new Label(u.getEmail().substring(0, 1).toUpperCase());
+        avatar.setStyle("-fx-background-color: #607d8b; -fx-text-fill: white; -fx-font-weight: bold; -fx-alignment: center; -fx-background-radius: 50; -fx-min-width: 32; -fx-min-height: 32;");
+
+        VBox text = new VBox(2);
+        Label name = new Label(u.getEmail().split("@")[0]);
+        name.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
+        Label email = new Label(u.getEmail());
+        email.setStyle("-fx-text-fill: #757575; -fx-font-size: 11px;");
+        text.getChildren().addAll(name, email);
+
+        Button addBtn = new Button("+");
+        addBtn.setStyle("-fx-background-color: #00bfa5; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4; -fx-padding: 4 12; -fx-cursor: hand;");
+        addBtn.setOnAction(e -> enrollStudent(u));
+
+        card.getChildren().addAll(avatar, text, addBtn);
+        return card;
+    }
+
+    // ==========================================
+    // TEACHERS
+    // ==========================================
 
     private void loadTeachers() {
-        teacherTable.setItems(FXCollections.observableArrayList(taSvc.getTeachersForClasseDto(classeId)));
+        teacherCountBadge.setText(String.valueOf(currentAssignedTeachers.size()));
+        
+        assignedTeachersContainer.getChildren().clear();
+        if (currentAssignedTeachers.isEmpty()) {
+            noTeachersLabel.setVisible(true); noTeachersLabel.setManaged(true);
+        } else {
+            noTeachersLabel.setVisible(false); noTeachersLabel.setManaged(false);
+            for (TeacherAssignmentRowDto t : currentAssignedTeachers) {
+                assignedTeachersContainer.getChildren().add(buildTeacherRow(t));
+            }
+        }
+
+        Set<Integer> assignedIds = currentAssignedTeachers.stream().map(TeacherAssignmentRowDto::getTeacherId).collect(Collectors.toSet());
+        List<UserOptionDto> available = userSvc.getAllUsers(1, 1000).stream()
+            .filter(u -> {
+                String r = u.getRole();
+                if (r == null) return false;
+                r = r.toUpperCase();
+                if (r.startsWith("ROLE_")) r = r.substring(5);
+                return "TEACHER".equals(r) && !assignedIds.contains(u.getId());
+            })
+            .map(u -> new UserOptionDto(u.getId(), u.getEmail()))
+            .collect(Collectors.toList());
+
+        availableTeachersContainer.getChildren().clear();
+        if (available.isEmpty()) {
+            noAvailableTeachersLabel.setVisible(true); noAvailableTeachersLabel.setManaged(true);
+        } else {
+            noAvailableTeachersLabel.setVisible(false); noAvailableTeachersLabel.setManaged(false);
+            for (UserOptionDto t : available) {
+                availableTeachersContainer.getChildren().add(buildAvailableTeacherCard(t));
+            }
+        }
     }
+
+    private HBox buildTeacherRow(TeacherAssignmentRowDto t) {
+        HBox row = new HBox(12);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setPadding(new Insets(12, 0, 12, 0));
+        row.setStyle("-fx-border-color: transparent transparent #e0e0e0 transparent; -fx-border-width: 0 0 1 0;");
+
+        Label avatar = new Label(t.getEmail().substring(0, 1).toUpperCase());
+        avatar.setStyle("-fx-background-color: #FF5722; -fx-text-fill: white; -fx-font-weight: bold; -fx-alignment: center; -fx-background-radius: 50; -fx-min-width: 36; -fx-min-height: 36;");
+        
+        Label email = new Label(t.getEmail());
+        email.getStyleClass().add("card-text");
+        email.setPrefWidth(200);
+
+        Label module = new Label(t.getModuleName() != null ? t.getModuleName() : "No Module Yet (" + t.getHasCreatedModule() + ")");
+        module.getStyleClass().add("card-text");
+        module.setPrefWidth(180);
+
+        Label status = new Label("Yes".equals(t.getActive()) ? "ACTIVE" : "INACTIVE");
+        status.getStyleClass().addAll("badge", "Yes".equals(t.getActive()) ? "badge-active" : "badge-inactive");
+        status.setPrefWidth(100);
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        Button toggleBtn = new Button("Yes".equals(t.getActive()) ? "⏸" : "▶");
+        toggleBtn.getStyleClass().add("ghost-button");
+        toggleBtn.setTooltip(new Tooltip("Toggle active status"));
+        toggleBtn.setOnAction(e -> toggleTeacher(t));
+
+        Button removeBtn = new Button("👨‍🏫x");
+        removeBtn.getStyleClass().add("ghost-button");
+        removeBtn.setStyle("-fx-text-fill: #d32f2f; -fx-border-color: #ef9a9a; -fx-border-radius: 4;");
+        removeBtn.setTooltip(new Tooltip("Remove from class"));
+        removeBtn.setOnAction(e -> removeTeacher(t));
+
+        HBox actions = new HBox(8, toggleBtn, removeBtn);
+        actions.setAlignment(Pos.CENTER_RIGHT);
+
+        row.getChildren().addAll(avatar, email, module, status, spacer, actions);
+        return row;
+    }
+
+    private HBox buildAvailableTeacherCard(UserOptionDto u) {
+        HBox card = new HBox(12);
+        card.setAlignment(Pos.CENTER_LEFT);
+        card.setStyle("-fx-background-color: white; -fx-padding: 8 16 8 8; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 4, 0, 0, 2);");
+
+        Label avatar = new Label(u.getEmail().substring(0, 1).toUpperCase());
+        avatar.setStyle("-fx-background-color: #795548; -fx-text-fill: white; -fx-font-weight: bold; -fx-alignment: center; -fx-background-radius: 50; -fx-min-width: 32; -fx-min-height: 32;");
+
+        VBox text = new VBox(2);
+        Label name = new Label(u.getEmail().split("@")[0]);
+        name.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
+        Label email = new Label(u.getEmail());
+        email.setStyle("-fx-text-fill: #757575; -fx-font-size: 11px;");
+        text.getChildren().addAll(name, email);
+
+        Button addBtn = new Button("+");
+        addBtn.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4; -fx-padding: 4 12; -fx-cursor: hand;");
+        addBtn.setOnAction(e -> assignTeacher(u));
+
+        card.getChildren().addAll(avatar, text, addBtn);
+        return card;
+    }
+
+    // ==========================================
+    // MODULES
+    // ==========================================
 
     private void loadModules() {
-        moduleTable.setItems(FXCollections.observableArrayList(cdSvc.getModulesForClasseDto(classeId)));
-    }
+        List<ModuleRowDto> modules = cdSvc.getModulesForClasseDto(classeId);
+        moduleCountBadge.setText(String.valueOf(modules.size()));
 
-    private void loadSelectors() {
-        Set<Integer> enrolled = studentTable.getItems().stream().map(StudentEnrollmentRowDto::getStudentId).collect(Collectors.toSet());
-        List<UserOptionDto> students = userSvc.getAllUsers(1, 1000).stream()
-            .filter(u -> {
-                String r = u.getRole();
-                if (r == null) return false;
-                r = r.toUpperCase();
-                if (r.startsWith("ROLE_")) r = r.substring(5);
-                return "STUDENT".equals(r) && !enrolled.contains(u.getId());
-            })
-            .map(u -> new UserOptionDto(u.getId(), u.getEmail()))
-            .collect(Collectors.toList());
-        studentSelector.setItems(FXCollections.observableArrayList(students));
-
-        Set<Integer> assigned = teacherTable.getItems().stream().map(TeacherAssignmentRowDto::getTeacherId).collect(Collectors.toSet());
-        List<UserOptionDto> teachers = userSvc.getAllUsers(1, 1000).stream()
-            .filter(u -> {
-                String r = u.getRole();
-                if (r == null) return false;
-                r = r.toUpperCase();
-                if (r.startsWith("ROLE_")) r = r.substring(5);
-                return "TEACHER".equals(r) && !assigned.contains(u.getId());
-            })
-            .map(u -> new UserOptionDto(u.getId(), u.getEmail()))
-            .collect(Collectors.toList());
-        teacherSelector.setItems(FXCollections.observableArrayList(teachers));
-    }
-
-    @FXML private void onEnrollStudent() {
-        UserOptionDto s = studentSelector.getValue();
-        if (s == null) {
-            new Alert(Alert.AlertType.WARNING, "Select a student.").showAndWait();
-            return;
+        modulesContainer.getChildren().clear();
+        if (modules.isEmpty()) {
+            noModulesLabel.setVisible(true); noModulesLabel.setManaged(true);
+        } else {
+            noModulesLabel.setVisible(false); noModulesLabel.setManaged(false);
+            for (ModuleRowDto m : modules) {
+                modulesContainer.getChildren().add(buildModuleRow(m));
+            }
         }
+    }
+
+    private HBox buildModuleRow(ModuleRowDto m) {
+        HBox row = new HBox(12);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setPadding(new Insets(12, 0, 12, 0));
+        row.setStyle("-fx-border-color: transparent transparent #e0e0e0 transparent; -fx-border-width: 0 0 1 0;");
+
+        Label name = new Label(m.getModuleName());
+        name.getStyleClass().add("card-text");
+        name.setStyle("-fx-font-weight: bold;");
+        name.setPrefWidth(300);
+
+        String teacherEmail = currentAssignedTeachers.stream()
+                .filter(tc -> m.getModuleId().equals(tc.getModuleId()))
+                .map(TeacherAssignmentRowDto::getEmail)
+                .findFirst().orElse("—");
+        
+        Label createdBy = new Label(teacherEmail);
+        createdBy.getStyleClass().add("card-text");
+
+        row.getChildren().addAll(name, createdBy);
+        return row;
+    }
+
+    // ==========================================
+    // ACTIONS
+    // ==========================================
+
+    private void enrollStudent(UserOptionDto s) {
         try {
             enrollSvc.enrollStudent(s.getUserId(), classeId);
             refreshAll();
@@ -191,12 +350,7 @@ public class AdminClasseDetailController implements Initializable {
         }
     }
 
-    @FXML private void onAssignTeacher() {
-        UserOptionDto t = teacherSelector.getValue();
-        if (t == null) {
-            new Alert(Alert.AlertType.WARNING, "Select a teacher.").showAndWait();
-            return;
-        }
+    private void assignTeacher(UserOptionDto t) {
         try {
             taSvc.assignTeacher(t.getUserId(), classeId);
             refreshAll();
@@ -217,8 +371,12 @@ public class AdminClasseDetailController implements Initializable {
     private void removeStudent(StudentEnrollmentRowDto sc) {
         new Alert(Alert.AlertType.CONFIRMATION, "Unenroll this student?", ButtonType.YES, ButtonType.NO).showAndWait().ifPresent(b -> {
             if(b == ButtonType.YES) {
-                enrollSvc.unenrollStudent(sc.getId());
-                refreshAll();
+                try {
+                    enrollSvc.unenrollStudent(sc.getId());
+                    refreshAll();
+                } catch (Exception e) {
+                    new Alert(Alert.AlertType.ERROR, e.getMessage()).showAndWait();
+                }
             }
         });
     }
@@ -233,15 +391,21 @@ public class AdminClasseDetailController implements Initializable {
     }
 
     private void removeTeacher(TeacherAssignmentRowDto tc) {
-        taSvc.removeTeacher(tc.getId());
-        refreshAll();
+        new Alert(Alert.AlertType.CONFIRMATION, "Remove this teacher?", ButtonType.YES, ButtonType.NO).showAndWait().ifPresent(b -> {
+            if(b == ButtonType.YES) {
+                try {
+                    taSvc.removeTeacher(tc.getId());
+                    refreshAll();
+                } catch (Exception e) {
+                    new Alert(Alert.AlertType.ERROR, e.getMessage()).showAndWait();
+                }
+            }
+        });
     }
 
     private void refreshAll() {
         Classe c = classeSvc.findById(classeId).orElse(null);
-        if (c != null) {
-            setClasse(c);
-        }
+        if (c != null) { setClasse(c); }
     }
 
     @FXML private void onBackToList() {
