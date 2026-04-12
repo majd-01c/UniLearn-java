@@ -17,7 +17,7 @@ public class ProgramModuleRepository {
 
     public List<ProgramModule> findByProgramId(Integer programId) {
         try (Session session = HibernateSessionFactory.getInstance().openSession()) {
-            return session.createQuery("FROM ProgramModule pm WHERE pm.program.id = :pid", ProgramModule.class)
+            return session.createQuery("FROM ProgramModule pm JOIN FETCH pm.module WHERE pm.program.id = :pid", ProgramModule.class)
                     .setParameter("pid", programId).list();
         } catch (Exception e) { LOG.error("findByProgramId failed", e); return Collections.emptyList(); }
     }
