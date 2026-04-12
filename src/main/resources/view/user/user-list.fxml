@@ -58,6 +58,7 @@
                         <Button text="Edit" onAction="#onEditUser" prefWidth="110.0"/>
                         <Button text="Delete" onAction="#onDeleteUser" prefWidth="110.0"/>
                         <Button text="Toggle Status" onAction="#onToggleStatus" prefWidth="130.0"/>
+                        <Button text="Change My Password" onAction="#onChangeMyPassword" prefWidth="170.0"/>
                     </children>
                 </HBox>
             </children>

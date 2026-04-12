@@ -10,14 +10,16 @@ public class MainFx extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/user/user-list.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/app/app-shell.fxml"));
         Parent root = loader.load();
 
-        Scene scene = new Scene(root, 1100, 700);
-        stage.setTitle("UniLearn - User Management");
+        Scene scene = new Scene(root, 1280, 800);
+        scene.getStylesheets().add(getClass().getResource("/view/styles/unilearn-desktop.css").toExternalForm());
+
+        stage.setTitle("UniLearn Desktop");
         stage.setScene(scene);
-        stage.setMinWidth(900);
-        stage.setMinHeight(600);
+        stage.setMinWidth(1024);
+        stage.setMinHeight(680);
         stage.show();
     }
 
