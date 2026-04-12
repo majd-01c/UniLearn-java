@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            prefWidth="640.0" prefHeight="470.0"
+            fx:controller="controller.UserFormController">
+
+    <top>
+        <Label text="User Form" style="-fx-font-size: 20px; -fx-font-weight: bold;">
+            <BorderPane.margin>
+                <Insets top="14.0" right="16.0" bottom="6.0" left="16.0"/>
+            </BorderPane.margin>
+        </Label>
+    </top>
+
+    <center>
+        <VBox spacing="10.0">
+            <BorderPane.margin>
+                <Insets top="8.0" right="16.0" bottom="8.0" left="16.0"/>
+            </BorderPane.margin>
+            <children>
+                <HBox spacing="10.0" alignment="CENTER_LEFT">
+                    <children>
+                        <Label text="Email" prefWidth="130.0"/>
+                        <TextField fx:id="emailField" promptText="name@example.com">
+                            <HBox.hgrow>
+                                <Priority fx:constant="ALWAYS"/>
+                            </HBox.hgrow>
+                        </TextField>
+                    </children>
+                </HBox>
+
+                <HBox spacing="10.0" alignment="CENTER_LEFT">
+                    <children>
+                        <Label text="Role" prefWidth="130.0"/>
+                        <ComboBox fx:id="roleComboBox" prefWidth="220.0"/>
+                    </children>
+                </HBox>
+
+                <HBox spacing="10.0" alignment="CENTER_LEFT">
+                    <children>
+                        <Label text="First Name" prefWidth="130.0"/>
+                        <TextField fx:id="firstNameField" promptText="First name">
+                            <HBox.hgrow>
+                                <Priority fx:constant="ALWAYS"/>
+                            </HBox.hgrow>
+                        </TextField>
+                    </children>
+                </HBox>
+
+                <HBox spacing="10.0" alignment="CENTER_LEFT">
+                    <children>
+                        <Label text="Last Name" prefWidth="130.0"/>
+                        <TextField fx:id="lastNameField" promptText="Last name">
+                            <HBox.hgrow>
+                                <Priority fx:constant="ALWAYS"/>
+                            </HBox.hgrow>
+                        </TextField>
+                    </children>
+                </HBox>
+
+                <HBox spacing="10.0" alignment="CENTER_LEFT">
+                    <children>
+                        <Label text="Phone" prefWidth="130.0"/>
+                        <TextField fx:id="phoneField" promptText="+216 12 345 678"/>
+                    </children>
+                </HBox>
+
+                <HBox spacing="10.0" alignment="TOP_LEFT">
+                    <children>
+                        <Label text="Description" prefWidth="130.0"/>
+                        <TextArea fx:id="descriptionArea" wrapText="true" prefRowCount="4">
+                            <HBox.hgrow>
+                                <Priority fx:constant="ALWAYS"/>
+                            </HBox.hgrow>
+                        </TextArea>
+                    </children>
+                </HBox>
+
+                <HBox fx:id="tempPasswordRow" spacing="10.0" alignment="CENTER_LEFT">
+                    <children>
+                        <Label text="Temp Password" prefWidth="130.0"/>
+                        <TextField fx:id="tempPasswordField" editable="false">
+                            <HBox.hgrow>
+                                <Priority fx:constant="ALWAYS"/>
+                            </HBox.hgrow>
+                        </TextField>
+                        <Button text="Regenerate" onAction="#onGenerateTempPassword"/>
+                        <Button text="Copy" onAction="#onCopyTempPassword"/>
+                    </children>
+                </HBox>
+
+                <CheckBox fx:id="sendWelcomeEmailCheckBox" text="Send welcome email after user is created"/>
+
+                <HBox fx:id="statusRow" spacing="10.0" alignment="CENTER_LEFT">
+                    <children>
+                        <Label text="Status" prefWidth="130.0"/>
+                        <ComboBox fx:id="statusComboBox" prefWidth="220.0"/>
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </center>
+
+    <bottom>
+        <HBox spacing="10.0" alignment="CENTER_RIGHT">
+            <BorderPane.margin>
+                <Insets top="8.0" right="16.0" bottom="14.0" left="16.0"/>
+            </BorderPane.margin>
+            <children>
+                <Button text="Cancel" onAction="#onCancel"/>
+                <Button text="Save" onAction="#onSave" defaultButton="true"/>
+            </children>
+        </HBox>
+    </bottom>
+
+</BorderPane>
