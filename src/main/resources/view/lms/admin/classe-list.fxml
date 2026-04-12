@@ -1,8 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.geometry.Insets?><?import javafx.scene.control.*?><?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?><?import javafx.scene.layout.*?>
 <VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.lms.AdminClasseController" styleClass="lms-root" spacing="16">
     <padding><Insets top="8" right="8" bottom="8" left="8"/></padding>
-    <HBox spacing="12" alignment="CENTER_LEFT"><Label text="Classes" styleClass="lms-page-title"/><Region HBox.hgrow="ALWAYS"/><ComboBox fx:id="statusFilter" prefWidth="130"/><TextField fx:id="searchField" promptText="Search..." prefWidth="200" styleClass="lms-input"/><Button text="+ New Class" onAction="#onNew" styleClass="primary-button"/></HBox>
-    <HBox fx:id="statsRow" spacing="12"><VBox styleClass="stat-card" spacing="2"><Label fx:id="totalLabel" text="0" styleClass="stat-value"/><Label text="Total" styleClass="stat-label"/></VBox><VBox styleClass="stat-card" spacing="2"><Label fx:id="activeLabel" text="0" styleClass="stat-value"/><Label text="Active" styleClass="stat-label"/></VBox><VBox styleClass="stat-card" spacing="2"><Label fx:id="fullLabel" text="0" styleClass="stat-value"/><Label text="Full" styleClass="stat-label"/></VBox></HBox>
-    <TableView fx:id="table" VBox.vgrow="ALWAYS" styleClass="lms-table"><columns><TableColumn fx:id="colId" text="ID" prefWidth="50"/><TableColumn fx:id="colName" text="Name" prefWidth="200"/><TableColumn fx:id="colProgram" text="Program" prefWidth="150"/><TableColumn fx:id="colLevel" text="Level" prefWidth="80"/><TableColumn fx:id="colCapacity" text="Capacity" prefWidth="100"/><TableColumn fx:id="colStatus" text="Status" prefWidth="90"/><TableColumn fx:id="colActions" text="Actions" prefWidth="200"/></columns><placeholder><Label text="No classes found" styleClass="empty-state"/></placeholder></TableView>
+    
+    <HBox spacing="12" alignment="CENTER_LEFT">
+        <Label text="Classes" styleClass="lms-page-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <ComboBox fx:id="statusFilter" prefWidth="130"/>
+        <TextField fx:id="searchField" promptText="Search..." prefWidth="200" styleClass="lms-input"/>
+        <Button text="+ New Class" onAction="#onNew" styleClass="primary-button"/>
+    </HBox>
+    
+    <HBox fx:id="statsRow" spacing="12">
+        <VBox styleClass="stat-card" spacing="2">
+            <Label fx:id="totalLabel" text="0" styleClass="stat-value"/>
+            <Label text="Total" styleClass="stat-label"/>
+        </VBox>
+        <VBox styleClass="stat-card" spacing="2">
+            <Label fx:id="activeLabel" text="0" styleClass="stat-value"/>
+            <Label text="Active" styleClass="stat-label"/>
+        </VBox>
+        <VBox styleClass="stat-card" spacing="2">
+            <Label fx:id="fullLabel" text="0" styleClass="stat-value"/>
+            <Label text="Full" styleClass="stat-label"/>
+        </VBox>
+    </HBox>
+
+    <ScrollPane VBox.vgrow="ALWAYS" styleClass="lms-scroll" fitToWidth="true" style="-fx-background-color: transparent;">
+        <FlowPane fx:id="cardsContainer" hgap="16" vgap="16">
+            <padding><Insets top="4" right="4" bottom="4" left="4"/></padding>
+        </FlowPane>
+    </ScrollPane>
 </VBox>

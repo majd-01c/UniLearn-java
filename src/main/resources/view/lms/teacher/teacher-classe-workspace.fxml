@@ -1,27 +1,99 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.geometry.Insets?><?import javafx.scene.control.*?><?import javafx.scene.layout.*?>
 <ScrollPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.lms.TeacherClasseWorkspaceController" styleClass="lms-scroll" fitToWidth="true">
-<VBox styleClass="lms-root" spacing="16"><padding><Insets top="8" right="8" bottom="8" left="8"/></padding>
-    <HBox styleClass="breadcrumb-bar"><Button text="My Classes" onAction="#onBack" styleClass="breadcrumb-link"/><Label text=" › " styleClass="breadcrumb-sep"/><Label fx:id="breadcrumb" text="Workspace" styleClass="breadcrumb-current"/></HBox>
-    <!-- Module Creation (before module exists) -->
-    <VBox fx:id="createModulePane" styleClass="lms-card" spacing="12" visible="false" managed="false">
-        <Label text="Create Your Module" styleClass="card-title"/>
-        <VBox spacing="4" styleClass="lms-form"><Label text="Module Name" styleClass="form-label"/><TextField fx:id="moduleNameField" styleClass="lms-input"/></VBox>
-        <HBox spacing="12"><VBox spacing="4" styleClass="lms-form" HBox.hgrow="ALWAYS"><Label text="Period Unit" styleClass="form-label"/><ComboBox fx:id="modulePeriodField" maxWidth="1.7976931348623157E308"/></VBox>
-        <VBox spacing="4" styleClass="lms-form" HBox.hgrow="ALWAYS"><Label text="Duration" styleClass="form-label"/><Spinner fx:id="moduleDurationField" min="1" max="999" initialValue="1"/></VBox></HBox>
-        <Label fx:id="createErrorLabel" styleClass="field-error" visible="false" managed="false" wrapText="true"/>
-        <Button text="Create Module" onAction="#onCreateModule" styleClass="primary-button"/>
-    </VBox>
-    <!-- Workspace (after module exists) -->
-    <VBox fx:id="workspacePane" spacing="16" visible="false" managed="false">
-        <VBox styleClass="lms-card" spacing="8"><Label fx:id="moduleInfoLabel" styleClass="card-title"/><Label fx:id="moduleDurationLabel" styleClass="card-text"/></VBox>
-        <!-- Courses & Content management -->
-        <VBox styleClass="lms-card" spacing="12">
-            <HBox spacing="12" alignment="CENTER_LEFT"><Label text="Courses" styleClass="card-title"/><Region HBox.hgrow="ALWAYS"/>
-                <ComboBox fx:id="courseSelector" promptText="Select course..." prefWidth="240"/>
-                <Button text="+ Add Course" onAction="#onAddCourse" styleClass="primary-button"/></HBox>
-            <VBox fx:id="coursesContainer" spacing="12"/>
+<VBox styleClass="lms-root" spacing="0">
+
+    <!-- Top Bar: Back + Class name + badges -->
+    <HBox styleClass="breadcrumb-bar" spacing="8" alignment="CENTER_LEFT">
+        <padding><Insets top="8" right="12" bottom="8" left="12"/></padding>
+        <Button text="← Back" onAction="#onBack" styleClass="ghost-button"/>
+        <Label fx:id="breadcrumb" text="Class" styleClass="header-title"/>
+    </HBox>
+    <HBox spacing="8" alignment="CENTER_LEFT">
+        <padding><Insets top="0" right="12" bottom="12" left="12"/></padding>
+        <Label fx:id="levelBadge" styleClass="badge badge-info"/>
+        <Label fx:id="specialtyBadge" styleClass="badge"/>
+        <Label fx:id="statusBadge" styleClass="badge badge-active"/>
+    </HBox>
+
+    <!-- Main 2-column layout -->
+    <HBox spacing="16" VBox.vgrow="ALWAYS">
+        <padding><Insets top="0" right="12" bottom="12" left="12"/></padding>
+
+        <!-- LEFT PANEL: Class Info + Module Info -->
+        <VBox prefWidth="260" minWidth="240" spacing="16">
+
+            <!-- Class Details Card -->
+            <VBox styleClass="lms-card" spacing="10">
+                <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+                <Label text="Class Details" styleClass="card-title"/>
+                <Separator/>
+                <Label fx:id="programLabel" styleClass="card-text" wrapText="true"/>
+                <Label fx:id="studentsLabel" styleClass="card-text"/>
+                <Label fx:id="durationLabel" styleClass="card-text" wrapText="true"/>
+            </VBox>
+
+            <!-- My Module Card -->
+            <VBox fx:id="moduleInfoCard" styleClass="lms-card" spacing="10" visible="false" managed="false">
+                <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+                <Label text="⊞ My Module" styleClass="card-title"/>
+                <Separator/>
+                <Label fx:id="moduleInfoLabel" styleClass="card-text" wrapText="true"/>
+                <Label fx:id="moduleDurationLabel" styleClass="card-text"/>
+                <HBox spacing="8">
+                    <Label text="Courses visible to students:" styleClass="card-text"/>
+                </HBox>
+                <Label fx:id="visibleCountLabel" styleClass="stat-value"/>
+            </VBox>
+
         </VBox>
-    </VBox>
+
+        <!-- RIGHT PANEL: Course/Content workspace + Students -->
+        <VBox spacing="16" HBox.hgrow="ALWAYS">
+
+            <!-- Module Creation (before module exists) -->
+            <VBox fx:id="createModulePane" styleClass="lms-card" spacing="12" visible="false" managed="false">
+                <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+                <Label text="Create Your Module" styleClass="card-title"/>
+                <Label text="You need to create a module before managing courses." styleClass="card-text"/>
+                <Separator/>
+                <VBox spacing="4" styleClass="lms-form"><Label text="Module Name" styleClass="form-label"/><TextField fx:id="moduleNameField" styleClass="lms-input"/></VBox>
+                <HBox spacing="12">
+                    <VBox spacing="4" styleClass="lms-form" HBox.hgrow="ALWAYS"><Label text="Period Unit" styleClass="form-label"/><ComboBox fx:id="modulePeriodField" maxWidth="1.7976931348623157E308"/></VBox>
+                    <VBox spacing="4" styleClass="lms-form" HBox.hgrow="ALWAYS"><Label text="Duration" styleClass="form-label"/><Spinner fx:id="moduleDurationField" min="1" max="999" initialValue="1"/></VBox>
+                </HBox>
+                <Label fx:id="createErrorLabel" styleClass="field-error" visible="false" managed="false" wrapText="true"/>
+                <Button text="Create Module" onAction="#onCreateModule" styleClass="primary-button"/>
+            </VBox>
+
+            <!-- Workspace: Module Courses (after module exists) -->
+            <VBox fx:id="workspacePane" spacing="16" visible="false" managed="false">
+
+                <!-- Module Courses Header -->
+                <VBox styleClass="lms-card" spacing="12">
+                    <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+                    <HBox spacing="12" alignment="CENTER_LEFT">
+                        <Label text="⊞ Module Courses" styleClass="card-title"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="courseCountBadge" styleClass="badge badge-info"/>
+                        <Button text="+ Add Course" onAction="#onAddCourse" styleClass="primary-button"/>
+                    </HBox>
+                    <VBox fx:id="coursesContainer" spacing="0"/>
+                </VBox>
+
+                <!-- Enrolled Students Section -->
+                <VBox styleClass="lms-card" spacing="12">
+                    <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+                    <Label text="👥 Enrolled Students" styleClass="card-title"/>
+                    <Separator/>
+                    <VBox fx:id="studentsContainer" spacing="0"/>
+                    <Label fx:id="noStudentsLabel" text="No students enrolled yet." styleClass="card-text" visible="false" managed="false"/>
+                </VBox>
+
+            </VBox>
+
+        </VBox>
+
+    </HBox>
 </VBox>
 </ScrollPane>

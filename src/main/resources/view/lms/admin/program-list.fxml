@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?><?import javafx.scene.layout.*?>
 
 <VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="controller.lms.AdminProgramController"
@@ -24,15 +23,10 @@
         <VBox styleClass="stat-card" spacing="2"><Label fx:id="draftLabel" text="0" styleClass="stat-value"/><Label text="Draft" styleClass="stat-label"/></VBox>
     </HBox>
 
-    <!-- Table -->
-    <TableView fx:id="programTable" VBox.vgrow="ALWAYS" styleClass="lms-table">
-        <columns>
-            <TableColumn fx:id="colId" text="ID" prefWidth="60"/>
-            <TableColumn fx:id="colName" text="Name" prefWidth="280"/>
-            <TableColumn fx:id="colPublished" text="Status" prefWidth="100"/>
-            <TableColumn fx:id="colCreated" text="Created" prefWidth="160"/>
-            <TableColumn fx:id="colActions" text="Actions" prefWidth="200"/>
-        </columns>
-        <placeholder><Label text="No programs found" styleClass="empty-state"/></placeholder>
-    </TableView>
+    <!-- Cards container -->
+    <ScrollPane VBox.vgrow="ALWAYS" styleClass="lms-scroll" fitToWidth="true" style="-fx-background-color: transparent;">
+        <FlowPane fx:id="cardsContainer" hgap="16" vgap="16">
+            <padding><Insets top="4" right="4" bottom="4" left="4"/></padding>
+        </FlowPane>
+    </ScrollPane>
 </VBox>

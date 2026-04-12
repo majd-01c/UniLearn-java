@@ -29,14 +29,14 @@
                 <!-- Admin Section -->
                 <Label fx:id="adminSectionLabel" text="ADMINISTRATION" styleClass="side-section-label"/>
                 <Button fx:id="navProgramsButton" text="▦  Programs" onAction="#onNavPrograms" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
-                <Button fx:id="navModulesButton" text="▤  Modules" onAction="#onNavModules" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
-                <Button fx:id="navCoursesButton" text="▧  Courses" onAction="#onNavCourses" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
-                <Button fx:id="navContenuButton" text="▨  Content" onAction="#onNavContenu" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
                 <Button fx:id="navClassesButton" text="▣  Classes" onAction="#onNavClasses" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
                 <Button fx:id="navUsersButton" text="◉  Users" onAction="#onNavUsers" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
 
                 <!-- Teacher Section -->
                 <Label fx:id="teacherSectionLabel" text="TEACHING" styleClass="side-section-label"/>
+                <Button fx:id="navModulesButton" text="▤  Modules" onAction="#onNavModules" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+                <Button fx:id="navCoursesButton" text="▧  Courses" onAction="#onNavCourses" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+                <Button fx:id="navContenuButton" text="▨  Content" onAction="#onNavContenu" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
                 <Button fx:id="navMyClassesButton" text="▣  My Classes" onAction="#onNavMyClasses" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
 
                 <!-- Student Section -->
