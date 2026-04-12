@@ -5,6 +5,8 @@ package entities;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import static jakarta.persistence.GenerationType.IDENTITY;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -27,7 +29,7 @@ import java.util.Set;
 public class TeacherClasse  implements java.io.Serializable {
 
 
-     private int id;
+     private Integer id;
      private User user;
      private Classe classe;
      private Module module;
@@ -40,7 +42,7 @@ public class TeacherClasse  implements java.io.Serializable {
     }
 
 	
-    public TeacherClasse(int id, User user, Classe classe, Timestamp assignedAt, byte isActive, byte hasCreatedModule) {
+    public TeacherClasse(Integer id, User user, Classe classe, Timestamp assignedAt, byte isActive, byte hasCreatedModule) {
         this.id = id;
         this.user = user;
         this.classe = classe;
@@ -48,7 +50,7 @@ public class TeacherClasse  implements java.io.Serializable {
         this.isActive = isActive;
         this.hasCreatedModule = hasCreatedModule;
     }
-    public TeacherClasse(int id, User user, Classe classe, Module module, Timestamp assignedAt, byte isActive, byte hasCreatedModule, Set<ClassMeeting> classMeetings) {
+    public TeacherClasse(Integer id, User user, Classe classe, Module module, Timestamp assignedAt, byte isActive, byte hasCreatedModule, Set<ClassMeeting> classMeetings) {
        this.id = id;
        this.user = user;
        this.classe = classe;
@@ -59,15 +61,15 @@ public class TeacherClasse  implements java.io.Serializable {
        this.classMeetings = classMeetings;
     }
    
-     @Id 
+     @Id @GeneratedValue(strategy=IDENTITY)
 
     
     @Column(name="id", unique=true, nullable=false)
-    public int getId() {
+    public Integer getId() {
         return this.id;
     }
     
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
