@@ -1,7 +1,8 @@
-package entities;
+package entities.job_offer;
 // Generated 11 avr. 2026, 15:58:41 by Hibernate Tools 6.6.42.Final
 
 
+import entities.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

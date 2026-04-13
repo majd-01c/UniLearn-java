@@ -1,6 +1,8 @@
-package services;
+package services.job_offer;
 
-import entities.JobOffer;
+import entities.job_offer.JobOffer;
+import services.IService;
+import services.ServiceSupport;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<ScrollPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.job_offer.JobOfferFormController" fitToWidth="true">
+    <VBox spacing="15" style="-fx-padding: 20;">
+        <!-- Title -->
+        <VBox spacing="5">
+            <Label style="-fx-font-weight: bold;">Job Title *</Label>
+            <TextField fx:id="titleField" promptText="e.g., Senior Software Engineer" style="-fx-padding: 8;"/>
+        </VBox>
+
+        <!-- Type and Location -->
+        <HBox spacing="20">
+            <VBox spacing="5" HBox.hgrow="ALWAYS">
+                <Label style="-fx-font-weight: bold;">Job Type *</Label>
+                <ComboBox fx:id="typeCombo" style="-fx-padding: 8;"/>
+            </VBox>
+            <VBox spacing="5" HBox.hgrow="ALWAYS">
+                <Label style="-fx-font-weight: bold;">Location</Label>
+                <TextField fx:id="locationField" promptText="e.g., Remote, Tunis, etc." style="-fx-padding: 8;"/>
+            </VBox>
+        </HBox>
+
+        <!-- Description -->
+        <VBox spacing="5">
+            <Label style="-fx-font-weight: bold;">Description *</Label>
+            <TextArea fx:id="descriptionArea" promptText="Describe the job opportunity and responsibilities" wrapText="true" prefRowCount="6" style="-fx-padding: 8;"/>
+        </VBox>
+
+        <!-- Requirements -->
+        <VBox spacing="5">
+            <Label style="-fx-font-weight: bold;">Requirements</Label>
+            <TextArea fx:id="requirementsArea" promptText="List specific requirements for candidates" wrapText="true" prefRowCount="5" style="-fx-padding: 8;"/>
+        </VBox>
+
+        <!-- Skills -->
+        <HBox spacing="20">
+            <VBox spacing="5" HBox.hgrow="ALWAYS">
+                <Label style="-fx-font-weight: bold;">Required Skills</Label>
+                <TextField fx:id="skillsField" promptText="e.g., Java, Spring, SQL" style="-fx-padding: 8;"/>
+            </VBox>
+            <VBox spacing="5" HBox.hgrow="ALWAYS">
+                <Label style="-fx-font-weight: bold;">Preferred Skills</Label>
+                <TextField fx:id="preferredSkillsField" promptText="e.g., Docker, Kubernetes" style="-fx-padding: 8;"/>
+            </VBox>
+        </HBox>
+
+        <!-- Education and Experience -->
+        <HBox spacing="20">
+            <VBox spacing="5" HBox.hgrow="ALWAYS">
+                <Label style="-fx-font-weight: bold;">Minimum Education</Label>
+                <ComboBox fx:id="educationCombo" style="-fx-padding: 8;"/>
+            </VBox>
+            <VBox spacing="5" HBox.hgrow="ALWAYS">
+                <Label style="-fx-font-weight: bold;">Experience (years)</Label>
+                <Spinner fx:id="experienceSpinner" style="-fx-padding: 8;"/>
+            </VBox>
+        </HBox>
+
+        <!-- Languages -->
+        <VBox spacing="5">
+            <Label style="-fx-font-weight: bold;">Required Languages</Label>
+            <TextField fx:id="languagesField" promptText="e.g., English, French, Arabic" style="-fx-padding: 8;"/>
+        </VBox>
+
+        <!-- Action Buttons -->
+        <HBox spacing="10" style="-fx-padding: 15; -fx-alignment: CENTER;">
+            <Button fx:id="saveButton" text="Save Job Offer" style="-fx-padding: 10 30; -fx-font-size: 12; -fx-background-color: #4CAF50; -fx-text-fill: white;" onAction="#onSave"/>
+            <Button fx:id="cancelButton" text="Cancel" style="-fx-padding: 10 30; -fx-font-size: 12;" onAction="#onCancel"/>
+        </HBox>
+    </VBox>
+</ScrollPane>

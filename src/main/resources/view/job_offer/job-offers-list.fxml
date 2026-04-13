@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox fx:id="rootContainer" spacing="15" style="-fx-padding: 20;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.job_offer.JobOfferListController">
+    <VBox.vgrow priority="never">
+        <HBox spacing="10" style="-fx-padding: 10; -fx-background-color: #f5f5f5; -fx-border-radius: 5;">
+            <TextField fx:id="searchField" promptText="Search job offers..." HBox.hgrow="ALWAYS" prefWidth="300"/>
+            <ComboBox fx:id="filterStatus" prefWidth="120"/>
+            <ComboBox fx:id="filterType" prefWidth="120"/>
+            <Button fx:id="createJobOfferButton" text="+ Create Offer" style="-fx-padding: 8 16; -fx-font-size: 12;" onAction="#onCreateJobOffer"/>
+        </HBox>
+    </VBox.vgrow>
+
+    <VBox.vgrow priority="always">
+        <ListView fx:id="jobOffersListView" VBox.vgrow="ALWAYS" style="-fx-control-inner-background: #ffffff;"/>
+    </VBox.vgrow>
+</VBox>

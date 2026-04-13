@@ -8,7 +8,7 @@ import entities.Event;
 import entities.forum.ForumComment;
 import entities.forum.ForumCategory;
 import entities.forum.ForumTopic;
-import entities.JobOffer;
+import entities.job_offer.JobOffer;
 import entities.Module;
 import entities.Program;
 import entities.Quiz;

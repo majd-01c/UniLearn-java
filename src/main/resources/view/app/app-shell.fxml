@@ -47,6 +47,7 @@
                 <!-- Community -->
                 <Label text="COMMUNITY" styleClass="side-section-label"/>
                 <Button fx:id="navForumButton" text="💬  Forum" onAction="#onNavForum" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+                <Button fx:id="navJobOffersButton" text="💼  Job Offers" onAction="#onNavJobOffers" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
 
                 <!-- Common -->
                 <Label text="ACCOUNT" styleClass="side-section-label"/>
