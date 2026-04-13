@@ -2,6 +2,9 @@ package entities;
 // Generated 11 avr. 2026, 15:58:41 by Hibernate Tools 6.6.42.Final
 
 
+import entities.forum.ForumComment;
+import entities.forum.ForumCommentReaction;
+import entities.forum.ForumTopic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

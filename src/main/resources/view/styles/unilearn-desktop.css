@@ -142,3 +142,315 @@
 .ghost-button:hover {
     -fx-background-color: #dcecf9;
 }
+
+.danger-button {
+    -fx-background-color: #c0392b;
+    -fx-text-fill: #ffffff;
+    -fx-background-radius: 10;
+    -fx-padding: 7 12;
+    -fx-font-weight: 700;
+    -fx-cursor: hand;
+}
+
+.danger-button:hover {
+    -fx-background-color: #e74c3c;
+}
+
+/* ========================================
+   FORUM STYLES
+   ======================================== */
+
+.forum-scroll-pane {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.forum-scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.forum-root {
+    -fx-background-color: transparent;
+}
+
+.forum-page-title {
+    -fx-text-fill: #0f2740;
+    -fx-font-size: 22px;
+    -fx-font-weight: 800;
+}
+
+.forum-page-subtitle {
+    -fx-text-fill: #5a7089;
+    -fx-font-size: 13px;
+}
+
+.forum-card {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d7e4f2;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 14;
+    -fx-effect: dropshadow(gaussian, rgba(10, 34, 56, 0.06), 8, 0.2, 0, 3);
+}
+
+.forum-card-title {
+    -fx-text-fill: #10243c;
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+    -fx-padding: 0 0 8 0;
+}
+
+.forum-list-item {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e8f0f8;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 10 12;
+}
+
+.forum-list-item:hover {
+    -fx-background-color: #f0f6fc;
+}
+
+.forum-item-title {
+    -fx-text-fill: #10243c;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+}
+
+.forum-item-subtitle {
+    -fx-text-fill: #6b8099;
+    -fx-font-size: 12px;
+}
+
+.forum-category-icon {
+    -fx-font-size: 28px;
+    -fx-min-width: 50;
+    -fx-min-height: 50;
+    -fx-alignment: center;
+    -fx-background-color: linear-gradient(to bottom right, #667eea, #764ba2);
+    -fx-background-radius: 10;
+    -fx-text-fill: #ffffff;
+}
+
+.forum-badge-primary {
+    -fx-background-color: #1d6fa5;
+    -fx-text-fill: #ffffff;
+    -fx-background-radius: 6;
+    -fx-padding: 3 8;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+}
+
+/* Status badges */
+.forum-status-badge {
+    -fx-background-radius: 6;
+    -fx-padding: 3 8;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+}
+
+.status-open {
+    -fx-background-color: #d4edfc;
+    -fx-text-fill: #1565a0;
+}
+
+.status-solved {
+    -fx-background-color: #d4f5e9;
+    -fx-text-fill: #1a7f4f;
+}
+
+.status-locked {
+    -fx-background-color: #e0e4e8;
+    -fx-text-fill: #4a5568;
+}
+
+.forum-pinned-badge {
+    -fx-background-color: #fff3cd;
+    -fx-text-fill: #856404;
+    -fx-background-radius: 6;
+    -fx-padding: 3 8;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+}
+
+/* Stats */
+.forum-stat-number {
+    -fx-text-fill: #1d6fa5;
+    -fx-font-size: 22px;
+    -fx-font-weight: 800;
+}
+
+.forum-stat-label {
+    -fx-text-fill: #6b8099;
+    -fx-font-size: 11px;
+}
+
+/* Topic detail */
+.forum-topic-title {
+    -fx-text-fill: #0f2740;
+    -fx-font-size: 20px;
+    -fx-font-weight: 800;
+}
+
+.forum-topic-content {
+    -fx-text-fill: #344256;
+    -fx-font-size: 14px;
+    -fx-padding: 8 0 0 0;
+}
+
+/* Comments */
+.forum-comment-card {
+    -fx-background-color: #fafcff;
+    -fx-border-color: #e2ebf4;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 12;
+}
+
+.forum-reply-card {
+    -fx-background-color: #f5f8fc;
+    -fx-border-color: #dde7f2;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 10;
+}
+
+.forum-accepted-card {
+    -fx-border-color: #27ae60;
+    -fx-border-width: 2;
+    -fx-background-color: #eafaf1;
+}
+
+.forum-comment-author {
+    -fx-text-fill: #1d6fa5;
+    -fx-font-weight: 700;
+    -fx-font-size: 13px;
+}
+
+.forum-comment-content {
+    -fx-text-fill: #344256;
+    -fx-font-size: 13px;
+}
+
+.forum-teacher-badge {
+    -fx-background-color: #fdf2e9;
+    -fx-text-fill: #e67e22;
+    -fx-background-radius: 6;
+    -fx-padding: 2 6;
+    -fx-font-size: 10px;
+    -fx-font-weight: 700;
+}
+
+.forum-accepted-badge {
+    -fx-background-color: #d4f5e9;
+    -fx-text-fill: #1a7f4f;
+    -fx-background-radius: 6;
+    -fx-padding: 2 6;
+    -fx-font-size: 10px;
+    -fx-font-weight: 700;
+}
+
+/* Reactions */
+.reaction-button {
+    -fx-background-color: #f0f4f8;
+    -fx-text-fill: #556b81;
+    -fx-background-radius: 8;
+    -fx-padding: 4 10;
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+}
+
+.reaction-button:hover {
+    -fx-background-color: #e0eaf4;
+}
+
+.reaction-active {
+    -fx-background-color: #d4edfc;
+    -fx-text-fill: #1565a0;
+    -fx-font-weight: 700;
+}
+
+/* Forms */
+.forum-form-label {
+    -fx-text-fill: #344256;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+}
+
+.forum-error-label {
+    -fx-text-fill: #c0392b;
+    -fx-font-size: 12px;
+}
+
+.forum-text-field {
+    -fx-background-color: #f7fbff;
+    -fx-border-color: #d0dde8;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 8 12;
+    -fx-font-size: 13px;
+}
+
+.forum-text-field:focused {
+    -fx-border-color: #1d6fa5;
+}
+
+.forum-text-area {
+    -fx-background-color: #f7fbff;
+    -fx-border-color: #d0dde8;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-font-size: 13px;
+}
+
+.forum-text-area:focused {
+    -fx-border-color: #1d6fa5;
+}
+
+.forum-combo-box {
+    -fx-background-color: #f7fbff;
+    -fx-border-color: #d0dde8;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 4 8;
+}
+
+.forum-search-field {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d0dde8;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 8 14;
+    -fx-font-size: 13px;
+}
+
+.forum-search-field:focused {
+    -fx-border-color: #1d6fa5;
+}
+
+.forum-empty-label {
+    -fx-text-fill: #8899aa;
+    -fx-font-size: 13px;
+    -fx-alignment: center;
+}
+
+/* Admin table */
+.forum-table {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d7e4f2;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.forum-table .column-header {
+    -fx-background-color: #edf4fb;
+}
+
+.forum-table .column-header .label {
+    -fx-text-fill: #10243c;
+    -fx-font-weight: 700;
+    -fx-font-size: 12px;
+}

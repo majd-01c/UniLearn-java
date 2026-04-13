@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controller.forum.ForumAdminCategoriesController"
+      spacing="16.0" styleClass="forum-root">
+    <padding>
+        <Insets top="22.0" right="22.0" bottom="22.0" left="22.0"/>
+    </padding>
+
+    <HBox spacing="12.0" alignment="CENTER_LEFT">
+        <Button text="← Back to Forum" onAction="#onBackToForum" styleClass="ghost-button"/>
+        <Label text="⚙ Manage Categories" styleClass="forum-page-title"/>
+    </HBox>
+
+    <HBox spacing="16.0" VBox.vgrow="ALWAYS">
+        <!-- Table -->
+        <TableView fx:id="categoryTable" HBox.hgrow="ALWAYS" styleClass="forum-table">
+            <columns>
+                <TableColumn fx:id="colName" text="Name" prefWidth="160.0"/>
+                <TableColumn fx:id="colDescription" text="Description" prefWidth="200.0"/>
+                <TableColumn fx:id="colIcon" text="Icon" prefWidth="80.0"/>
+                <TableColumn fx:id="colPosition" text="Position" prefWidth="70.0"/>
+                <TableColumn fx:id="colActive" text="Active" prefWidth="60.0"/>
+            </columns>
+        </TableView>
+
+        <!-- Form -->
+        <VBox spacing="10.0" styleClass="forum-card" prefWidth="300.0" minWidth="280.0">
+            <Label text="Category Details" styleClass="forum-card-title"/>
+
+            <VBox spacing="4.0">
+                <Label text="Name *" styleClass="forum-form-label"/>
+                <TextField fx:id="nameField" promptText="Category name" styleClass="forum-text-field"/>
+            </VBox>
+
+            <VBox spacing="4.0">
+                <Label text="Description" styleClass="forum-form-label"/>
+                <TextArea fx:id="descriptionField" promptText="Description" prefRowCount="3" styleClass="forum-text-area"/>
+            </VBox>
+
+            <VBox spacing="4.0">
+                <Label text="Icon (emoji)" styleClass="forum-form-label"/>
+                <TextField fx:id="iconField" promptText="e.g. 💬" styleClass="forum-text-field"/>
+            </VBox>
+
+            <VBox spacing="4.0">
+                <Label text="Position" styleClass="forum-form-label"/>
+                <TextField fx:id="positionField" text="0" styleClass="forum-text-field"/>
+            </VBox>
+
+            <CheckBox fx:id="activeCheckBox" text="Active" selected="true"/>
+
+            <Label fx:id="formErrorLabel" text="" styleClass="forum-error-label"/>
+
+            <HBox spacing="8.0">
+                <Button fx:id="saveButton" text="Add" onAction="#onSave" styleClass="primary-button"/>
+                <Button fx:id="deleteButton" text="Delete" onAction="#onDelete" styleClass="danger-button" disable="true"/>
+                <Button text="Clear" onAction="#onClear" styleClass="ghost-button"/>
+            </HBox>
+        </VBox>
+    </HBox>
+</VBox>

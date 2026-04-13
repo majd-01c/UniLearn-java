@@ -5,9 +5,9 @@ import entities.Choice;
 import entities.Contenu;
 import entities.Course;
 import entities.Event;
-import entities.ForumComment;
-import entities.ForumCategory;
-import entities.ForumTopic;
+import entities.forum.ForumComment;
+import entities.forum.ForumCategory;
+import entities.forum.ForumTopic;
 import entities.JobOffer;
 import entities.Module;
 import entities.Program;
@@ -24,7 +24,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
-abstract class ServiceSupport {
+public abstract class ServiceSupport {
     protected final Connection connection;
 
     protected ServiceSupport() {

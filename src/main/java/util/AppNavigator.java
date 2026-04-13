@@ -2,6 +2,9 @@ package util;
 
 import controller.AppShellController;
 import entities.User;
+import entities.forum.ForumCategory;
+import entities.forum.ForumComment;
+import entities.forum.ForumTopic;
 
 public final class AppNavigator {
 
@@ -71,6 +74,52 @@ public final class AppNavigator {
     public static void logout() {
         if (appShellController != null) {
             appShellController.logout();
+        }
+    }
+
+    // ========================
+    // FORUM NAVIGATION
+    // ========================
+
+    public static void showForum() {
+        if (appShellController != null) {
+            appShellController.showForumView();
+        }
+    }
+
+    public static void showForumCategory(ForumCategory category) {
+        if (appShellController != null) {
+            appShellController.showForumCategoryView(category);
+        }
+    }
+
+    public static void showForumTopic(ForumTopic topic) {
+        if (appShellController != null) {
+            appShellController.showForumTopicView(topic);
+        }
+    }
+
+    public static void showForumNewTopic() {
+        if (appShellController != null) {
+            appShellController.showForumNewTopicView();
+        }
+    }
+
+    public static void showForumEditTopic(ForumTopic topic) {
+        if (appShellController != null) {
+            appShellController.showForumEditTopicView(topic);
+        }
+    }
+
+    public static void showForumEditComment(ForumComment comment) {
+        if (appShellController != null) {
+            appShellController.showForumEditCommentView(comment);
+        }
+    }
+
+    public static void showForumAdminCategories() {
+        if (appShellController != null) {
+            appShellController.showForumAdminCategoriesView();
         }
     }
 }

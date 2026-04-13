@@ -1,6 +1,8 @@
-package services;
+package services.forum;
 
-import entities.ForumAiSuggestion;
+import entities.forum.ForumAiSuggestion;
+import services.IService;
+import services.ServiceSupport;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
