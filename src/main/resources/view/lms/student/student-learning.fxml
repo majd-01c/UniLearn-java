@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?><?import javafx.scene.control.*?><?import javafx.scene.layout.*?>
+<ScrollPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.lms.StudentLearningController" styleClass="lms-scroll" fitToWidth="true">
+<VBox styleClass="lms-root" spacing="16"><padding><Insets top="8" right="8" bottom="8" left="8"/></padding>
+    <Label text="My Learning" styleClass="lms-page-title"/>
+    <FlowPane fx:id="classesPane" hgap="16" vgap="16"/>
+    <Label fx:id="emptyLabel" text="You are not enrolled in any classes yet." styleClass="empty-state" visible="false" managed="false"/>
+</VBox>
+</ScrollPane>

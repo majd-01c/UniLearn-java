@@ -5,6 +5,8 @@ package entities;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import static jakarta.persistence.GenerationType.IDENTITY;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -24,7 +26,7 @@ import java.sql.Timestamp;
 public class StudentClasse  implements java.io.Serializable {
 
 
-     private int id;
+     private Integer id;
      private User user;
      private Classe classe;
      private Timestamp enrolledAt;
@@ -33,7 +35,7 @@ public class StudentClasse  implements java.io.Serializable {
     public StudentClasse() {
     }
 
-    public StudentClasse(int id, User user, Classe classe, Timestamp enrolledAt, byte isActive) {
+    public StudentClasse(Integer id, User user, Classe classe, Timestamp enrolledAt, byte isActive) {
        this.id = id;
        this.user = user;
        this.classe = classe;
@@ -41,15 +43,15 @@ public class StudentClasse  implements java.io.Serializable {
        this.isActive = isActive;
     }
    
-     @Id 
+     @Id @GeneratedValue(strategy=IDENTITY)
 
     
     @Column(name="id", unique=true, nullable=false)
-    public int getId() {
+    public Integer getId() {
         return this.id;
     }
     
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

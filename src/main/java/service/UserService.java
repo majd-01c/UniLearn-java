@@ -25,6 +25,12 @@ public class UserService {
         return getAllUsers(1, DEFAULT_PAGE_SIZE);
     }
 
+    public List<dto.lms.UserOptionDto> getAllUsersOptionsDto() {
+        return getAllUsers(1, 1000).stream()
+                .map(u -> new dto.lms.UserOptionDto(u.getId(), u.getEmail()))
+                .collect(java.util.stream.Collectors.toList());
+    }
+
     public List<User> getAllUsers(int page, int pageSize) {
         Session session = HibernateSessionFactory.getSession();
         try {

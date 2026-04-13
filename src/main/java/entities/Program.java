@@ -5,6 +5,8 @@ package entities;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import static jakarta.persistence.GenerationType.IDENTITY;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -23,7 +25,7 @@ import java.util.Set;
 public class Program  implements java.io.Serializable {
 
 
-     private int id;
+     private Integer id;
      private String name;
      private byte published;
      private Timestamp createdAt;
@@ -37,14 +39,14 @@ public class Program  implements java.io.Serializable {
     }
 
 	
-    public Program(int id, String name, byte published, Timestamp createdAt, Timestamp updatedAt) {
+    public Program(Integer id, String name, byte published, Timestamp createdAt, Timestamp updatedAt) {
         this.id = id;
         this.name = name;
         this.published = published;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
-    public Program(int id, String name, byte published, Timestamp createdAt, Timestamp updatedAt, Set<BuildProgram> buildPrograms, Set<ProgramChatMessage> programChatMessages, Set<ProgramModule> programModules, Set<Classe> classes) {
+    public Program(Integer id, String name, byte published, Timestamp createdAt, Timestamp updatedAt, Set<BuildProgram> buildPrograms, Set<ProgramChatMessage> programChatMessages, Set<ProgramModule> programModules, Set<Classe> classes) {
        this.id = id;
        this.name = name;
        this.published = published;
@@ -56,15 +58,15 @@ public class Program  implements java.io.Serializable {
        this.classes = classes;
     }
    
-     @Id 
+     @Id @GeneratedValue(strategy=IDENTITY)
 
     
     @Column(name="id", unique=true, nullable=false)
-    public int getId() {
+    public Integer getId() {
         return this.id;
     }
     
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

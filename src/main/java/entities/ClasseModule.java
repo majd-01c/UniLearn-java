@@ -5,6 +5,8 @@ package entities;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import static jakarta.persistence.GenerationType.IDENTITY;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -24,7 +26,7 @@ import java.util.Set;
 public class ClasseModule  implements java.io.Serializable {
 
 
-     private int id;
+     private Integer id;
      private Classe classe;
      private Module module;
      private Set<ClasseCourse> classeCourses = new HashSet<ClasseCourse>(0);
@@ -33,27 +35,27 @@ public class ClasseModule  implements java.io.Serializable {
     }
 
 	
-    public ClasseModule(int id, Classe classe, Module module) {
+    public ClasseModule(Integer id, Classe classe, Module module) {
         this.id = id;
         this.classe = classe;
         this.module = module;
     }
-    public ClasseModule(int id, Classe classe, Module module, Set<ClasseCourse> classeCourses) {
+    public ClasseModule(Integer id, Classe classe, Module module, Set<ClasseCourse> classeCourses) {
        this.id = id;
        this.classe = classe;
        this.module = module;
        this.classeCourses = classeCourses;
     }
    
-     @Id 
+     @Id @GeneratedValue(strategy=IDENTITY)
 
     
     @Column(name="id", unique=true, nullable=false)
-    public int getId() {
+    public Integer getId() {
         return this.id;
     }
     
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

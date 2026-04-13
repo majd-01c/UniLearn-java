@@ -5,6 +5,8 @@ package entities;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import static jakarta.persistence.GenerationType.IDENTITY;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -21,28 +23,28 @@ import jakarta.persistence.UniqueConstraint;
 public class ProgramModule  implements java.io.Serializable {
 
 
-     private int id;
+     private Integer id;
      private Program program;
      private Module module;
 
     public ProgramModule() {
     }
 
-    public ProgramModule(int id, Program program, Module module) {
+    public ProgramModule(Integer id, Program program, Module module) {
        this.id = id;
        this.program = program;
        this.module = module;
     }
    
-     @Id 
+     @Id @GeneratedValue(strategy=IDENTITY)
 
     
     @Column(name="id", unique=true, nullable=false)
-    public int getId() {
+    public Integer getId() {
         return this.id;
     }
     
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
