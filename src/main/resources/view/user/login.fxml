@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
@@ -9,35 +10,47 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
 <BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="controller.LoginController">
+            fx:controller="controller.LoginController"
+            styleClass="login-root">
     <center>
-        <VBox alignment="CENTER" spacing="14.0">
+        <VBox alignment="CENTER" spacing="14.0" styleClass="login-card">
             <padding>
                 <Insets top="30.0" right="30.0" bottom="30.0" left="30.0"/>
             </padding>
             <children>
-                <Label text="UniLearn Desktop - Login" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
-                <Label text="Only admins can create accounts." style="-fx-text-fill: #666666;"/>
+                <Label text="UniLearn Desktop" styleClass="login-title"/>
+                <Label text="Sign in to continue your workspace session." styleClass="login-subtitle"/>
                 <GridPane hgap="10.0" vgap="12.0" maxWidth="420.0">
                     <children>
-                        <Label text="Email" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                        <Label text="Email" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
                         <TextField fx:id="emailField" promptText="name@unilearn.tn" onAction="#handleLogin"
                                    GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-                        <Label text="Password" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                        <PasswordField fx:id="passwordField" promptText="Password" onAction="#handleLogin"
-                                       GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                        <Label text="Password" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                        <HBox spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                            <children>
+                                <StackPane HBox.hgrow="ALWAYS">
+                                    <children>
+                                        <PasswordField fx:id="passwordField" promptText="Password" onAction="#handleLogin"/>
+                                        <TextField fx:id="passwordVisibleField" promptText="Password" onAction="#handleLogin" visible="false" managed="false"/>
+                                    </children>
+                                </StackPane>
+                                <Button fx:id="passwordToggleButton" text="Show" onAction="#handleTogglePasswordVisibility" styleClass="ghost-button"/>
+                            </children>
+                        </HBox>
                     </children>
                 </GridPane>
-                <Button fx:id="loginButton" text="Login" onAction="#handleLogin" prefWidth="160.0"/>
+                <CheckBox fx:id="rememberMeCheckBox" text="Remember my email"/>
+                <Button fx:id="loginButton" text="Sign In" onAction="#handleLogin" prefWidth="180.0" styleClass="primary-button"/>
                 <HBox alignment="CENTER" spacing="10.0">
                     <children>
                         <Hyperlink text="Forgot password?" onAction="#handleForgotPassword"/>
                     </children>
                 </HBox>
-                <Label fx:id="messageLabel" style="-fx-text-fill: #c0392b;"/>
+                <Label fx:id="messageLabel" styleClass="form-feedback-error" wrapText="true" maxWidth="420.0"/>
             </children>
         </VBox>
     </center>

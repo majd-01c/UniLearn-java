@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:id="rootContainer"
+      fx:controller="controller.FrontOfficeHomeController"
+      spacing="16.0" styleClass="home-root frontoffice-home-root animate-enter">
+    <padding>
+        <Insets top="22.0" right="22.0" bottom="22.0" left="22.0"/>
+    </padding>
+    <children>
+        <VBox spacing="8.0" styleClass="home-card frontoffice-card stagger-card">
+            <children>
+                <Label text="FrontOffice" styleClass="frontoffice-chip"/>
+                <Label fx:id="welcomeLabel" text="Welcome to FrontOffice" styleClass="home-title"/>
+                <Label fx:id="roleLabel" text="Role: USER" styleClass="home-role"/>
+                <Label text="Access learning, schedule, meetings, forum, and opportunities from your role-based home."
+                       wrapText="true" styleClass="home-summary"/>
+            </children>
+        </VBox>
+
+        <HBox spacing="12.0">
+            <children>
+                <VBox spacing="10.0" styleClass="home-card frontoffice-card stagger-card" prefWidth="280.0">
+                    <children>
+                        <Label text="Courses" styleClass="frontoffice-heading"/>
+                        <Label text="Open course content and continue your learning journey." wrapText="true" styleClass="card-text"/>
+                        <Region prefHeight="4.0"/>
+                        <Button text="Open Courses" onAction="#onOpenCourses" styleClass="primary-button"/>
+                    </children>
+                </VBox>
+
+                <VBox spacing="10.0" styleClass="home-card frontoffice-card stagger-card" prefWidth="280.0">
+                    <children>
+                        <Label text="Schedule &amp; Meetings" styleClass="frontoffice-heading"/>
+                        <Label text="Track timetable and access class meetings and sessions." wrapText="true" styleClass="card-text"/>
+                        <Region prefHeight="4.0"/>
+                        <Button text="Open Schedule" onAction="#onOpenSchedule" styleClass="ghost-button"/>
+                        <Button text="Open Meetings" onAction="#onOpenMeetings" styleClass="ghost-button"/>
+                    </children>
+                </VBox>
+
+                <VBox spacing="10.0" styleClass="home-card frontoffice-card stagger-card" prefWidth="280.0">
+                    <children>
+                        <Label text="Forum &amp; Opportunities" styleClass="frontoffice-heading"/>
+                        <Label text="Participate in the forum and explore opportunities." wrapText="true" styleClass="card-text"/>
+                        <Region prefHeight="4.0"/>
+                        <Button text="Open Forum" onAction="#onOpenForum" styleClass="ghost-button"/>
+                        <Button text="Open Opportunities" onAction="#onOpenOpportunities" styleClass="ghost-button"/>
+                    </children>
+                </VBox>
+            </children>
+        </HBox>
+
+        <VBox spacing="10.0" styleClass="home-card frontoffice-card frontoffice-widget stagger-card">
+            <children>
+                <Label text="Personal Widgets" styleClass="card-title"/>
+                <Label fx:id="nextClassLabel" text="Next class/event: not scheduled" styleClass="card-text"/>
+                <Label fx:id="notificationsLabel" text="Notifications: 0 unread" styleClass="card-text"/>
+                <Label fx:id="tasksLabel" text="Tasks: no pending tasks" styleClass="card-text"/>
+                <Region prefHeight="4.0"/>
+                <HBox spacing="10.0">
+                    <children>
+                        <Button text="My Profile" onAction="#onOpenProfile" styleClass="ghost-button"/>
+                        <Button text="Change Password" onAction="#onChangePassword" styleClass="ghost-button"/>
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </children>
+</VBox>
