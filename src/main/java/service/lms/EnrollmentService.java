@@ -2,16 +2,12 @@ package service.lms;
 
 import entities.*;
 import repository.lms.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Optional;
 
 public class EnrollmentService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(EnrollmentService.class);
     private final StudentClasseRepository scRepo = new StudentClasseRepository();
     private final ClasseRepository classeRepo = new ClasseRepository();
 

@@ -12,20 +12,19 @@ public class ServiceAssessment extends ServiceSupport implements IService<Assess
 
     @Override
     public void add(Assessment assessment) {
-        String sql = "INSERT INTO assessment (id, contenu_id, teacher_id, course_id, classe_id, type, title, description, date, created_at, updated_at, max_score) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO assessment (contenu_id, teacher_id, course_id, classe_id, type, title, description, date, created_at, updated_at, max_score) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, assessment.getId());
-            setNullableInteger(statement, 2, assessment.getContenu() == null ? null : assessment.getContenu().getId());
-            statement.setInt(3, assessment.getUser().getId());
-            setNullableInteger(statement, 4, assessment.getCourse() == null ? null : assessment.getCourse().getId());
-            setNullableInteger(statement, 5, assessment.getClasse() == null ? null : assessment.getClasse().getId());
-            statement.setString(6, assessment.getType());
-            statement.setString(7, assessment.getTitle());
-            setNullableString(statement, 8, assessment.getDescription());
-            setNullableTimestamp(statement, 9, assessment.getDate());
-            statement.setTimestamp(10, assessment.getCreatedAt());
-            statement.setTimestamp(11, assessment.getUpdatedAt());
-            statement.setDouble(12, assessment.getMaxScore());
+            setNullableInteger(statement, 1, assessment.getContenu() == null ? null : assessment.getContenu().getId());
+            statement.setInt(2, assessment.getUser().getId());
+            setNullableInteger(statement, 3, assessment.getCourse() == null ? null : assessment.getCourse().getId());
+            setNullableInteger(statement, 4, assessment.getClasse() == null ? null : assessment.getClasse().getId());
+            statement.setString(5, assessment.getType());
+            statement.setString(6, assessment.getTitle());
+            setNullableString(statement, 7, assessment.getDescription());
+            setNullableTimestamp(statement, 8, assessment.getDate());
+            statement.setTimestamp(9, assessment.getCreatedAt());
+            statement.setTimestamp(10, assessment.getUpdatedAt());
+            statement.setDouble(11, assessment.getMaxScore());
             statement.executeUpdate();
         } catch (SQLException e) {
             System.out.println(e.getMessage());

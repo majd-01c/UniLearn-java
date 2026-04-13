@@ -2,8 +2,6 @@ package service.lms;
 
 import entities.Contenu;
 import repository.lms.ContenuRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -11,9 +9,7 @@ import java.util.Optional;
 
 public class ContenuService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ContenuService.class);
     private final ContenuRepository contenuRepo = new ContenuRepository();
-    private final FileUploadService uploadService = new FileUploadService();
 
     public List<Contenu> listAll() { return contenuRepo.findAll(); }
     public List<dto.lms.ContenuOptionDto> listAllOptionsDto() {

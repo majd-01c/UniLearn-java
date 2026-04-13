@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controller.evaluation.EvaluationAdminController"
+      spacing="10.0" styleClass="eval-root">
+
+    <padding>
+        <Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/>
+    </padding>
+
+    <HBox spacing="8.0" alignment="CENTER_LEFT">
+        <children>
+            <Button text="Refresh" onAction="#onRefreshAll" styleClass="eval-primary-btn"/>
+            <Label fx:id="feedbackLabel" styleClass="eval-feedback"/>
+        </children>
+    </HBox>
+
+    <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+        <tabs>
+            <Tab text="Complaints">
+                <content>
+                    <VBox spacing="8.0" padding="10.0">
+                        <children>
+                            <HBox spacing="8.0" alignment="CENTER_LEFT">
+                                <children>
+                                    <Label text="ID"/>
+                                    <TextField fx:id="reclamationIdField" prefWidth="90.0"/>
+                                    <Label text="Status"/>
+                                    <TextField fx:id="reclamationStatusField" prefWidth="130.0"/>
+                                    <Button text="Update" onAction="#onUpdateReclamation" styleClass="eval-primary-btn"/>
+                                </children>
+                            </HBox>
+                            <TextArea fx:id="reclamationResponseArea" promptText="Admin response" prefHeight="90.0"/>
+                            <TableView fx:id="reclamationsTable" VBox.vgrow="ALWAYS">
+                                <columns>
+                                    <TableColumn fx:id="reclamationIdCol" text="ID" prefWidth="80.0"/>
+                                    <TableColumn fx:id="reclamationStudentCol" text="Student" prefWidth="120.0"/>
+                                    <TableColumn fx:id="reclamationSubjectCol" text="Subject" prefWidth="250.0"/>
+                                    <TableColumn fx:id="reclamationStatusCol" text="Status" prefWidth="130.0"/>
+                                </columns>
+                            </TableView>
+                        </children>
+                    </VBox>
+                </content>
+            </Tab>
+
+            <Tab text="Document Requests">
+                <content>
+                    <VBox spacing="8.0" padding="10.0">
+                        <children>
+                            <HBox spacing="8.0" alignment="CENTER_LEFT">
+                                <children>
+                                    <Label text="ID"/>
+                                    <TextField fx:id="documentIdField" prefWidth="90.0"/>
+                                    <Label text="Status"/>
+                                    <TextField fx:id="documentStatusField" prefWidth="130.0"/>
+                                    <Label text="Path"/>
+                                    <TextField fx:id="documentPathField" prefWidth="280.0"/>
+                                    <Button text="Update" onAction="#onUpdateDocumentRequest" styleClass="eval-primary-btn"/>
+                                </children>
+                            </HBox>
+                            <TableView fx:id="documentRequestsTable" VBox.vgrow="ALWAYS">
+                                <columns>
+                                    <TableColumn fx:id="documentIdCol" text="ID" prefWidth="80.0"/>
+                                    <TableColumn fx:id="documentStudentCol" text="Student" prefWidth="120.0"/>
+                                    <TableColumn fx:id="documentTypeCol" text="Type" prefWidth="220.0"/>
+                                    <TableColumn fx:id="documentStatusCol" text="Status" prefWidth="140.0"/>
+                                </columns>
+                            </TableView>
+                        </children>
+                    </VBox>
+                </content>
+            </Tab>
+
+            <Tab text="Schedules">
+                <content>
+                    <VBox spacing="8.0" padding="10.0">
+                        <children>
+                            <GridPane hgap="8.0" vgap="8.0">
+                                <children>
+                                    <Label text="Teacher ID" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                                    <TextField fx:id="scheduleTeacherIdField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                                    <Label text="Course ID" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                                    <TextField fx:id="scheduleCourseIdField" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+
+                                    <Label text="Class ID" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                                    <TextField fx:id="scheduleClassIdField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                                    <Label text="Day" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                                    <TextField fx:id="scheduleDayField" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+
+                                    <Label text="Start Time" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                                    <TextField fx:id="scheduleStartTimeField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                                    <Label text="End Time" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
+                                    <TextField fx:id="scheduleEndTimeField" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
+
+                                    <Label text="Start Date" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                                    <DatePicker fx:id="scheduleStartDatePicker" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                                    <Label text="End Date" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
+                                    <DatePicker fx:id="scheduleEndDatePicker" GridPane.columnIndex="3" GridPane.rowIndex="3"/>
+
+                                    <Label text="Room" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                                    <TextField fx:id="scheduleRoomField" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                                </children>
+                            </GridPane>
+
+                            <HBox spacing="8.0" alignment="CENTER_LEFT">
+                                <children>
+                                    <Button text="Create Schedule" onAction="#onCreateSchedule" styleClass="eval-primary-btn"/>
+                                    <Separator prefWidth="16.0"/>
+                                    <Label text="Delete by ID"/>
+                                    <TextField fx:id="scheduleDeleteIdField" prefWidth="90.0"/>
+                                    <Button text="Delete" onAction="#onDeleteSchedule"/>
+                                </children>
+                            </HBox>
+
+                            <TableView fx:id="schedulesTable" VBox.vgrow="ALWAYS">
+                                <columns>
+                                    <TableColumn fx:id="scheduleIdCol" text="ID" prefWidth="80.0"/>
+                                    <TableColumn fx:id="scheduleDayCol" text="Day" prefWidth="120.0"/>
+                                    <TableColumn fx:id="scheduleTimeCol" text="Time" prefWidth="200.0"/>
+                                    <TableColumn fx:id="scheduleClassCol" text="Class" prefWidth="180.0"/>
+                                    <TableColumn fx:id="scheduleTeacherCol" text="Teacher" prefWidth="120.0"/>
+                                </columns>
+                            </TableView>
+                        </children>
+                    </VBox>
+                </content>
+            </Tab>
+        </tabs>
+    </TabPane>
+
+</VBox>

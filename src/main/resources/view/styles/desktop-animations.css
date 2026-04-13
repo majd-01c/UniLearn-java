@@ -1,0 +1,7 @@
+.animate-enter {
+    -fx-opacity: 1;
+}
+
+.stagger-card {
+    -fx-opacity: 1;
+}
