@@ -2,8 +2,6 @@ package service.lms;
 
 import entities.*;
 import repository.lms.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -11,7 +9,6 @@ import java.util.Optional;
 
 public class CourseService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CourseService.class);
     private final CourseRepository courseRepo = new CourseRepository();
     private final CourseContenuRepository ccRepo = new CourseContenuRepository();
     private final ContenuRepository contenuRepo = new ContenuRepository();

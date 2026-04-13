@@ -2,15 +2,12 @@ package service.lms;
 
 import entities.*;
 import repository.lms.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
 
 public class ClasseService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ClasseService.class);
     private final ClasseRepository classeRepo = new ClasseRepository();
     private final ProgramRepository programRepo = new ProgramRepository();
     private final TeacherAssignmentService teacherService = new TeacherAssignmentService();

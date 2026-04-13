@@ -1,0 +1,387 @@
+.eval-shell-root,
+.eval-root {
+    background-color: #eff5ff;
+    -fx-background-color: linear-gradient(to bottom, #f7fbff 0%, #eef4ff 45%, #e9f0ff 100%);
+    font-family: "Segoe UI", "Noto Sans", "Arial";
+    -fx-font-family: "Segoe UI", "Noto Sans", "Arial";
+}
+
+.eval-shell-header {
+    background-color: #1f5da8;
+    -fx-background-color: linear-gradient(to right, #0f3b67 0%, #1a4f8f 45%, #2367b8 100%);
+    border-color: #0c2c4e;
+    -fx-border-color: #0c2c4e;
+    border-width: 0 0 1px 0;
+    -fx-border-width: 0 0 1 0;
+}
+
+.eval-title {
+    -fx-text-fill: #ffffff;
+    font-size: 22px;
+    -fx-font-size: 22px;
+    font-weight: 800;
+    -fx-font-weight: 800;
+}
+
+.eval-subtitle {
+    -fx-text-fill: #d7e8ff;
+    font-size: 12px;
+    -fx-font-size: 12px;
+}
+
+.eval-user-chip {
+    background-color: rgba(255,255,255,0.18);
+    -fx-background-color: rgba(255,255,255,0.18);
+    -fx-text-fill: #ffffff;
+    -fx-background-radius: 999;
+    padding: 4px 10px;
+    -fx-padding: 4 10;
+    font-size: 11px;
+    -fx-font-size: 11px;
+    font-weight: 700;
+    -fx-font-weight: 700;
+}
+
+.eval-label {
+    -fx-text-fill: #eff6ff;
+}
+
+.eval-shell-hint-row {
+    background-color: rgba(255,255,255,0.12);
+    -fx-background-color: rgba(255,255,255,0.12);
+    -fx-background-radius: 10;
+    border-radius: 10px;
+    -fx-padding: 6 10;
+    padding: 6px 10px;
+}
+
+.eval-role-host {
+    padding: 12px;
+    -fx-padding: 12;
+}
+
+.eval-student-root {
+    background-color: transparent;
+    -fx-background-color: transparent;
+}
+
+.eval-student-hero {
+    background-color: #ffffff;
+    -fx-background-color: linear-gradient(to right, #ffffff 0%, #f4f8ff 100%);
+    border-color: #d8e5fc;
+    -fx-border-color: #d8e5fc;
+    border-width: 1px;
+    -fx-border-width: 1;
+    border-radius: 14px;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    padding: 12px;
+    -fx-padding: 12;
+}
+
+.eval-page-title {
+    -fx-text-fill: #0f3b67;
+    font-size: 20px;
+    -fx-font-size: 20px;
+    font-weight: 800;
+    -fx-font-weight: 800;
+}
+
+.eval-page-subtitle {
+    -fx-text-fill: #4b6384;
+    font-size: 12px;
+    -fx-font-size: 12px;
+}
+
+.eval-control-row {
+    background-color: #edf4ff;
+    -fx-background-color: #edf4ff;
+    border-radius: 10px;
+    -fx-background-radius: 10;
+    -fx-padding: 8;
+    padding: 8px;
+}
+
+.eval-pill-input {
+    background-color: #ffffff;
+    -fx-background-color: #ffffff;
+    border-color: #c6d9fb;
+    -fx-border-color: #c6d9fb;
+    border-radius: 999px;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-padding: 4 10;
+    padding: 4px 10px;
+}
+
+.eval-primary-btn {
+    background-color: #1f6ed6;
+    -fx-background-color: linear-gradient(to bottom, #2a78de, #1e65c7);
+    -fx-text-fill: white;
+    font-weight: 700;
+    -fx-font-weight: 700;
+    -fx-background-radius: 10;
+    padding: 8px 14px;
+    -fx-padding: 8 14;
+}
+
+.eval-primary-btn:hover {
+    background-color: #1d4ed8;
+    -fx-background-color: linear-gradient(to bottom, #1f6ed6, #1b57ae);
+}
+
+.eval-summary-grid {
+    background-color: transparent;
+    -fx-background-color: transparent;
+}
+
+.eval-kpi-card {
+    background-color: #ffffff;
+    -fx-background-color: #ffffff;
+    border-color: #d5e3fb;
+    -fx-border-color: #d5e3fb;
+    border-width: 1px;
+    -fx-border-width: 1;
+    border-radius: 12px;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    padding: 8px 12px;
+    -fx-padding: 8 12;
+    -fx-pref-width: 220;
+}
+
+.eval-kpi-label {
+    -fx-text-fill: #5e7494;
+    font-size: 11px;
+    -fx-font-size: 11px;
+}
+
+.eval-summary-value {
+    font-weight: 800;
+    -fx-font-weight: 800;
+    -fx-text-fill: #154a93;
+    font-size: 17px;
+    -fx-font-size: 17px;
+}
+
+.eval-feedback {
+    -fx-text-fill: #114e2f;
+    font-size: 12px;
+    -fx-font-size: 12px;
+    background-color: #e8f8ee;
+    -fx-background-color: #e8f8ee;
+    -fx-background-radius: 8;
+    padding: 4px 8px;
+    -fx-padding: 4 8;
+}
+
+.eval-root .table-view,
+.eval-shell-root .table-view {
+    background-color: #ffffff;
+    -fx-background-color: #ffffff;
+    border-color: #dce6f8;
+    -fx-border-color: #dce6f8;
+    border-width: 1px;
+    -fx-border-width: 1;
+    border-radius: 10px;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.eval-root .table-view .column-header-background,
+.eval-shell-root .table-view .column-header-background {
+    background-color: #e6efff;
+    -fx-background-color: linear-gradient(to bottom, #f2f7ff, #e6efff);
+}
+
+.eval-root .table-view .column-header,
+.eval-root .table-view .filler,
+.eval-shell-root .table-view .column-header,
+.eval-shell-root .table-view .filler {
+    border-color: #d5e3fb;
+    -fx-border-color: #d5e3fb;
+}
+
+.eval-root .table-view .column-header .label,
+.eval-shell-root .table-view .column-header .label {
+    -fx-text-fill: #163b68;
+    font-weight: 700;
+    -fx-font-weight: 700;
+}
+
+.eval-root .table-row-cell,
+.eval-shell-root .table-row-cell {
+    background-color: #ffffff;
+    -fx-background-color: #ffffff;
+    border-color: transparent transparent #edf3ff transparent;
+    -fx-border-color: transparent transparent #edf3ff transparent;
+}
+
+.eval-root .table-row-cell:odd,
+.eval-shell-root .table-row-cell:odd {
+    background-color: #f9fbff;
+    -fx-background-color: #f9fbff;
+}
+
+.eval-root .table-row-cell:selected,
+.eval-shell-root .table-row-cell:selected {
+    background-color: #d9e9ff;
+    -fx-background-color: #d9e9ff;
+    -fx-text-fill: #0f3b67;
+}
+
+.eval-root .table-cell,
+.eval-shell-root .table-cell {
+    -fx-text-fill: #16324f;
+    padding: 8px 6px;
+    -fx-padding: 8 6;
+}
+
+.eval-root .tab-pane,
+.eval-shell-root .tab-pane {
+    background-color: transparent;
+    -fx-background-color: transparent;
+}
+
+.eval-tabs .tab-content-area,
+.eval-panel {
+    background-color: #ffffff;
+    -fx-background-color: #ffffff;
+    border-color: #dce6f8;
+    -fx-border-color: #dce6f8;
+    border-width: 1px;
+    -fx-border-width: 1;
+    border-radius: 0 0 12px 12px;
+    -fx-border-radius: 0 0 12 12;
+    -fx-background-radius: 0 0 12 12;
+}
+
+.eval-section-menu {
+    background-color: #ffffff;
+    -fx-background-color: #ffffff;
+    border-color: #d6e4fc;
+    -fx-border-color: #d6e4fc;
+    border-width: 1px;
+    -fx-border-width: 1;
+    border-radius: 12px;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    padding: 8px;
+    -fx-padding: 8;
+}
+
+.eval-section-btn {
+    background-color: #edf4ff;
+    -fx-background-color: linear-gradient(to bottom, #f7faff, #e9f2ff);
+    border-color: #c9dcfb;
+    -fx-border-color: #c9dcfb;
+    border-width: 1px;
+    -fx-border-width: 1;
+    border-radius: 999px;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    padding: 6px 12px;
+    -fx-padding: 6 12;
+    font-size: 12px;
+    -fx-font-size: 12px;
+    font-weight: 700;
+    -fx-font-weight: 700;
+    -fx-text-fill: #1f4774;
+}
+
+.eval-section-btn:hover {
+    background-color: #dcecff;
+    -fx-background-color: linear-gradient(to bottom, #e8f2ff, #dcecff);
+}
+
+.eval-content-host {
+    background-color: transparent;
+    -fx-background-color: transparent;
+}
+
+.eval-card-title {
+    -fx-text-fill: #10395f;
+    font-size: 16px;
+    -fx-font-size: 16px;
+    font-weight: 800;
+    -fx-font-weight: 800;
+}
+
+.eval-scroll-clean,
+.eval-scroll-clean .viewport {
+    background-color: transparent;
+    -fx-background-color: transparent;
+}
+
+.eval-data-card {
+    background-color: #ffffff;
+    -fx-background-color: linear-gradient(to bottom, #ffffff 0%, #f6faff 100%);
+    border-color: #d6e5fc;
+    -fx-border-color: #d6e5fc;
+    border-width: 1px;
+    -fx-border-width: 1;
+    border-radius: 12px;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    padding: 10px 12px;
+    -fx-padding: 10 12;
+    -fx-spacing: 3;
+}
+
+.eval-data-card-title {
+    -fx-text-fill: #163f68;
+    font-size: 14px;
+    -fx-font-size: 14px;
+    font-weight: 800;
+    -fx-font-weight: 800;
+}
+
+.eval-data-card-line {
+    -fx-text-fill: #355678;
+    font-size: 12px;
+    -fx-font-size: 12px;
+}
+
+.eval-empty-card {
+    background-color: #f5f9ff;
+    -fx-background-color: #f5f9ff;
+    border-color: #d8e6fc;
+    -fx-border-color: #d8e6fc;
+    border-width: 1px;
+    -fx-border-width: 1;
+    border-radius: 12px;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    padding: 12px;
+    -fx-padding: 12;
+}
+
+.eval-root .tab-pane .tab-header-area .tab-header-background,
+.eval-shell-root .tab-pane .tab-header-area .tab-header-background {
+    background-color: #dde8fb;
+    -fx-background-color: #dde8fb;
+}
+
+.eval-root .tab-pane .tab,
+.eval-shell-root .tab-pane .tab {
+    -fx-background-radius: 10 10 0 0;
+    background-color: #edf3ff;
+    -fx-background-color: #edf3ff;
+    padding: 7px 12px;
+    -fx-padding: 7 12;
+}
+
+.eval-root .tab-pane .tab:selected,
+.eval-shell-root .tab-pane .tab:selected {
+    background-color: #ffffff;
+    -fx-background-color: #ffffff;
+}
+
+.eval-root .tab-pane .tab .tab-label,
+.eval-shell-root .tab-pane .tab .tab-label {
+    -fx-text-fill: #1a3657;
+    font-size: 13px;
+    -fx-font-size: 13px;
+    font-weight: 700;
+    -fx-font-weight: 700;
+}

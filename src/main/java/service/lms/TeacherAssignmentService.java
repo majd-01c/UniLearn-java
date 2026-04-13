@@ -3,8 +3,6 @@ package service.lms;
 import entities.*;
 import entities.Module;
 import repository.lms.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -12,7 +10,6 @@ import java.util.Optional;
 
 public class TeacherAssignmentService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(TeacherAssignmentService.class);
     private final TeacherClasseRepository tcRepo = new TeacherClasseRepository();
     private final ClasseRepository classeRepo = new ClasseRepository();
     private final ModuleRepository moduleRepo = new ModuleRepository();

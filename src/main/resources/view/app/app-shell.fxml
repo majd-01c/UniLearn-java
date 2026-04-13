@@ -3,6 +3,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
@@ -16,47 +17,60 @@
             styleClass="app-shell-root">
 
     <left>
-        <VBox fx:id="sideRail" styleClass="app-side-rail" prefWidth="228.0" spacing="6.0">
-            <padding>
-                <Insets top="16.0" right="12.0" bottom="16.0" left="12.0"/>
-            </padding>
-            <children>
-                <Label text="UniLearn" styleClass="brand-title"/>
-                <Label text="Desktop Workspace" styleClass="brand-subtitle"/>
-                <Region prefHeight="8.0"/>
+        <ScrollPane fx:id="sideRailScroll" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" styleClass="side-rail-scroll" prefWidth="228.0">
+            <content>
+                <VBox fx:id="sideRail" styleClass="app-side-rail" prefWidth="228.0" spacing="6.0">
+                    <padding>
+                        <Insets top="16.0" right="12.0" bottom="16.0" left="12.0"/>
+                    </padding>
+                    <children>
+                        <Label text="UniLearn" styleClass="brand-title"/>
+                        <Label text="Desktop Workspace" styleClass="brand-subtitle"/>
+                        <Region prefHeight="8.0"/>
 
-                <Button fx:id="navHomeButton" text="⌂  Home" onAction="#onNavHome" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+                        <Button fx:id="navHomeButton" text="⌂  Home" onAction="#onNavHome" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
 
-                <!-- Admin Section -->
-                <Label fx:id="adminSectionLabel" text="ADMINISTRATION" styleClass="side-section-label"/>
-                <Button fx:id="navProgramsButton" text="▦  Programs" onAction="#onNavPrograms" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
-                <Button fx:id="navClassesButton" text="▣  Classes" onAction="#onNavClasses" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
-                <Button fx:id="navUsersButton" text="◉  Users" onAction="#onNavUsers" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+                        <!-- Admin Section -->
+                        <Label fx:id="adminSectionLabel" text="ADMINISTRATION" styleClass="side-section-label"/>
+                        <Button fx:id="navProgramsButton" text="▦  Programs" onAction="#onNavPrograms" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+                        <Button fx:id="navClassesButton" text="▣  Classes" onAction="#onNavClasses" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+                        <Button fx:id="navUsersButton" text="◉  Users" onAction="#onNavUsers" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
 
-                <!-- Teacher Section -->
-                <Label fx:id="teacherSectionLabel" text="TEACHING" styleClass="side-section-label"/>
-                <Button fx:id="navModulesButton" text="▤  Modules" onAction="#onNavModules" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
-                <Button fx:id="navCoursesButton" text="▧  Courses" onAction="#onNavCourses" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
-                <Button fx:id="navContenuButton" text="▨  Content" onAction="#onNavContenu" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
-                <Button fx:id="navMyClassesButton" text="▣  My Classes" onAction="#onNavMyClasses" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+                        <!-- Teacher Section -->
+                        <Label fx:id="teacherSectionLabel" text="TEACHING" styleClass="side-section-label"/>
+                        <Button fx:id="navModulesButton" text="▤  Modules" onAction="#onNavModules" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+                        <Button fx:id="navCoursesButton" text="▧  Courses" onAction="#onNavCourses" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+                        <Button fx:id="navContenuButton" text="▨  Content" onAction="#onNavContenu" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+                        <Button fx:id="navMyClassesButton" text="▣  My Classes" onAction="#onNavMyClasses" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
 
-                <!-- Student Section -->
-                <Label fx:id="studentSectionLabel" text="LEARNING" styleClass="side-section-label"/>
-                <Button fx:id="navMyLearningButton" text="▶  My Learning" onAction="#onNavMyLearning" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+                        <!-- Student Section -->
+                        <Label fx:id="studentSectionLabel" text="LEARNING" styleClass="side-section-label"/>
+                        <Button fx:id="navMyLearningButton" text="▶  My Learning" onAction="#onNavMyLearning" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
 
-                <!-- Community -->
-                <Label text="COMMUNITY" styleClass="side-section-label"/>
-                <Button fx:id="navForumButton" text="💬  Forum" onAction="#onNavForum" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+                        <!-- Evaluation -->
+                        <Label text="EVALUATION" styleClass="side-section-label"/>
+                        <Button fx:id="navEvaluationButton" text="✎  Evaluation" onAction="#onNavEvaluation" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+                        <Button fx:id="navEvaluationGradesButton" text="   • Grades" onAction="#onNavEvaluationGrades" maxWidth="1.7976931348623157E308" styleClass="side-button side-sub-button" visible="false" managed="false"/>
+                        <Button fx:id="navEvaluationRecommendationsButton" text="   • Recommendations" onAction="#onNavEvaluationRecommendations" maxWidth="1.7976931348623157E308" styleClass="side-button side-sub-button" visible="false" managed="false"/>
+                        <Button fx:id="navEvaluationScheduleButton" text="   • Schedule" onAction="#onNavEvaluationSchedule" maxWidth="1.7976931348623157E308" styleClass="side-button side-sub-button" visible="false" managed="false"/>
+                        <Button fx:id="navEvaluationComplaintsButton" text="   • Complaints" onAction="#onNavEvaluationComplaints" maxWidth="1.7976931348623157E308" styleClass="side-button side-sub-button" visible="false" managed="false"/>
+                        <Button fx:id="navEvaluationDocumentsButton" text="   • Documents" onAction="#onNavEvaluationDocuments" maxWidth="1.7976931348623157E308" styleClass="side-button side-sub-button" visible="false" managed="false"/>
 
-                <!-- Common -->
-                <Label text="ACCOUNT" styleClass="side-section-label"/>
-                <Button fx:id="navProfileButton" text="◎  My Profile" onAction="#onNavProfile" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
-                <Button fx:id="navChangePasswordButton" text="⚿  Change Password" onAction="#onNavChangePassword" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+                        <!-- Community -->
+                        <Label text="COMMUNITY" styleClass="side-section-label"/>
+                        <Button fx:id="navForumButton" text="💬  Forum" onAction="#onNavForum" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
 
-                <Region VBox.vgrow="ALWAYS"/>
-                <Button text="⏻  Logout" onAction="#onNavLogout" maxWidth="1.7976931348623157E308" styleClass="side-button side-danger-button"/>
-            </children>
-        </VBox>
+                        <!-- Common -->
+                        <Label text="ACCOUNT" styleClass="side-section-label"/>
+                        <Button fx:id="navProfileButton" text="◎  My Profile" onAction="#onNavProfile" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+                        <Button fx:id="navChangePasswordButton" text="⚿  Change Password" onAction="#onNavChangePassword" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+
+                        <Region VBox.vgrow="ALWAYS"/>
+                        <Button text="⏻  Logout" onAction="#onNavLogout" maxWidth="1.7976931348623157E308" styleClass="side-button side-danger-button"/>
+                    </children>
+                </VBox>
+            </content>
+        </ScrollPane>
     </left>
 
     <top>

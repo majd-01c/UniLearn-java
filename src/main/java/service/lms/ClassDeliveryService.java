@@ -2,13 +2,10 @@ package service.lms;
 
 import entities.*;
 import repository.lms.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import security.UserSession;
 import util.RoleGuard;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Service for managing class-level delivery (modules, courses, content).
@@ -21,7 +18,6 @@ import java.util.Optional;
  */
 public class ClassDeliveryService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ClassDeliveryService.class);
     private final ClasseModuleRepository cmRepo = new ClasseModuleRepository();
     private final ClasseCourseRepository ccRepo = new ClasseCourseRepository();
     private final ClasseContenuRepository cxRepo = new ClasseContenuRepository();

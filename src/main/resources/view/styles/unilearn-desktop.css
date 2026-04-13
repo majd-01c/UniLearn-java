@@ -90,6 +90,26 @@
     -fx-border-width: 0 1 0 0;
 }
 
+.side-rail-scroll,
+.side-rail-scroll .viewport {
+    -fx-background-color: -ul-bg-rail;
+}
+
+.side-rail-scroll {
+    -fx-padding: 0;
+    -fx-background-insets: 0;
+    -fx-border-width: 0;
+}
+
+.side-rail-scroll .scroll-bar:vertical {
+    -fx-background-color: transparent;
+}
+
+.side-rail-scroll .scroll-bar:vertical .thumb {
+    -fx-background-color: rgba(160, 195, 225, 0.45);
+    -fx-background-radius: 999;
+}
+
 .brand-title {
     -fx-text-fill: -ul-text-brand;
     -fx-font-size: 24px;
@@ -127,6 +147,19 @@
     -fx-background-color: -ul-btn-side-active;
     -fx-border-color: #98c7ea;
     -fx-text-fill: #ffffff;
+}
+
+.side-sub-button {
+    -fx-background-color: rgba(28, 79, 121, 0.68);
+    -fx-font-size: 12px;
+    -fx-padding: 8 12 8 20;
+    -fx-background-radius: 9;
+    -fx-border-radius: 9;
+    -fx-text-fill: #d4e8fa;
+}
+
+.side-sub-button:hover {
+    -fx-background-color: rgba(37, 100, 150, 0.92);
 }
 
 .side-section-label {

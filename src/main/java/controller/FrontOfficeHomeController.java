@@ -69,6 +69,12 @@ public class FrontOfficeHomeController implements Initializable {
     }
 
     @FXML
+    private void onOpenEvaluation() {
+        AppNavigator.setHeader("Evaluation Module", "Student, Teacher, and Admin evaluation workspace");
+        AppNavigator.loadCenter("/view/evaluation/module-shell.fxml", null);
+    }
+
+    @FXML
     private void onOpenSchedule() {
         showInfo("Schedule", "Schedule module shortcut is ready for wiring.");
     }

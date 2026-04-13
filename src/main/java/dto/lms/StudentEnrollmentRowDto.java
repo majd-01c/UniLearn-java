@@ -1,7 +1,5 @@
 package dto.lms;
 
-import java.util.Date;
-
 public class StudentEnrollmentRowDto {
     private final Integer id;
     private final Integer studentId;

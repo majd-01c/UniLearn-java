@@ -97,6 +97,12 @@ public class BackOfficeHomeController implements Initializable {
     }
 
     @FXML
+    private void onOpenEvaluation() {
+        AppNavigator.setHeader("Evaluation Module", "Student, Teacher, and Admin evaluation workspace");
+        AppNavigator.loadCenter("/view/evaluation/module-shell.fxml", null);
+    }
+
+    @FXML
     private void onOpenProgramManagement() {
         showInfo("Shortcut", "Program/Class management module shortcut is ready for wiring to the dedicated screen.");
     }

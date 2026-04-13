@@ -15,6 +15,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
@@ -42,6 +43,8 @@ public class AppShellController implements Initializable {
     @FXML
     private VBox sideRail;
     @FXML
+    private ScrollPane sideRailScroll;
+    @FXML
     private Label headerTitleLabel;
     @FXML
     private Label headerSubtitleLabel;
@@ -59,6 +62,18 @@ public class AppShellController implements Initializable {
     private Button themeToggleButton;
     @FXML
     private Button navForumButton;
+    @FXML
+    private Button navEvaluationButton;
+    @FXML
+    private Button navEvaluationGradesButton;
+    @FXML
+    private Button navEvaluationRecommendationsButton;
+    @FXML
+    private Button navEvaluationScheduleButton;
+    @FXML
+    private Button navEvaluationComplaintsButton;
+    @FXML
+    private Button navEvaluationDocumentsButton;
     @FXML
     private StackPane contentHost;
 
@@ -106,6 +121,7 @@ public class AppShellController implements Initializable {
     private User currentUser;
     private String selectedModule = "";
     private List<String> breadcrumbs = new ArrayList<>();
+    private boolean evaluationSubNavExpanded;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -147,6 +163,12 @@ public class AppShellController implements Initializable {
             case "USERS", "USER_LIST" -> showUsersView();
             case "PROFILE", "MY_PROFILE" -> showProfileView();
             case "CHANGE_PASSWORD" -> showChangePasswordView();
+            case "EVALUATION" -> onNavEvaluation();
+            case "EVALUATION_GRADES" -> onNavEvaluationGrades();
+            case "EVALUATION_RECOMMENDATIONS" -> onNavEvaluationRecommendations();
+            case "EVALUATION_SCHEDULE" -> onNavEvaluationSchedule();
+            case "EVALUATION_COMPLAINTS" -> onNavEvaluationComplaints();
+            case "EVALUATION_DOCUMENTS" -> onNavEvaluationDocuments();
             case "LOGIN" -> showLoginView();
             default -> showHomeView();
         }
@@ -205,6 +227,10 @@ public class AppShellController implements Initializable {
         // Student section
         setNodeVisible(studentSectionLabel, student);
         setNodeVisible(navMyLearningButton, student);
+
+        // Evaluation module for authenticated academic roles.
+        setNodeVisible(navEvaluationButton, currentUser != null && currentUser.getId() != null);
+        updateEvaluationSubNavVisibility();
     }
 
     private void setNodeVisible(javafx.scene.Node node, boolean visible) {
@@ -694,6 +720,47 @@ public class AppShellController implements Initializable {
         showStudentLearning();
     }
 
+    @FXML
+    private void onNavEvaluation() {
+        if (selectedModule != null && selectedModule.startsWith("EVALUATION") && evaluationSubNavExpanded) {
+            evaluationSubNavExpanded = false;
+            updateEvaluationSubNavVisibility();
+            return;
+        }
+        evaluationSubNavExpanded = true;
+        showEvaluationSection("GRADES", "Grades");
+    }
+
+    @FXML
+    private void onNavEvaluationGrades() {
+        evaluationSubNavExpanded = true;
+        showEvaluationSection("GRADES", "Grades");
+    }
+
+    @FXML
+    private void onNavEvaluationRecommendations() {
+        evaluationSubNavExpanded = true;
+        showEvaluationSection("RECOMMENDATIONS", "Recommendations");
+    }
+
+    @FXML
+    private void onNavEvaluationSchedule() {
+        evaluationSubNavExpanded = true;
+        showEvaluationSection("SCHEDULE", "Schedule");
+    }
+
+    @FXML
+    private void onNavEvaluationComplaints() {
+        evaluationSubNavExpanded = true;
+        showEvaluationSection("COMPLAINTS", "Complaints");
+    }
+
+    @FXML
+    private void onNavEvaluationDocuments() {
+        evaluationSubNavExpanded = true;
+        showEvaluationSection("DOCUMENTS", "Documents");
+    }
+
     // ==================== Internals ====================
     @FXML
     private void onToggleTheme() {
@@ -769,12 +836,16 @@ public class AppShellController implements Initializable {
 
     private void setNavigationState(String moduleKey, String... breadcrumbParts) {
         selectedModule = moduleKey == null ? "" : moduleKey;
+        if (selectedModule == null || !selectedModule.startsWith("EVALUATION")) {
+            evaluationSubNavExpanded = false;
+        }
         breadcrumbs = Arrays.stream(breadcrumbParts)
                 .filter(value -> value != null && !value.isBlank())
                 .toList();
 
         updateBreadcrumbs();
         updateActiveNavigationButton();
+        updateEvaluationSubNavVisibility();
     }
 
     private void updateBreadcrumbs() {
@@ -791,6 +862,28 @@ public class AppShellController implements Initializable {
         clearActiveState(navUsersButton);
         clearActiveState(navProfileButton);
         clearActiveState(navChangePasswordButton);
+        clearActiveState(navEvaluationButton);
+        clearActiveState(navEvaluationGradesButton);
+        clearActiveState(navEvaluationRecommendationsButton);
+        clearActiveState(navEvaluationScheduleButton);
+        clearActiveState(navEvaluationComplaintsButton);
+        clearActiveState(navEvaluationDocumentsButton);
+
+        if (selectedModule != null && selectedModule.startsWith("EVALUATION")) {
+            markActive(navEvaluationButton);
+            switch (selectedModule) {
+                case "EVALUATION_GRADES" -> markActive(navEvaluationGradesButton);
+                case "EVALUATION_RECOMMENDATIONS" -> markActive(navEvaluationRecommendationsButton);
+                case "EVALUATION_SCHEDULE" -> markActive(navEvaluationScheduleButton);
+                case "EVALUATION_COMPLAINTS" -> markActive(navEvaluationComplaintsButton);
+                case "EVALUATION_DOCUMENTS" -> markActive(navEvaluationDocumentsButton);
+                default -> {
+                    // Default entry highlights first section for students.
+                    markActive(navEvaluationGradesButton);
+                }
+            }
+            return;
+        }
 
         switch (selectedModule) {
             case "HOME" -> markActive(navHomeButton);
@@ -820,6 +913,11 @@ public class AppShellController implements Initializable {
     }
 
     private void setNavigationVisible(boolean visible) {
+        if (sideRailScroll != null) {
+            sideRailScroll.setManaged(visible);
+            sideRailScroll.setVisible(visible);
+        }
+
         sideRail.setManaged(visible);
         sideRail.setVisible(visible);
 
@@ -995,6 +1093,31 @@ public class AppShellController implements Initializable {
 
     public User getCurrentUser() {
         return currentUser;
+    }
+
+    private void showEvaluationSection(String sectionKey, String sectionLabel) {
+        if (!ensureAuthenticated()) {
+            return;
+        }
+
+        String normalizedSection = sectionKey == null ? "GRADES" : sectionKey.trim().toUpperCase();
+        setHeader("Evaluation Module", "Student, Teacher, and Admin evaluation workspace");
+        setNavigationState("EVALUATION_" + normalizedSection, "Home", "Evaluation", sectionLabel);
+        loadCenter("/view/evaluation/module-shell.fxml", controller -> {
+            if (controller instanceof controller.evaluation.EvaluationShellController shellController) {
+                shellController.setInitialStudentSection(normalizedSection);
+            }
+        });
+    }
+
+    private void updateEvaluationSubNavVisibility() {
+        boolean student = RoleGuard.isStudent(currentUser);
+        boolean visible = student && selectedModule != null && selectedModule.startsWith("EVALUATION") && evaluationSubNavExpanded;
+        setNodeVisible(navEvaluationGradesButton, visible);
+        setNodeVisible(navEvaluationRecommendationsButton, visible);
+        setNodeVisible(navEvaluationScheduleButton, visible);
+        setNodeVisible(navEvaluationComplaintsButton, visible);
+        setNodeVisible(navEvaluationDocumentsButton, visible);
     }
 
     private void showWarning(String title, String message) {
