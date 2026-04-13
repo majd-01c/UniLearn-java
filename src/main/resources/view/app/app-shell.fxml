@@ -15,22 +15,45 @@
             styleClass="app-shell-root">
 
     <left>
-        <VBox fx:id="sideRail" styleClass="app-side-rail" prefWidth="228.0" spacing="8.0">
+        <VBox fx:id="sideRail" styleClass="app-side-rail" prefWidth="228.0" spacing="6.0">
             <padding>
                 <Insets top="16.0" right="12.0" bottom="16.0" left="12.0"/>
             </padding>
             <children>
                 <Label text="UniLearn" styleClass="brand-title"/>
                 <Label text="Desktop Workspace" styleClass="brand-subtitle"/>
-                <Region prefHeight="10.0"/>
+                <Region prefHeight="8.0"/>
 
-                <Button fx:id="navHomeButton" text="Home" onAction="#onNavHome" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
-                <Button fx:id="navUsersButton" text="Users" onAction="#onNavUsers" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
-                <Button fx:id="navProfileButton" text="My Profile" onAction="#onNavProfile" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
-                <Button fx:id="navChangePasswordButton" text="Change Password" onAction="#onNavChangePassword" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+                <Button fx:id="navHomeButton" text="⌂  Home" onAction="#onNavHome" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+
+                <!-- Admin Section -->
+                <Label fx:id="adminSectionLabel" text="ADMINISTRATION" styleClass="side-section-label"/>
+                <Button fx:id="navProgramsButton" text="▦  Programs" onAction="#onNavPrograms" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+                <Button fx:id="navClassesButton" text="▣  Classes" onAction="#onNavClasses" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+                <Button fx:id="navUsersButton" text="◉  Users" onAction="#onNavUsers" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+
+                <!-- Teacher Section -->
+                <Label fx:id="teacherSectionLabel" text="TEACHING" styleClass="side-section-label"/>
+                <Button fx:id="navModulesButton" text="▤  Modules" onAction="#onNavModules" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+                <Button fx:id="navCoursesButton" text="▧  Courses" onAction="#onNavCourses" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+                <Button fx:id="navContenuButton" text="▨  Content" onAction="#onNavContenu" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+                <Button fx:id="navMyClassesButton" text="▣  My Classes" onAction="#onNavMyClasses" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+
+                <!-- Student Section -->
+                <Label fx:id="studentSectionLabel" text="LEARNING" styleClass="side-section-label"/>
+                <Button fx:id="navMyLearningButton" text="▶  My Learning" onAction="#onNavMyLearning" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+
+                <!-- Community -->
+                <Label text="COMMUNITY" styleClass="side-section-label"/>
+                <Button fx:id="navForumButton" text="💬  Forum" onAction="#onNavForum" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+
+                <!-- Common -->
+                <Label text="ACCOUNT" styleClass="side-section-label"/>
+                <Button fx:id="navProfileButton" text="◎  My Profile" onAction="#onNavProfile" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+                <Button fx:id="navChangePasswordButton" text="⚿  Change Password" onAction="#onNavChangePassword" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
 
                 <Region VBox.vgrow="ALWAYS"/>
-                <Button text="Logout" onAction="#onNavLogout" maxWidth="1.7976931348623157E308" styleClass="side-button side-danger-button"/>
+                <Button text="⏻  Logout" onAction="#onNavLogout" maxWidth="1.7976931348623157E308" styleClass="side-button side-danger-button"/>
             </children>
         </VBox>
     </left>
@@ -48,6 +71,7 @@
                     </children>
                 </VBox>
                 <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="themeToggleButton" text="◐ Theme" onAction="#onToggleTheme" styleClass="theme-toggle"/>
                 <Label fx:id="currentUserLabel" styleClass="user-badge"/>
             </children>
         </HBox>

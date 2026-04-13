@@ -1,144 +1,730 @@
+/* ============================================================
+   UniLearn Desktop — Complete Visual System
+   Light & Dark Theme + LMS Module Styles
+   ============================================================ */
+
+/* ----- Root & Theme Variables ----- */
 .root {
     -fx-font-family: "Segoe UI", "Noto Sans", "Arial";
+    -ul-bg-workspace: linear-gradient(to bottom, #f7fbff 0%, #eef3f9 100%);
+    -ul-bg-rail: linear-gradient(to bottom, #0f2f4d 0%, #123a5d 45%, #0f2f4d 100%);
+    -ul-rail-border: #0b243c;
+    -ul-text-brand: #ffffff;
+    -ul-text-brand-sub: #c7dbef;
+    -ul-btn-side: #1c4f79;
+    -ul-btn-side-hover: #256496;
+    -ul-btn-side-active: #2e7ab8;
+    -ul-danger: #8f2d2d;
+    -ul-danger-hover: #b03838;
+    -ul-bg-header: rgba(255,255,255,0.92);
+    -ul-header-border: #d9e4f2;
+    -ul-text-heading: #10243c;
+    -ul-text-sub: #5a6f85;
+    -ul-badge-bg: #dcecfb;
+    -ul-badge-fg: #144a76;
+    -ul-card-bg: #ffffff;
+    -ul-card-border: #d7e4f2;
+    -ul-card-shadow: rgba(10,34,56,0.08);
+    -ul-primary: #1d6fa5;
+    -ul-primary-hover: #2482bf;
+    -ul-ghost-bg: #edf4fb;
+    -ul-ghost-fg: #12446f;
+    -ul-ghost-hover: #dcecf9;
+    -ul-table-stripe: #f5f9fd;
+    -ul-table-hover: #e8f1fa;
+    -ul-success: #1a8754;
+    -ul-success-bg: #d4edda;
+    -ul-warning: #b8860b;
+    -ul-warning-bg: #fff3cd;
+    -ul-info: #0c5460;
+    -ul-info-bg: #d1ecf1;
+    -ul-error: #c0392b;
+    -ul-error-bg: #f8d7da;
+    -ul-input-bg: #ffffff;
+    -ul-input-border: #c8d6e5;
+    -ul-input-focus: #1d6fa5;
+    -ul-text-body: #3d5167;
 }
 
+/* ----- Dark Theme ----- */
+.dark-theme {
+    -ul-bg-workspace: linear-gradient(to bottom, #131a23 0%, #0e1620 100%);
+    -ul-bg-rail: linear-gradient(to bottom, #0b1929 0%, #0e2035 45%, #0b1929 100%);
+    -ul-rail-border: #0a1421;
+    -ul-btn-side: #17334d;
+    -ul-btn-side-hover: #1e4366;
+    -ul-btn-side-active: #255580;
+    -ul-bg-header: rgba(18,26,36,0.95);
+    -ul-header-border: #1e2d3d;
+    -ul-text-heading: #e4ecf4;
+    -ul-text-sub: #8ea4b8;
+    -ul-badge-bg: #1a3350;
+    -ul-badge-fg: #8ec0e8;
+    -ul-card-bg: #182430;
+    -ul-card-border: #243648;
+    -ul-card-shadow: rgba(0,0,0,0.25);
+    -ul-primary: #3aa0e0;
+    -ul-primary-hover: #5ab5ec;
+    -ul-ghost-bg: #1a2e40;
+    -ul-ghost-fg: #8ec0e8;
+    -ul-ghost-hover: #243d54;
+    -ul-table-stripe: #15202c;
+    -ul-table-hover: #1c3044;
+    -ul-success-bg: #1a3c2c;
+    -ul-warning-bg: #3a3010;
+    -ul-info-bg: #102a32;
+    -ul-error-bg: #3a1a1a;
+    -ul-input-bg: #1a2a38;
+    -ul-input-border: #2a3e52;
+    -ul-text-body: #b0c4d8;
+}
+
+/* ----- Application Shell ----- */
 .app-shell-root {
-    -fx-background-color: linear-gradient(to bottom, #f7fbff 0%, #eef3f9 100%);
+    -fx-background-color: -ul-bg-workspace;
 }
 
 .app-side-rail {
-    -fx-background-color: linear-gradient(to bottom, #0f2f4d 0%, #123a5d 45%, #0f2f4d 100%);
-    -fx-border-color: #0b243c;
+    -fx-background-color: -ul-bg-rail;
+    -fx-border-color: -ul-rail-border;
     -fx-border-width: 0 1 0 0;
 }
 
 .brand-title {
-    -fx-text-fill: #ffffff;
+    -fx-text-fill: -ul-text-brand;
     -fx-font-size: 24px;
     -fx-font-weight: 800;
 }
 
 .brand-subtitle {
-    -fx-text-fill: #c7dbef;
+    -fx-text-fill: -ul-text-brand-sub;
     -fx-font-size: 12px;
     -fx-font-weight: 600;
 }
 
+/* ----- Side Rail Buttons ----- */
 .side-button {
-    -fx-background-color: #1c4f79;
+    -fx-background-color: -ul-btn-side;
     -fx-text-fill: #e8f2fb;
     -fx-background-radius: 10;
     -fx-padding: 10 12;
     -fx-font-weight: 600;
+    -fx-font-size: 13px;
     -fx-cursor: hand;
+    -fx-alignment: CENTER-LEFT;
+}
+.side-button:hover { -fx-background-color: -ul-btn-side-hover; }
+.side-button:pressed, .side-button-active { -fx-background-color: -ul-btn-side-active; }
+
+.side-section-label {
+    -fx-text-fill: #6a92b8;
+    -fx-font-size: 10px;
+    -fx-font-weight: 700;
+    -fx-padding: 12 0 2 4;
 }
 
-.side-button:hover {
-    -fx-background-color: #256496;
-}
+.side-danger-button { -fx-background-color: -ul-danger; }
+.side-danger-button:hover { -fx-background-color: -ul-danger-hover; }
 
-.side-danger-button {
-    -fx-background-color: #8f2d2d;
-}
-
-.side-danger-button:hover {
-    -fx-background-color: #b03838;
-}
-
+/* ----- Header ----- */
 .app-header {
-    -fx-background-color: rgba(255, 255, 255, 0.92);
-    -fx-border-color: #d9e4f2;
+    -fx-background-color: -ul-bg-header;
+    -fx-border-color: -ul-header-border;
     -fx-border-width: 0 0 1 0;
 }
 
 .header-title {
-    -fx-text-fill: #10243c;
+    -fx-text-fill: -ul-text-heading;
     -fx-font-size: 20px;
     -fx-font-weight: 700;
 }
 
 .header-subtitle {
-    -fx-text-fill: #5a6f85;
+    -fx-text-fill: -ul-text-sub;
     -fx-font-size: 12px;
 }
 
 .user-badge {
-    -fx-background-color: #dcecfb;
-    -fx-text-fill: #144a76;
+    -fx-background-color: -ul-badge-bg;
+    -fx-text-fill: -ul-badge-fg;
     -fx-background-radius: 999;
     -fx-padding: 8 12;
     -fx-font-size: 12px;
     -fx-font-weight: 600;
 }
 
-.app-content-host {
-    -fx-padding: 16;
+/* ----- Theme Toggle ----- */
+.theme-toggle {
+    -fx-background-color: -ul-ghost-bg;
+    -fx-text-fill: -ul-ghost-fg;
+    -fx-background-radius: 8;
+    -fx-padding: 6 10;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
 }
+.theme-toggle:hover { -fx-background-color: -ul-ghost-hover; }
 
-.home-root {
-    -fx-background-color: transparent;
-}
+/* ----- Content Host ----- */
+.app-content-host { -fx-padding: 16; }
 
-.home-card {
-    -fx-background-color: #ffffff;
-    -fx-border-color: #d7e4f2;
+/* ----- Cards ----- */
+.home-root, .lms-root { -fx-background-color: transparent; }
+
+.home-card, .lms-card {
+    -fx-background-color: -ul-card-bg;
+    -fx-border-color: -ul-card-border;
     -fx-border-width: 1;
     -fx-border-radius: 14;
     -fx-background-radius: 14;
     -fx-padding: 16;
-    -fx-effect: dropshadow(gaussian, rgba(10, 34, 56, 0.08), 10, 0.25, 0, 4);
+    -fx-effect: dropshadow(gaussian, -ul-card-shadow, 10, 0.25, 0, 4);
+}
+.lms-card:hover {
+    -fx-effect: dropshadow(gaussian, -ul-card-shadow, 16, 0.35, 0, 6);
 }
 
-.home-title {
-    -fx-text-fill: #0f2740;
+.stat-card {
+    -fx-background-color: -ul-card-bg;
+    -fx-border-color: -ul-card-border;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 14;
+    -fx-min-width: 160;
+    -fx-effect: dropshadow(gaussian, -ul-card-shadow, 8, 0.2, 0, 3);
+}
+
+/* ----- Typography ----- */
+.home-title, .lms-page-title {
+    -fx-text-fill: -ul-text-heading;
     -fx-font-size: 24px;
     -fx-font-weight: 800;
 }
 
-.home-role {
-    -fx-text-fill: #1f5f92;
-    -fx-font-size: 13px;
-    -fx-font-weight: 700;
-}
-
-.home-summary {
-    -fx-text-fill: #4f6277;
-    -fx-font-size: 13px;
-}
+.home-role { -fx-text-fill: #1f5f92; -fx-font-size: 13px; -fx-font-weight: 700; }
+.home-summary { -fx-text-fill: -ul-text-sub; -fx-font-size: 13px; }
 
 .card-title {
-    -fx-text-fill: #10243c;
+    -fx-text-fill: -ul-text-heading;
     -fx-font-size: 16px;
     -fx-font-weight: 700;
 }
 
-.card-text {
-    -fx-text-fill: #556b81;
+.card-text, .lms-text {
+    -fx-text-fill: -ul-text-body;
     -fx-font-size: 12px;
 }
 
+.stat-value {
+    -fx-text-fill: -ul-primary;
+    -fx-font-size: 28px;
+    -fx-font-weight: 800;
+}
+
+.stat-label {
+    -fx-text-fill: -ul-text-sub;
+    -fx-font-size: 11px;
+    -fx-font-weight: 600;
+}
+
+/* ----- Buttons ----- */
 .primary-button {
-    -fx-background-color: #1d6fa5;
+    -fx-background-color: -ul-primary;
+    -fx-text-fill: #ffffff;
+    -fx-background-radius: 10;
+    -fx-padding: 9 16;
+    -fx-font-weight: 700;
+    -fx-font-size: 13px;
+    -fx-cursor: hand;
+}
+.primary-button:hover { -fx-background-color: -ul-primary-hover; }
+
+.ghost-button {
+    -fx-background-color: -ul-ghost-bg;
+    -fx-text-fill: -ul-ghost-fg;
+    -fx-background-radius: 10;
+    -fx-padding: 9 12;
+    -fx-font-weight: 700;
+    -fx-font-size: 13px;
+    -fx-cursor: hand;
+}
+.ghost-button:hover { -fx-background-color: -ul-ghost-hover; }
+
+.danger-button {
+    -fx-background-color: -ul-danger;
     -fx-text-fill: #ffffff;
     -fx-background-radius: 10;
     -fx-padding: 9 12;
     -fx-font-weight: 700;
+    -fx-font-size: 13px;
     -fx-cursor: hand;
 }
+.danger-button:hover { -fx-background-color: -ul-danger-hover; }
 
-.primary-button:hover {
-    -fx-background-color: #2482bf;
-}
-
-.ghost-button {
-    -fx-background-color: #edf4fb;
-    -fx-text-fill: #12446f;
+.success-button {
+    -fx-background-color: -ul-success;
+    -fx-text-fill: #ffffff;
     -fx-background-radius: 10;
     -fx-padding: 9 12;
     -fx-font-weight: 700;
+    -fx-font-size: 13px;
     -fx-cursor: hand;
 }
 
-.ghost-button:hover {
-    -fx-background-color: #dcecf9;
+.icon-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -ul-text-sub;
+    -fx-padding: 4 8;
+    -fx-cursor: hand;
+    -fx-font-size: 13px;
+}
+.icon-button:hover { -fx-text-fill: -ul-primary; }
+
+/* ----- Status Badges ----- */
+.badge {
+    -fx-background-radius: 6;
+    -fx-padding: 3 10;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+}
+.badge-published { -fx-background-color: -ul-success-bg; -fx-text-fill: -ul-success; }
+.badge-draft { -fx-background-color: -ul-warning-bg; -fx-text-fill: -ul-warning; }
+.badge-active { -fx-background-color: -ul-info-bg; -fx-text-fill: -ul-info; }
+.badge-inactive { -fx-background-color: #e9ecef; -fx-text-fill: #6c757d; }
+.badge-full { -fx-background-color: -ul-error-bg; -fx-text-fill: -ul-error; }
+.badge-video { -fx-background-color: #e8d5f5; -fx-text-fill: #6f42c1; }
+.badge-quiz { -fx-background-color: #ffe4cc; -fx-text-fill: #d35400; }
+.badge-text { -fx-background-color: #d4edda; -fx-text-fill: #1a8754; }
+.badge-exercice { -fx-background-color: #cce5ff; -fx-text-fill: #004085; }
+.badge-cours { -fx-background-color: #f0e6ff; -fx-text-fill: #5a2d82; }
+
+/* ----- Tables ----- */
+.lms-table {
+    -fx-background-color: -ul-card-bg;
+    -fx-border-color: -ul-card-border;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+}
+.lms-table .column-header-background {
+    -fx-background-color: -ul-ghost-bg;
+}
+.lms-table .column-header .label {
+    -fx-text-fill: -ul-text-heading;
+    -fx-font-weight: 700;
+    -fx-font-size: 12px;
+}
+.lms-table .table-row-cell {
+    -fx-border-color: transparent transparent -ul-card-border transparent;
+    -fx-background-color: -ul-card-bg;
+}
+.lms-table .table-row-cell:odd {
+    -fx-background-color: -ul-table-stripe;
+}
+.lms-table .table-row-cell:hover {
+    -fx-background-color: -ul-table-hover;
+}
+.lms-table .table-cell {
+    -fx-text-fill: -ul-text-body;
+    -fx-font-size: 13px;
+    -fx-padding: 8 12;
+}
+
+/* ----- Forms ----- */
+.lms-form .label, .form-label {
+    -fx-text-fill: -ul-text-heading;
+    -fx-font-weight: 600;
+    -fx-font-size: 13px;
+}
+
+.lms-input, .lms-form .text-field, .lms-form .text-area, .lms-form .combo-box {
+    -fx-background-color: -ul-input-bg;
+    -fx-border-color: -ul-input-border;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 8 12;
+    -fx-font-size: 13px;
+    -fx-text-fill: -ul-text-heading;
+}
+.lms-input:focused, .lms-form .text-field:focused {
+    -fx-border-color: -ul-input-focus;
+    -fx-effect: dropshadow(gaussian, rgba(29,111,165,0.15), 6, 0, 0, 0);
+}
+
+.field-error {
+    -fx-text-fill: -ul-error;
+    -fx-font-size: 11px;
+    -fx-font-weight: 600;
+}
+
+/* ----- Progress Bars ----- */
+.capacity-bar {
+    -fx-pref-height: 8;
+    -fx-background-radius: 4;
+}
+.capacity-bar .track {
+    -fx-background-color: -ul-ghost-bg;
+    -fx-background-radius: 4;
+}
+.capacity-bar .bar {
+    -fx-background-color: -ul-primary;
+    -fx-background-radius: 4;
+}
+.capacity-bar-full .bar {
+    -fx-background-color: -ul-error;
+}
+
+/* ----- Breadcrumbs ----- */
+.breadcrumb-bar {
+    -fx-padding: 0 0 8 0;
+}
+.breadcrumb-link {
+    -fx-text-fill: -ul-primary;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
+    -fx-underline: true;
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+.breadcrumb-sep {
+    -fx-text-fill: -ul-text-sub;
+    -fx-font-size: 12px;
+    -fx-padding: 0 4;
+}
+.breadcrumb-current {
+    -fx-text-fill: -ul-text-sub;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+}
+
+/* ----- Scroll Pane ----- */
+.lms-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+}
+.lms-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+/* ----- Empty State ----- */
+.empty-state {
+    -fx-text-fill: -ul-text-sub;
+    -fx-font-size: 14px;
+    -fx-font-style: italic;
+    -fx-padding: 32;
+    -fx-alignment: CENTER;
+}
+
+/* ----- Prev/Next Navigation ----- */
+.nav-button {
+    -fx-background-color: -ul-ghost-bg;
+    -fx-text-fill: -ul-ghost-fg;
+    -fx-background-radius: 10;
+    -fx-padding: 10 20;
+    -fx-font-weight: 700;
+    -fx-cursor: hand;
+}
+.nav-button:hover { -fx-background-color: -ul-ghost-hover; }
+.nav-button:disabled { -fx-opacity: 0.4; }
+
+
+
+/* ========================================
+   FORUM STYLES
+   ======================================== */
+
+.forum-scroll-pane {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.forum-scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.forum-root {
+    -fx-background-color: transparent;
+}
+
+.forum-page-title {
+    -fx-text-fill: #0f2740;
+    -fx-font-size: 22px;
+    -fx-font-weight: 800;
+}
+
+.forum-page-subtitle {
+    -fx-text-fill: #5a7089;
+    -fx-font-size: 13px;
+}
+
+.forum-card {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d7e4f2;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 14;
+    -fx-effect: dropshadow(gaussian, rgba(10, 34, 56, 0.06), 8, 0.2, 0, 3);
+}
+
+.forum-card-title {
+    -fx-text-fill: #10243c;
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+    -fx-padding: 0 0 8 0;
+}
+
+.forum-list-item {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e8f0f8;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 10 12;
+}
+
+.forum-list-item:hover {
+    -fx-background-color: #f0f6fc;
+}
+
+.forum-item-title {
+    -fx-text-fill: #10243c;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+}
+
+.forum-item-subtitle {
+    -fx-text-fill: #6b8099;
+    -fx-font-size: 12px;
+}
+
+.forum-category-icon {
+    -fx-font-size: 28px;
+    -fx-min-width: 50;
+    -fx-min-height: 50;
+    -fx-alignment: center;
+    -fx-background-color: linear-gradient(to bottom right, #667eea, #764ba2);
+    -fx-background-radius: 10;
+    -fx-text-fill: #ffffff;
+}
+
+.forum-badge-primary {
+    -fx-background-color: #1d6fa5;
+    -fx-text-fill: #ffffff;
+    -fx-background-radius: 6;
+    -fx-padding: 3 8;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+}
+
+/* Status badges */
+.forum-status-badge {
+    -fx-background-radius: 6;
+    -fx-padding: 3 8;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+}
+
+.status-open {
+    -fx-background-color: #d4edfc;
+    -fx-text-fill: #1565a0;
+}
+
+.status-solved {
+    -fx-background-color: #d4f5e9;
+    -fx-text-fill: #1a7f4f;
+}
+
+.status-locked {
+    -fx-background-color: #e0e4e8;
+    -fx-text-fill: #4a5568;
+}
+
+.forum-pinned-badge {
+    -fx-background-color: #fff3cd;
+    -fx-text-fill: #856404;
+    -fx-background-radius: 6;
+    -fx-padding: 3 8;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+}
+
+/* Stats */
+.forum-stat-number {
+    -fx-text-fill: #1d6fa5;
+    -fx-font-size: 22px;
+    -fx-font-weight: 800;
+}
+
+.forum-stat-label {
+    -fx-text-fill: #6b8099;
+    -fx-font-size: 11px;
+}
+
+/* Topic detail */
+.forum-topic-title {
+    -fx-text-fill: #0f2740;
+    -fx-font-size: 20px;
+    -fx-font-weight: 800;
+}
+
+.forum-topic-content {
+    -fx-text-fill: #344256;
+    -fx-font-size: 14px;
+    -fx-padding: 8 0 0 0;
+}
+
+/* Comments */
+.forum-comment-card {
+    -fx-background-color: #fafcff;
+    -fx-border-color: #e2ebf4;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 12;
+}
+
+.forum-reply-card {
+    -fx-background-color: #f5f8fc;
+    -fx-border-color: #dde7f2;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 10;
+}
+
+.forum-accepted-card {
+    -fx-border-color: #27ae60;
+    -fx-border-width: 2;
+    -fx-background-color: #eafaf1;
+}
+
+.forum-comment-author {
+    -fx-text-fill: #1d6fa5;
+    -fx-font-weight: 700;
+    -fx-font-size: 13px;
+}
+
+.forum-comment-content {
+    -fx-text-fill: #344256;
+    -fx-font-size: 13px;
+}
+
+.forum-teacher-badge {
+    -fx-background-color: #fdf2e9;
+    -fx-text-fill: #e67e22;
+    -fx-background-radius: 6;
+    -fx-padding: 2 6;
+    -fx-font-size: 10px;
+    -fx-font-weight: 700;
+}
+
+.forum-accepted-badge {
+    -fx-background-color: #d4f5e9;
+    -fx-text-fill: #1a7f4f;
+    -fx-background-radius: 6;
+    -fx-padding: 2 6;
+    -fx-font-size: 10px;
+    -fx-font-weight: 700;
+}
+
+/* Reactions */
+.reaction-button {
+    -fx-background-color: #f0f4f8;
+    -fx-text-fill: #556b81;
+    -fx-background-radius: 8;
+    -fx-padding: 4 10;
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+}
+
+.reaction-button:hover {
+    -fx-background-color: #e0eaf4;
+}
+
+.reaction-active {
+    -fx-background-color: #d4edfc;
+    -fx-text-fill: #1565a0;
+    -fx-font-weight: 700;
+}
+
+/* Forms */
+.forum-form-label {
+    -fx-text-fill: #344256;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+}
+
+.forum-error-label {
+    -fx-text-fill: #c0392b;
+    -fx-font-size: 12px;
+}
+
+.forum-text-field {
+    -fx-background-color: #f7fbff;
+    -fx-border-color: #d0dde8;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 8 12;
+    -fx-font-size: 13px;
+}
+
+.forum-text-field:focused {
+    -fx-border-color: #1d6fa5;
+}
+
+.forum-text-area {
+    -fx-background-color: #f7fbff;
+    -fx-border-color: #d0dde8;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-font-size: 13px;
+}
+
+.forum-text-area:focused {
+    -fx-border-color: #1d6fa5;
+}
+
+.forum-combo-box {
+    -fx-background-color: #f7fbff;
+    -fx-border-color: #d0dde8;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 4 8;
+}
+
+.forum-search-field {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d0dde8;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 8 14;
+    -fx-font-size: 13px;
+}
+
+.forum-search-field:focused {
+    -fx-border-color: #1d6fa5;
+}
+
+.forum-empty-label {
+    -fx-text-fill: #8899aa;
+    -fx-font-size: 13px;
+    -fx-alignment: center;
+}
+
+/* Admin table */
+.forum-table {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d7e4f2;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.forum-table .column-header {
+    -fx-background-color: #edf4fb;
+}
+
+.forum-table .column-header .label {
+    -fx-text-fill: #10243c;
+    -fx-font-weight: 700;
+    -fx-font-size: 12px;
 }
