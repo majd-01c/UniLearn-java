@@ -1,0 +1,42 @@
+.admin-home-root {
+    -fx-background-color: linear-gradient(to bottom right, derive(-ul-back-primary, 72%), derive(-ul-back-secondary, 82%));
+}
+
+.admin-card {
+    -fx-border-color: derive(-ul-back-primary, 35%);
+}
+
+.admin-title-chip {
+    -fx-background-color: linear-gradient(to right, -ul-back-primary, -ul-back-secondary);
+    -fx-text-fill: #ffffff;
+    -fx-background-radius: 999;
+    -fx-padding: 5 10;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+}
+
+.admin-stat-title {
+    -fx-text-fill: -ul-text-muted;
+    -fx-font-size: 11px;
+    -fx-font-weight: 600;
+}
+
+.admin-stat-value {
+    -fx-text-fill: -ul-text-primary;
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+}
+
+.admin-side-panel {
+    -fx-background-color: derive(-ul-surface-2, -2%);
+    -fx-border-color: derive(-ul-back-primary, 45%);
+}
+
+.admin-primary-button {
+    -fx-background-color: linear-gradient(to right, -ul-back-primary, -ul-back-secondary);
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 700;
+    -fx-background-radius: 10;
+    -fx-padding: 9 12;
+    -fx-cursor: hand;
+}

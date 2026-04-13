@@ -77,7 +77,7 @@ public class UserFormController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        roleComboBox.setItems(FXCollections.observableArrayList("ADMIN", "TEACHER", "STUDENT", "PARTNER"));
+        roleComboBox.setItems(FXCollections.observableArrayList("ADMIN", "TEACHER", "STUDENT", "PARTNER", "TRAINER"));
         statusComboBox.setItems(FXCollections.observableArrayList("Active", "Inactive"));
         setCreateMode();
     }

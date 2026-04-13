@@ -13,20 +13,21 @@
 <?import javafx.scene.layout.VBox?>
 
 <BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="controller.UserListController">
+            fx:controller="controller.UserListController"
+            styleClass="user-list-root">
     <top>
-        <VBox spacing="10.0">
+        <VBox spacing="10.0" styleClass="user-list-toolbar">
             <padding>
                 <Insets top="14.0" right="14.0" bottom="10.0" left="14.0"/>
             </padding>
             <children>
-                <Label text="User Management" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+                <Label text="User Management" styleClass="card-title"/>
                 <HBox spacing="8.0">
                     <children>
                         <TextField fx:id="searchField" promptText="Search by email, first name, last name" prefWidth="320.0"/>
                         <ComboBox fx:id="roleFilterComboBox" prefWidth="150.0"/>
                         <ComboBox fx:id="statusFilterComboBox" prefWidth="130.0"/>
-                        <Button text="Refresh" onAction="#onRefreshUsers"/>
+                        <Button text="Refresh" onAction="#onRefreshUsers" styleClass="ghost-button"/>
                     </children>
                 </HBox>
             </children>
@@ -46,7 +47,7 @@
     </center>
 
     <bottom>
-        <VBox spacing="10.0">
+        <VBox spacing="10.0" styleClass="user-list-actions">
             <padding>
                 <Insets top="10.0" right="14.0" bottom="14.0" left="14.0"/>
             </padding>
@@ -54,11 +55,11 @@
                 <Pagination fx:id="pagination"/>
                 <HBox spacing="8.0">
                     <children>
-                        <Button text="Create User" onAction="#onCreateUser" prefWidth="130.0"/>
-                        <Button text="Edit" onAction="#onEditUser" prefWidth="110.0"/>
-                        <Button text="Delete" onAction="#onDeleteUser" prefWidth="110.0"/>
-                        <Button text="Toggle Status" onAction="#onToggleStatus" prefWidth="130.0"/>
-                        <Button text="Change My Password" onAction="#onChangeMyPassword" prefWidth="170.0"/>
+                        <Button text="Create User" onAction="#onCreateUser" prefWidth="130.0" styleClass="primary-button"/>
+                        <Button text="Edit" onAction="#onEditUser" prefWidth="110.0" styleClass="ghost-button"/>
+                        <Button text="Delete" onAction="#onDeleteUser" prefWidth="110.0" styleClass="ghost-button"/>
+                        <Button text="Toggle Status" onAction="#onToggleStatus" prefWidth="130.0" styleClass="ghost-button"/>
+                        <Button text="Change My Password" onAction="#onChangeMyPassword" prefWidth="170.0" styleClass="ghost-button"/>
                     </children>
                 </HBox>
             </children>

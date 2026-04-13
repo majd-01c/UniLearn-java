@@ -84,6 +84,10 @@ public class UserListController implements Initializable {
         openUserForm(null);
     }
 
+    public void onCreate() {
+        onCreateUser();
+    }
+
     @FXML
     public void onEditUser() {
         User selectedUser = userTable.getSelectionModel().getSelectedItem();
@@ -93,6 +97,10 @@ public class UserListController implements Initializable {
         }
 
         openUserForm(selectedUser);
+    }
+
+    public void onEdit() {
+        onEditUser();
     }
 
     @FXML
@@ -114,6 +122,10 @@ public class UserListController implements Initializable {
 
         userService.deleteUser(selectedUser.getId().longValue());
         refreshUsers();
+    }
+
+    public void onDelete() {
+        onDeleteUser();
     }
 
     @FXML
@@ -138,8 +150,16 @@ public class UserListController implements Initializable {
         refreshUsers();
     }
 
+    public void onToggleStatusAction() {
+        onToggleStatus();
+    }
+
     @FXML
     public void onRefreshUsers() {
+        refreshUsers();
+    }
+
+    public void refreshData() {
         refreshUsers();
     }
 
@@ -191,7 +211,8 @@ public class UserListController implements Initializable {
                 "ADMIN",
                 "TEACHER",
                 "STUDENT",
-                "PARTNER"
+                "PARTNER",
+                "TRAINER"
         ));
         roleFilterComboBox.getSelectionModel().selectFirst();
 
@@ -228,6 +249,30 @@ public class UserListController implements Initializable {
     }
 
     private void refreshUsers() {
+        applyFilters();
+    }
+
+    public void loadPage(int pageIndex) {
+        int safePageIndex = Math.max(pageIndex, 0);
+        pagination.setCurrentPageIndex(safePageIndex);
+        updateTablePage(safePageIndex);
+    }
+
+    public void applyFilters(String search, String role, String status) {
+        searchField.setText(search == null ? "" : search);
+
+        if (role == null || role.isBlank()) {
+            roleFilterComboBox.getSelectionModel().select("ALL");
+        } else {
+            roleFilterComboBox.getSelectionModel().select(role.toUpperCase());
+        }
+
+        if (status == null || status.isBlank()) {
+            statusFilterComboBox.getSelectionModel().select("ALL");
+        } else {
+            statusFilterComboBox.getSelectionModel().select(status.toUpperCase());
+        }
+
         applyFilters();
     }
 
@@ -276,6 +321,7 @@ public class UserListController implements Initializable {
             case "TEACHER" -> "ROLE_TEACHER";
             case "STUDENT" -> "ROLE_STUDENT";
             case "PARTNER" -> "ROLE_PARTNER";
+            case "TRAINER" -> "ROLE_TRAINER";
             default -> selectedRole;
         };
     }

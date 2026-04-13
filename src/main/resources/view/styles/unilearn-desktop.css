@@ -37,6 +37,13 @@
     -fx-background-color: #256496;
 }
 
+.side-button-active {
+    -fx-background-color: #2b79b4;
+    -fx-text-fill: #ffffff;
+    -fx-border-color: #98c7ea;
+    -fx-border-width: 1;
+}
+
 .side-danger-button {
     -fx-background-color: #8f2d2d;
 }
@@ -60,6 +67,35 @@
 .header-subtitle {
     -fx-text-fill: #5a6f85;
     -fx-font-size: 12px;
+}
+
+.header-breadcrumbs {
+    -fx-text-fill: #6b7f96;
+    -fx-font-size: 11px;
+    -fx-font-weight: 600;
+}
+
+.avatar-container {
+    -fx-background-color: #f1f7fe;
+    -fx-border-color: #c8dff4;
+    -fx-border-width: 1;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-min-width: 32;
+    -fx-min-height: 32;
+    -fx-max-width: 32;
+    -fx-max-height: 32;
+    -fx-alignment: center;
+}
+
+.avatar-image {
+    -fx-background-radius: 999;
+}
+
+.avatar-initials {
+    -fx-text-fill: #174a74;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
 }
 
 .user-badge {
