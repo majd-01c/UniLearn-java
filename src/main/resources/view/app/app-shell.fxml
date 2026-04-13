@@ -26,6 +26,7 @@
 
                 <Button fx:id="navHomeButton" text="Home" onAction="#onNavHome" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
                 <Button fx:id="navUsersButton" text="Users" onAction="#onNavUsers" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+                <Button fx:id="navForumButton" text="Forum" onAction="#onNavForum" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
                 <Button fx:id="navProfileButton" text="My Profile" onAction="#onNavProfile" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
                 <Button fx:id="navChangePasswordButton" text="Change Password" onAction="#onNavChangePassword" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
 

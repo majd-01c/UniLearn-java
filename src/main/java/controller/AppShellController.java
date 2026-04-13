@@ -1,6 +1,10 @@
 package controller;
 
+import controller.forum.*;
 import entities.User;
+import entities.forum.ForumCategory;
+import entities.forum.ForumComment;
+import entities.forum.ForumTopic;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -45,6 +49,9 @@ public class AppShellController implements Initializable {
 
     @FXML
     private Button navChangePasswordButton;
+
+    @FXML
+    private Button navForumButton;
 
     @FXML
     private StackPane contentHost;
@@ -185,6 +192,72 @@ public class AppShellController implements Initializable {
         showLoginView();
     }
 
+    // ========================
+    // FORUM NAVIGATION
+    // ========================
+
+    public void showForumView() {
+        if (!ensureAuthenticated()) return;
+        setHeader("Community Forum", "Ask questions, share knowledge, and connect with others");
+        loadCenter("/view/forum/forum-home.fxml", null);
+    }
+
+    public void showForumCategoryView(ForumCategory category) {
+        if (!ensureAuthenticated()) return;
+        setHeader("Forum · " + (category.getName() != null ? category.getName() : "Category"), "Browse topics in this category");
+        loadCenter("/view/forum/forum-category.fxml", controller -> {
+            if (controller instanceof ForumCategoryController c) {
+                c.setCategory(category);
+            }
+        });
+    }
+
+    public void showForumTopicView(ForumTopic topic) {
+        if (!ensureAuthenticated()) return;
+        setHeader("Forum · Topic", topic.getTitle() != null ? topic.getTitle() : "Topic");
+        loadCenter("/view/forum/forum-topic.fxml", controller -> {
+            if (controller instanceof ForumTopicController c) {
+                c.setTopic(topic);
+            }
+        });
+    }
+
+    public void showForumNewTopicView() {
+        if (!ensureAuthenticated()) return;
+        setHeader("Forum · New Topic", "Create a new discussion");
+        loadCenter("/view/forum/forum-new-topic.fxml", null);
+    }
+
+    public void showForumEditTopicView(ForumTopic topic) {
+        if (!ensureAuthenticated()) return;
+        setHeader("Forum · Edit Topic", "Modify your topic");
+        loadCenter("/view/forum/forum-edit-topic.fxml", controller -> {
+            if (controller instanceof ForumEditTopicController c) {
+                c.setTopic(topic);
+            }
+        });
+    }
+
+    public void showForumEditCommentView(ForumComment comment) {
+        if (!ensureAuthenticated()) return;
+        setHeader("Forum · Edit Comment", "Modify your comment");
+        loadCenter("/view/forum/forum-edit-comment.fxml", controller -> {
+            if (controller instanceof ForumEditCommentController c) {
+                c.setComment(comment);
+            }
+        });
+    }
+
+    public void showForumAdminCategoriesView() {
+        if (!ensureAuthenticated()) return;
+        if (!isAdmin(currentUser)) {
+            showWarning("Access denied", "Only administrators can manage categories.");
+            return;
+        }
+        setHeader("Forum · Manage Categories", "Add, edit, and delete forum categories");
+        loadCenter("/view/forum/forum-admin-categories.fxml", null);
+    }
+
     @FXML
     private void onNavHome() {
         showHomeView();
@@ -193,6 +266,11 @@ public class AppShellController implements Initializable {
     @FXML
     private void onNavUsers() {
         showUsersView();
+    }
+
+    @FXML
+    private void onNavForum() {
+        showForumView();
     }
 
     @FXML
