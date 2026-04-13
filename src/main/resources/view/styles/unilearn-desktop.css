@@ -107,6 +107,9 @@
     -fx-background-color: -ul-btn-side;
     -fx-text-fill: #e8f2fb;
     -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: transparent;
+    -fx-border-width: 1;
     -fx-padding: 10 12;
     -fx-font-weight: 600;
     -fx-font-size: 13px;
@@ -116,11 +119,14 @@
 
 .side-button:hover {
     -fx-background-color: -ul-btn-side-hover;
+    -fx-border-color: #7fb2d9;
 }
 
 .side-button:pressed,
 .side-button-active {
     -fx-background-color: -ul-btn-side-active;
+    -fx-border-color: #98c7ea;
+    -fx-text-fill: #ffffff;
 }
 
 .side-section-label {
@@ -136,25 +142,6 @@
 
 .side-danger-button:hover {
     -fx-background-color: -ul-danger-hover;
-}
-
-.side-button:hover {
-    -fx-background-color: #256496;
-}
-
-.side-button-active {
-    -fx-background-color: #2b79b4;
-    -fx-text-fill: #ffffff;
-    -fx-border-color: #98c7ea;
-    -fx-border-width: 1;
-}
-
-.side-danger-button {
-    -fx-background-color: #8f2d2d;
-}
-
-.side-danger-button:hover {
-    -fx-background-color: #b03838;
 }
 
 /* ----- Header ----- */

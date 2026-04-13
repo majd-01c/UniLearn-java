@@ -8,6 +8,8 @@ import java.util.prefs.Preferences;
 
 public final class ThemeManager {
 
+    private static final String LEGACY_DARK_CLASS = "dark-theme";
+
     public enum Theme {
         LIGHT("theme-light"),
         DARK("theme-dark");
@@ -58,7 +60,7 @@ public final class ThemeManager {
         }
 
         ObservableList<String> classes = root.getStyleClass();
-        if (classes.contains(Theme.DARK.cssClass())) {
+        if (classes.contains(LEGACY_DARK_CLASS) || classes.contains(Theme.DARK.cssClass())) {
             return Theme.DARK;
         }
 
@@ -85,7 +87,14 @@ public final class ThemeManager {
         ObservableList<String> classes = root.getStyleClass();
         classes.remove(Theme.LIGHT.cssClass());
         classes.remove(Theme.DARK.cssClass());
-        classes.add(theme.cssClass());
+        classes.remove(LEGACY_DARK_CLASS);
+
+        if (theme == Theme.DARK) {
+            classes.add(LEGACY_DARK_CLASS);
+            classes.add(Theme.DARK.cssClass());
+        } else {
+            classes.add(Theme.LIGHT.cssClass());
+        }
 
         preferences.put(PREF_THEME_KEY, theme.name());
     }

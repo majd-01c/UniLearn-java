@@ -8,6 +8,7 @@ import entities.forum.ForumComment;
 import entities.forum.ForumTopic;
 import javafx.animation.FadeTransition;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -34,7 +35,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
-import java.util.prefs.Preferences;
 import javafx.util.Duration;
 
 public class AppShellController implements Initializable {
@@ -88,8 +88,6 @@ public class AppShellController implements Initializable {
     @FXML
     private Button navMyLearningButton;
 
-    private boolean darkTheme = false;
-    private static final Preferences PREFS = Preferences.userNodeForPackage(AppShellController.class);
     @FXML
     private Label breadcrumbsLabel;
 
@@ -101,27 +99,6 @@ public class AppShellController implements Initializable {
 
     @FXML
     private Label currentUserInitialsLabel;
-
-    @FXML
-    private Label currentUserLabel;
-
-    @FXML
-    private Button themeToggleButton;
-
-    @FXML
-    private Button navHomeButton;
-
-    @FXML
-    private Button navUsersButton;
-
-    @FXML
-    private Button navProfileButton;
-
-    @FXML
-    private Button navChangePasswordButton;
-
-    @FXML
-    private StackPane contentHost;
 
     private final UserService userService = new UserService();
     private ViewRouter viewRouter;
@@ -136,34 +113,13 @@ public class AppShellController implements Initializable {
 
         contentHost.sceneProperty().addListener((observable, oldScene, newScene) -> {
             if (newScene != null) {
+                ThemeManager.getInstance().applySavedTheme(newScene);
                 updateThemeToggleLabel(ThemeManager.getInstance().getActiveTheme(newScene));
             }
         });
 
         AppNavigator.registerShell(this);
-        darkTheme = PREFS.getBoolean("darkTheme", false);
-        applyTheme();
         showLoginView();
-    }
-
-    @FXML
-    private void onToggleTheme() {
-        darkTheme = !darkTheme;
-        PREFS.putBoolean("darkTheme", darkTheme);
-        applyTheme();
-    }
-
-    private void applyTheme() {
-        Parent root = contentHost.getScene() != null ? contentHost.getScene().getRoot() : contentHost.getParent();
-        if (root == null)
-            return;
-        root.getStyleClass().remove("dark-theme");
-        if (darkTheme) {
-            root.getStyleClass().add("dark-theme");
-            themeToggleButton.setText("☀ Light");
-        } else {
-            themeToggleButton.setText("◐ Dark");
-        }
     }
 
     // ==================== Auth ====================
@@ -174,10 +130,11 @@ public class AppShellController implements Initializable {
         }
         this.currentUser = userService.getUserById(user.getId().longValue()).orElse(user);
         UserSession.setCurrentUser(this.currentUser);
-        
+
+        setNavigationVisible(true);
         configureNavForRole();
         currentUserLabel.setText(buildUserBadge(this.currentUser));
-        applyTheme();
+        updateThemeToggleLabel(ThemeManager.getInstance().getActiveTheme(contentHost.getScene()));
         updateUserAvatar(this.currentUser);
         navUsersButton.setDisable(!isAdmin(this.currentUser));
     }
@@ -742,19 +699,35 @@ public class AppShellController implements Initializable {
     private void onToggleTheme() {
         Scene scene = contentHost == null ? null : contentHost.getScene();
         if (scene == null) {
+            return;
         }
         ThemeManager.Theme activeTheme = ThemeManager.getInstance().toggleTheme(scene);
         updateThemeToggleLabel(activeTheme);
     }
 
     private boolean ensureAuthenticated() {
-        if (currentUser != null && currentUser.getId() != null) return true;
+        if (currentUser != null && currentUser.getId() != null)
+            return true;
         Optional<Integer> sessionUserId = UserSession.getCurrentUserId();
-        if (sessionUserId.isPresent()) currentUser = userService.getUserById(sessionUserId.get().longValue()).orElse(null);
-        if (currentUser == null) { showLoginView(); return false; }
+        if (sessionUserId.isPresent()) {
+            currentUser = userService.getUserById(sessionUserId.get().longValue()).orElse(null);
+            if (currentUser != null) {
+                setNavigationVisible(true);
+                configureNavForRole();
+                currentUserLabel.setText(buildUserBadge(currentUser));
+                updateThemeToggleLabel(ThemeManager.getInstance().getActiveTheme(contentHost.getScene()));
+                updateUserAvatar(currentUser);
+                navUsersButton.setDisable(!isAdmin(currentUser));
+            }
+        }
+        if (currentUser == null) {
+            showLoginView();
+            return false;
+        }
         return true;
+    }
 
-        public void loadCenter(String fxmlPath, Consumer<Object> controllerInitializer) {
+    public void loadCenter(String fxmlPath, Consumer<Object> controllerInitializer) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent content = loader.load();
@@ -767,8 +740,6 @@ public class AppShellController implements Initializable {
             showError("View loading failed", "Could not load view: " + fxmlPath + "\n" + exception.getMessage());
         }
     }
-
-    public void setHeader(String title, String subtitle) {
 
     private void playViewEnterAnimation(Parent viewRoot) {
         if (viewRoot == null) {
@@ -791,7 +762,7 @@ public class AppShellController implements Initializable {
         themeToggleButton.setText(theme == ThemeManager.Theme.DARK ? "Light Theme" : "Dark Theme");
     }
 
-    private void setHeader(String title, String subtitle) {
+    public void setHeader(String title, String subtitle) {
         headerTitleLabel.setText(title == null ? "" : title);
         headerSubtitleLabel.setText(subtitle == null ? "" : subtitle);
     }

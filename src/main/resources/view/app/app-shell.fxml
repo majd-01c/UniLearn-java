@@ -73,8 +73,6 @@
                     </children>
                 </VBox>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button fx:id="themeToggleButton" text="◐ Theme" onAction="#onToggleTheme" styleClass="theme-toggle"/>
-                <Label fx:id="currentUserLabel" styleClass="user-badge"/>
                 <HBox alignment="CENTER_RIGHT" spacing="8.0">
                     <children>
                         <Button fx:id="themeToggleButton" text="Dark Theme" onAction="#onToggleTheme" styleClass="theme-toggle-button"/>

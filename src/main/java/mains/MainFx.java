@@ -21,6 +21,7 @@ public class MainFx extends Application {
         addStylesheet(scene, "/view/styles/desktop-admin.css");
         addStylesheet(scene, "/view/styles/desktop-frontoffice.css");
         addStylesheet(scene, "/view/styles/desktop-animations.css");
+        addStylesheet(scene, "/view/styles/unilearn-desktop.css");
 
         ThemeManager.getInstance().applySavedTheme(scene);
 
