@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.HibernateSessionFactory;
 
+import java.sql.Timestamp;
 import java.util.*;
 
 /**
@@ -112,11 +113,24 @@ public class JobOfferRepository implements IJobOfferRepository {
             CriteriaBuilder builder = session.getCriteriaBuilder();
             CriteriaQuery<JobOffer> criteria = builder.createQuery(JobOffer.class);
             Root<JobOffer> root = criteria.from(JobOffer.class);
+            Timestamp now = Timestamp.from(java.time.Instant.now());
 
             List<Predicate> predicates = new ArrayList<>();
 
             // Must be ACTIVE
             predicates.add(builder.equal(root.get("status"), "ACTIVE"));
+
+            // Must already be published, or have no explicit publication date.
+            predicates.add(builder.or(
+                builder.isNull(root.get("publishedAt")),
+                builder.lessThanOrEqualTo(root.get("publishedAt"), now)
+            ));
+
+            // Must not be expired.
+            predicates.add(builder.or(
+                builder.isNull(root.get("expiresAt")),
+                builder.greaterThan(root.get("expiresAt"), now)
+            ));
 
             // Optional: type filter
             if (type != null && !type.isBlank()) {
@@ -161,9 +175,18 @@ public class JobOfferRepository implements IJobOfferRepository {
             CriteriaBuilder builder = session.getCriteriaBuilder();
             CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
             Root<JobOffer> root = criteria.from(JobOffer.class);
+            Timestamp now = Timestamp.from(java.time.Instant.now());
 
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(builder.equal(root.get("status"), "ACTIVE"));
+            predicates.add(builder.or(
+                builder.isNull(root.get("publishedAt")),
+                builder.lessThanOrEqualTo(root.get("publishedAt"), now)
+            ));
+            predicates.add(builder.or(
+                builder.isNull(root.get("expiresAt")),
+                builder.greaterThan(root.get("expiresAt"), now)
+            ));
 
             if (type != null && !type.isBlank()) {
                 predicates.add(builder.equal(root.get("type"), type));

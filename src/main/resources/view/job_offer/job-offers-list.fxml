@@ -11,6 +11,7 @@
         <Button fx:id="myApplicationsButton" text="My Applications" styleClass="ghost-button" onAction="#onOpenMyApplications" visible="false" managed="false"/>
         <Button fx:id="partnerApplicationsButton" text="Applications to Review" styleClass="ghost-button" onAction="#onOpenPartnerApplications" visible="false" managed="false"/>
         <Button fx:id="myOffersButton" text="My Offers" styleClass="ghost-button" onAction="#onShowMyOffers" visible="false" managed="false"/>
+        <Button fx:id="scheduledOffersButton" text="Scheduled Offers" styleClass="ghost-button" onAction="#onShowScheduledOffers" visible="false" managed="false"/>
         <Button fx:id="otherOffersButton" text="Other Offers" styleClass="ghost-button" onAction="#onShowOtherOffers" visible="false" managed="false"/>
         <Button fx:id="createJobOfferButton" text="+ New Offer" styleClass="primary-button" onAction="#onCreateJobOffer"/>
     </HBox>

@@ -573,6 +573,7 @@
 .job-offer-input,
 .job-offer-text-area,
 .job-offer-spinner,
+.job-offer-date-picker,
 .job-offer-form-panel .combo-box {
     -fx-background-color: -ul-input-bg;
     -fx-border-color: -ul-input-border;
@@ -585,6 +586,7 @@
 .job-offer-input:focused,
 .job-offer-text-area:focused,
 .job-offer-spinner:focused,
+.job-offer-date-picker:focused,
 .job-offer-form-panel .combo-box:focused {
     -fx-border-color: -ul-input-focus;
     -fx-effect: dropshadow(gaussian, derive(-ul-input-focus, 55%), 8, 0, 0, 0);
@@ -629,9 +631,41 @@
 .job-offer-form-panel .text-input,
 .job-offer-form-panel .text-area .content,
 .job-offer-form-panel .combo-box .list-cell,
-.job-offer-form-panel .spinner .text-field {
+.job-offer-form-panel .spinner .text-field,
+.job-offer-form-panel .date-picker .text-field {
     -fx-background-color: transparent;
     -fx-text-fill: -ul-text-heading;
+}
+
+.job-offer-form-panel .date-picker .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.job-offer-form-panel .date-picker .arrow {
+    -fx-background-color: -ul-text-secondary;
+}
+
+.job-offer-form-panel .date-picker-popup {
+    -fx-background-color: -ul-card-bg;
+    -fx-border-color: -ul-outline;
+}
+
+.job-offer-form-panel .date-picker-popup .month-year-pane {
+    -fx-background-color: derive(-ul-surface-1, 6%);
+}
+
+.job-offer-form-panel .date-picker-popup .calendar-grid {
+    -fx-background-color: -ul-card-bg;
+}
+
+.job-offer-form-panel .date-picker-popup .day-cell {
+    -fx-text-fill: -ul-text-heading;
+}
+
+.job-offer-form-panel .date-picker-popup .day-cell:hover,
+.job-offer-form-panel .date-picker-popup .selected {
+    -fx-background-color: derive(-ul-input-focus, 20%);
+    -fx-text-fill: #ffffff;
 }
 
 .job-offer-form-panel .combo-box-popup .list-view {

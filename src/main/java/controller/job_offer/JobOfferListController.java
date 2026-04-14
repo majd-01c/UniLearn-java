@@ -66,6 +66,9 @@ public class JobOfferListController implements Initializable {
     private Button otherOffersButton;
 
     @FXML
+    private Button scheduledOffersButton;
+
+    @FXML
     private VBox adminModerationPanel;
 
     @FXML
@@ -97,6 +100,7 @@ public class JobOfferListController implements Initializable {
     private enum PartnerOfferScope {
         ALL,
         MY_OFFERS,
+        SCHEDULED_OFFERS,
         OTHER_OFFERS
     }
 
@@ -139,6 +143,10 @@ public class JobOfferListController implements Initializable {
                 otherOffersButton.setVisible(false);
                 otherOffersButton.setManaged(false);
             }
+            if (scheduledOffersButton != null) {
+                scheduledOffersButton.setVisible(false);
+                scheduledOffersButton.setManaged(false);
+            }
             if (adminModerationPanel != null) {
                 adminModerationPanel.setVisible(false);
                 adminModerationPanel.setManaged(false);
@@ -170,6 +178,13 @@ public class JobOfferListController implements Initializable {
         if (otherOffersButton != null) {
             otherOffersButton.setVisible(isPartner);
             otherOffersButton.setManaged(isPartner);
+        }
+        if (scheduledOffersButton != null) {
+            scheduledOffersButton.setVisible(isPartner);
+            scheduledOffersButton.setManaged(isPartner);
+        }
+        if (isPartner && partnerOfferScope == PartnerOfferScope.ALL) {
+            partnerOfferScope = PartnerOfferScope.MY_OFFERS;
         }
         if (!isPartner) {
             partnerOfferScope = PartnerOfferScope.ALL;
@@ -239,7 +254,7 @@ public class JobOfferListController implements Initializable {
         String searchText = searchField.getText().toLowerCase().trim();
         String selectStatus = filterStatus.getValue();
         String selectType = filterType.getValue();
-        boolean isPartner = currentUser != null && !RoleGuard.isStudent(currentUser) && !RoleGuard.isAdmin(currentUser);
+        Timestamp now = Timestamp.from(Instant.now());
 
         List<JobOffer> filtered = allJobOffers.stream()
                 .filter(offer -> {
@@ -252,19 +267,24 @@ public class JobOfferListController implements Initializable {
                 .filter(offer -> "All".equals(selectStatus) || selectStatus.equals(offer.getStatus()))
                 .filter(offer -> "All".equals(selectType) || selectType.equals(offer.getType()))
                 .filter(offer -> {
-                    if (!isPartner) {
-                        return true;
-                    }
-                    if (offer == null || offer.getUser() == null || offer.getUser().getId() == null || currentUser == null) {
+                    if (offer == null) {
                         return false;
                     }
 
-                    boolean isOwner = offer.getUser().getId().equals(currentUser.getId());
-                    return switch (partnerOfferScope) {
-                        case MY_OFFERS -> isOwner;
-                        case OTHER_OFFERS -> !isOwner;
-                        default -> true;
-                    };
+                    if (RoleGuard.isAdmin(currentUser)) {
+                        return true;
+                    }
+
+                    if (isPartnerOfferScope()) {
+                        return switch (partnerOfferScope) {
+                            case MY_OFFERS -> isOwnOffer(offer);
+                            case SCHEDULED_OFFERS -> isOwnOffer(offer) && isScheduledOffer(offer, now);
+                            case OTHER_OFFERS -> !isOwnOffer(offer) && isPublicVisibleOffer(offer, now);
+                            default -> true;
+                        };
+                    }
+
+                    return isPublicVisibleOffer(offer, now);
                 })
                 .collect(Collectors.toList());
 
@@ -317,6 +337,12 @@ public class JobOfferListController implements Initializable {
     @FXML
     private void onShowOtherOffers() {
         partnerOfferScope = PartnerOfferScope.OTHER_OFFERS;
+        applyFilters();
+    }
+
+    @FXML
+    private void onShowScheduledOffers() {
+        partnerOfferScope = PartnerOfferScope.SCHEDULED_OFFERS;
         applyFilters();
     }
 
@@ -419,7 +445,7 @@ public class JobOfferListController implements Initializable {
 
         if (RoleGuard.isAdmin(currentUser)) {
             actionsBox.getChildren().add(buildAdminActions(offer));
-        } else if (canPartnerCloseOffer(offer)) {
+        } else if (canPartnerManageOwnOffer(offer)) {
             actionsBox.getChildren().add(buildPartnerActions(offer));
         }
 
@@ -429,6 +455,15 @@ public class JobOfferListController implements Initializable {
 
     private HBox buildPartnerActions(JobOffer offer) {
         HBox partnerActions = new HBox(8);
+
+        Button editButton = new Button("Edit Offer");
+        editButton.getStyleClass().addAll("job-offer-card-button", "job-offer-neutral-button");
+        editButton.setOnAction(event -> {
+            event.consume();
+            AppNavigator.showJobOfferForm(offer);
+        });
+
+        partnerActions.getChildren().add(editButton);
 
         JobOfferStatus currentStatus = JobOfferStatus.fromString(offer.getStatus());
         if (currentStatus == JobOfferStatus.CLOSED) {
@@ -512,7 +547,7 @@ public class JobOfferListController implements Initializable {
         return button;
     }
 
-    private boolean canPartnerCloseOffer(JobOffer offer) {
+    private boolean canPartnerManageOwnOffer(JobOffer offer) {
         if (offer == null || currentUser == null || RoleGuard.isAdmin(currentUser) || RoleGuard.isStudent(currentUser)) {
             return false;
         }
@@ -521,12 +556,11 @@ public class JobOfferListController implements Initializable {
             return false;
         }
 
-        boolean isOwner = offer.getUser().getId().equals(currentUser.getId());
-        return isOwner;
+        return offer.getUser().getId().equals(currentUser.getId());
     }
 
     private void closeOwnOffer(JobOffer offer) {
-        if (!canPartnerCloseOffer(offer)) {
+        if (!canPartnerManageOwnOffer(offer)) {
             showError("Access denied", "You can close only your own non-closed offers.");
             return;
         }
@@ -554,7 +588,7 @@ public class JobOfferListController implements Initializable {
     }
 
     private void reopenOwnOffer(JobOffer offer) {
-        if (!canPartnerCloseOffer(offer)) {
+        if (!canPartnerManageOwnOffer(offer)) {
             showError("Access denied", "You can reopen only your own offers.");
             return;
         }
@@ -653,5 +687,34 @@ public class JobOfferListController implements Initializable {
 
     private String valueOrDefault(String value, String fallback) {
         return value == null || value.trim().isEmpty() ? fallback : value.trim();
+    }
+
+    private boolean isPartnerOfferScope() {
+        return currentUser != null && !RoleGuard.isStudent(currentUser) && !RoleGuard.isAdmin(currentUser);
+    }
+
+    private boolean isOwnOffer(JobOffer offer) {
+        return offer != null
+                && offer.getUser() != null
+                && offer.getUser().getId() != null
+                && currentUser != null
+                && offer.getUser().getId().equals(currentUser.getId());
+    }
+
+    private boolean isScheduledOffer(JobOffer offer, Timestamp now) {
+        return offer != null
+                && offer.getPublishedAt() != null
+                && offer.getPublishedAt().after(now);
+    }
+
+    private boolean isPublicVisibleOffer(JobOffer offer, Timestamp now) {
+        if (offer == null) {
+            return false;
+        }
+
+        JobOfferStatus status = JobOfferStatus.fromString(offer.getStatus());
+        boolean isCurrentlyPublished = offer.getPublishedAt() == null || !offer.getPublishedAt().after(now);
+        boolean isNotExpired = offer.getExpiresAt() == null || offer.getExpiresAt().after(now);
+        return status == JobOfferStatus.ACTIVE && isCurrentlyPublished && isNotExpired;
     }
 }

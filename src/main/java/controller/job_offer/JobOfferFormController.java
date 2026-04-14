@@ -12,6 +12,8 @@ import util.AppNavigator;
 import java.net.URL;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ResourceBundle;
 
 public class JobOfferFormController implements Initializable {
@@ -50,6 +52,12 @@ public class JobOfferFormController implements Initializable {
     private TextField languagesField;
 
     @FXML
+    private DatePicker publishedDatePicker;
+
+    @FXML
+    private DatePicker expiresDatePicker;
+
+    @FXML
     private Button saveButton;
 
     @FXML
@@ -77,6 +85,7 @@ public class JobOfferFormController implements Initializable {
         setupTypeCombo();
         setupEducationCombo();
         setupExperienceSpinner();
+        setupDatePickers();
     }
 
     public void setJobOffer(JobOffer offer) {
@@ -148,6 +157,17 @@ public class JobOfferFormController implements Initializable {
         }
     }
 
+    private void setupDatePickers() {
+        if (jobOffer != null) {
+            if (jobOffer.getPublishedAt() != null && publishedDatePicker != null) {
+                publishedDatePicker.setValue(jobOffer.getPublishedAt().toLocalDateTime().toLocalDate());
+            }
+            if (jobOffer.getExpiresAt() != null && expiresDatePicker != null) {
+                expiresDatePicker.setValue(jobOffer.getExpiresAt().toLocalDateTime().toLocalDate());
+            }
+        }
+    }
+
     private void populateForm(JobOffer offer) {
         titleField.setText(offer.getTitle() != null ? offer.getTitle() : "");
         typeCombo.setValue(offer.getType() != null ? offer.getType() : "JOB");
@@ -161,6 +181,16 @@ public class JobOfferFormController implements Initializable {
             experienceSpinner.getValueFactory().setValue(offer.getMinExperienceYears());
         }
         languagesField.setText(offer.getRequiredLanguages() != null ? offer.getRequiredLanguages() : "");
+        if (publishedDatePicker != null) {
+            publishedDatePicker.setValue(offer.getPublishedAt() != null
+                    ? offer.getPublishedAt().toLocalDateTime().toLocalDate()
+                    : null);
+        }
+        if (expiresDatePicker != null) {
+            expiresDatePicker.setValue(offer.getExpiresAt() != null
+                    ? offer.getExpiresAt().toLocalDateTime().toLocalDate()
+                    : null);
+        }
     }
 
     @FXML
@@ -194,6 +224,8 @@ public class JobOfferFormController implements Initializable {
             jobOffer.setMinExperienceYears(experienceSpinner.getValue());
             jobOffer.setMinEducation(educationCombo.getValue());
             jobOffer.setRequiredLanguages(languagesField.getText());
+            jobOffer.setPublishedAt(toTimestamp(publishedDatePicker != null ? publishedDatePicker.getValue() : null));
+            jobOffer.setExpiresAt(toTimestamp(expiresDatePicker != null ? expiresDatePicker.getValue() : null));
             jobOffer.setUpdatedAt(new Timestamp(Instant.now().toEpochMilli()));
 
             if (isNewOffer) {
@@ -231,7 +263,20 @@ public class JobOfferFormController implements Initializable {
             showError("Validation Error", "Type is required");
             return false;
         }
+        if (publishedDatePicker != null && expiresDatePicker != null
+                && publishedDatePicker.getValue() != null && expiresDatePicker.getValue() != null
+                && expiresDatePicker.getValue().isBefore(publishedDatePicker.getValue())) {
+            showError("Validation Error", "Expiration date cannot be before publication date");
+            return false;
+        }
         return true;
+    }
+
+    private Timestamp toTimestamp(LocalDate date) {
+        if (date == null) {
+            return null;
+        }
+        return Timestamp.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
     }
 
     private void showInfo(String title, String message) {

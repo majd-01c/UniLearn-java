@@ -74,6 +74,22 @@
                 </VBox>
             </VBox>
 
+            <VBox spacing="14" styleClass="job-offer-section">
+                <Label text="Publication" styleClass="job-offer-section-title"/>
+                <HBox spacing="14">
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="Date de publication" styleClass="form-label"/>
+                        <DatePicker fx:id="publishedDatePicker" promptText="mm/dd/yyyy" styleClass="lms-input job-offer-input job-offer-date-picker"/>
+                        <Label text="Laisser vide pour publier immédiatement" styleClass="job-offer-form-note" wrapText="true"/>
+                    </VBox>
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="Date d'expiration" styleClass="form-label"/>
+                        <DatePicker fx:id="expiresDatePicker" promptText="mm/dd/yyyy" styleClass="lms-input job-offer-input job-offer-date-picker"/>
+                        <Label text="Optionnel: date de fin de l'offre" styleClass="job-offer-form-note" wrapText="true"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+
             <HBox spacing="12" alignment="CENTER_RIGHT" styleClass="job-offer-form-footer">
                 <Label text="All fields marked * are required." styleClass="job-offer-form-note"/>
                 <Region HBox.hgrow="ALWAYS"/>
