@@ -137,6 +137,12 @@ public final class AppNavigator {
         }
     }
 
+    public static void showPartnerApplications() {
+        if (appShellController != null) {
+            appShellController.showPartnerApplicationsView();
+        }
+    }
+
     public static void showJobApplicationReview(JobApplication application) {
         if (appShellController != null) {
             appShellController.showJobApplicationReviewView(application);

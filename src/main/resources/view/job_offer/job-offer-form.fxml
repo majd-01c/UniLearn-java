@@ -2,72 +2,84 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<ScrollPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.job_offer.JobOfferFormController" fitToWidth="true">
-    <VBox spacing="15" style="-fx-padding: 20;">
-        <!-- Title -->
-        <VBox spacing="5">
-            <Label style="-fx-font-weight: bold;">Job Title *</Label>
-            <TextField fx:id="titleField" promptText="e.g., Senior Software Engineer" style="-fx-padding: 8;"/>
+<ScrollPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.job_offer.JobOfferFormController" fitToWidth="true" styleClass="job-offer-form-scroll lms-scroll">
+    <VBox alignment="CENTER" spacing="18" styleClass="job-offer-form-shell">
+        <VBox fx:id="rootContainer" maxWidth="980.0" spacing="18" styleClass="job-offer-form-panel">
+            <HBox spacing="14" alignment="CENTER_LEFT" styleClass="job-offer-form-hero">
+                <VBox spacing="2" HBox.hgrow="ALWAYS">
+                    <Label fx:id="formTitleLabel" text="Create Job Offer" styleClass="job-offer-form-title"/>
+                    <Label fx:id="formSubtitleLabel" text="Design an attractive offer that matches the partner dashboard style." wrapText="true" styleClass="job-offer-form-subtitle"/>
+                </VBox>
+                <Label fx:id="modeBadgeLabel" text="NEW OFFER" styleClass="job-offer-mode-badge"/>
+            </HBox>
+
+            <VBox spacing="14" styleClass="job-offer-section">
+                <Label text="Basic Information" styleClass="job-offer-section-title"/>
+                <VBox spacing="6">
+                    <Label text="Job Title *" styleClass="form-label"/>
+                    <TextField fx:id="titleField" promptText="e.g., Senior Software Engineer" styleClass="lms-input job-offer-input"/>
+                </VBox>
+
+                <HBox spacing="14">
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="Job Type *" styleClass="form-label"/>
+                        <ComboBox fx:id="typeCombo" styleClass="lms-input job-offer-input"/>
+                    </VBox>
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="Location" styleClass="form-label"/>
+                        <TextField fx:id="locationField" promptText="e.g., Remote, Tunis, etc." styleClass="lms-input job-offer-input"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <VBox spacing="14" styleClass="job-offer-section">
+                <Label text="Description &amp; Requirements" styleClass="job-offer-section-title"/>
+                <VBox spacing="6">
+                    <Label text="Description *" styleClass="form-label"/>
+                    <TextArea fx:id="descriptionArea" promptText="Describe the job opportunity and responsibilities" wrapText="true" prefRowCount="7" styleClass="lms-input job-offer-text-area"/>
+                </VBox>
+                <VBox spacing="6">
+                    <Label text="Requirements" styleClass="form-label"/>
+                    <TextArea fx:id="requirementsArea" promptText="List specific requirements for candidates" wrapText="true" prefRowCount="5" styleClass="lms-input job-offer-text-area"/>
+                </VBox>
+            </VBox>
+
+            <VBox spacing="14" styleClass="job-offer-section">
+                <Label text="Skills &amp; Profile" styleClass="job-offer-section-title"/>
+                <HBox spacing="14">
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="Required Skills" styleClass="form-label"/>
+                        <TextField fx:id="skillsField" promptText="e.g., Java, Spring, SQL" styleClass="lms-input job-offer-input"/>
+                    </VBox>
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="Preferred Skills" styleClass="form-label"/>
+                        <TextField fx:id="preferredSkillsField" promptText="e.g., Docker, Kubernetes" styleClass="lms-input job-offer-input"/>
+                    </VBox>
+                </HBox>
+
+                <HBox spacing="14">
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="Minimum Education" styleClass="form-label"/>
+                        <ComboBox fx:id="educationCombo" styleClass="lms-input job-offer-input"/>
+                    </VBox>
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="Experience (years)" styleClass="form-label"/>
+                        <Spinner fx:id="experienceSpinner" styleClass="lms-input job-offer-input job-offer-spinner"/>
+                    </VBox>
+                </HBox>
+
+                <VBox spacing="6">
+                    <Label text="Required Languages" styleClass="form-label"/>
+                    <TextField fx:id="languagesField" promptText="e.g., English, French, Arabic" styleClass="lms-input job-offer-input"/>
+                </VBox>
+            </VBox>
+
+            <HBox spacing="12" alignment="CENTER_RIGHT" styleClass="job-offer-form-footer">
+                <Label text="All fields marked * are required." styleClass="job-offer-form-note"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="cancelButton" text="Cancel" styleClass="ghost-button" onAction="#onCancel"/>
+                <Button fx:id="saveButton" text="Create Offer" styleClass="primary-button job-offer-submit-button" onAction="#onSave"/>
+            </HBox>
         </VBox>
-
-        <!-- Type and Location -->
-        <HBox spacing="20">
-            <VBox spacing="5" HBox.hgrow="ALWAYS">
-                <Label style="-fx-font-weight: bold;">Job Type *</Label>
-                <ComboBox fx:id="typeCombo" style="-fx-padding: 8;"/>
-            </VBox>
-            <VBox spacing="5" HBox.hgrow="ALWAYS">
-                <Label style="-fx-font-weight: bold;">Location</Label>
-                <TextField fx:id="locationField" promptText="e.g., Remote, Tunis, etc." style="-fx-padding: 8;"/>
-            </VBox>
-        </HBox>
-
-        <!-- Description -->
-        <VBox spacing="5">
-            <Label style="-fx-font-weight: bold;">Description *</Label>
-            <TextArea fx:id="descriptionArea" promptText="Describe the job opportunity and responsibilities" wrapText="true" prefRowCount="6" style="-fx-padding: 8;"/>
-        </VBox>
-
-        <!-- Requirements -->
-        <VBox spacing="5">
-            <Label style="-fx-font-weight: bold;">Requirements</Label>
-            <TextArea fx:id="requirementsArea" promptText="List specific requirements for candidates" wrapText="true" prefRowCount="5" style="-fx-padding: 8;"/>
-        </VBox>
-
-        <!-- Skills -->
-        <HBox spacing="20">
-            <VBox spacing="5" HBox.hgrow="ALWAYS">
-                <Label style="-fx-font-weight: bold;">Required Skills</Label>
-                <TextField fx:id="skillsField" promptText="e.g., Java, Spring, SQL" style="-fx-padding: 8;"/>
-            </VBox>
-            <VBox spacing="5" HBox.hgrow="ALWAYS">
-                <Label style="-fx-font-weight: bold;">Preferred Skills</Label>
-                <TextField fx:id="preferredSkillsField" promptText="e.g., Docker, Kubernetes" style="-fx-padding: 8;"/>
-            </VBox>
-        </HBox>
-
-        <!-- Education and Experience -->
-        <HBox spacing="20">
-            <VBox spacing="5" HBox.hgrow="ALWAYS">
-                <Label style="-fx-font-weight: bold;">Minimum Education</Label>
-                <ComboBox fx:id="educationCombo" style="-fx-padding: 8;"/>
-            </VBox>
-            <VBox spacing="5" HBox.hgrow="ALWAYS">
-                <Label style="-fx-font-weight: bold;">Experience (years)</Label>
-                <Spinner fx:id="experienceSpinner" style="-fx-padding: 8;"/>
-            </VBox>
-        </HBox>
-
-        <!-- Languages -->
-        <VBox spacing="5">
-            <Label style="-fx-font-weight: bold;">Required Languages</Label>
-            <TextField fx:id="languagesField" promptText="e.g., English, French, Arabic" style="-fx-padding: 8;"/>
-        </VBox>
-
-        <!-- Action Buttons -->
-        <HBox spacing="10" style="-fx-padding: 15; -fx-alignment: CENTER;">
-            <Button fx:id="saveButton" text="Save Job Offer" style="-fx-padding: 10 30; -fx-font-size: 12; -fx-background-color: #4CAF50; -fx-text-fill: white;" onAction="#onSave"/>
-            <Button fx:id="cancelButton" text="Cancel" style="-fx-padding: 10 30; -fx-font-size: 12;" onAction="#onCancel"/>
-        </HBox>
     </VBox>
 </ScrollPane>

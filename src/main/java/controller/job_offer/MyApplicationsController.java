@@ -11,16 +11,20 @@ import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import services.job_offer.ServiceJobApplication;
 import util.AppNavigator;
 
 import java.net.URL;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 public class MyApplicationsController implements Initializable {
+
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMM yyyy");
 
     @FXML
     private VBox rootContainer;
@@ -46,8 +50,6 @@ public class MyApplicationsController implements Initializable {
         setupFilters();
         setupListView();
         filterStatus.setOnAction(e -> applyFilters());
-
-        Platform.runLater(this::loadApplications);
     }
 
     public void setCurrentUser(User user) {
@@ -64,12 +66,18 @@ public class MyApplicationsController implements Initializable {
 
     private void setupListView() {
         applicationListView.setCellFactory(param -> new ApplicationListCell());
+        Label placeholder = new Label("No applications to display.");
+        placeholder.getStyleClass().add("job-offer-empty-label");
+        applicationListView.setPlaceholder(placeholder);
     }
 
     private void loadApplications() {
+        if (currentUser == null || currentUser.getId() == null) {
+            return;
+        }
+
         Thread thread = new Thread(() -> {
             try {
-                // TODO: Fetch only applications for current user
                 List<JobApplication> applications = serviceJobApplication.getALL();
                 List<JobApplication> userApps = applications.stream()
                         .filter(app -> app.getUser().getId().equals(currentUser.getId()))
@@ -119,11 +127,18 @@ public class MyApplicationsController implements Initializable {
             super.updateItem(app, empty);
             if (empty || app == null) {
                 setGraphic(null);
+                setText(null);
+                setOnMouseClicked(null);
+                getStyleClass().remove("job-offer-list-cell");
                 return;
             }
 
-            VBox cellContent = new VBox(8);
-            cellContent.setStyle("-fx-padding: 10; -fx-border-color: #ddd; -fx-border-radius: 5; -fx-background-color: #f9f9f9;");
+            if (!getStyleClass().contains("job-offer-list-cell")) {
+                getStyleClass().add("job-offer-list-cell");
+            }
+
+            VBox cellContent = new VBox(9);
+            cellContent.getStyleClass().add("job-offer-card");
 
             HBox titleBar = new HBox(10);
             titleBar.setAlignment(Pos.CENTER_LEFT);
@@ -131,37 +146,50 @@ public class MyApplicationsController implements Initializable {
             JobOffer offer = app.getJobOffer();
             String jobTitle = offer != null && offer.getTitle() != null ? offer.getTitle() : "Unknown Offer";
             Label titleLabel = new Label(jobTitle);
-            titleLabel.setStyle("-fx-font-size: 14; -fx-font-weight: bold;");
+            titleLabel.getStyleClass().add("job-offer-card-title");
+            HBox.setHgrow(titleLabel, Priority.ALWAYS);
 
             Label statusLabel = new Label(app.getStatus() != null ? app.getStatus() : "");
-            String statusColor = getStatusColor(app.getStatus());
-            statusLabel.setStyle("-fx-padding: 2 8; -fx-background-color: " + statusColor + "; -fx-text-fill: white; -fx-border-radius: 3;");
+            applyApplicationStatusStyle(statusLabel, app.getStatus());
 
             titleBar.getChildren().addAll(titleLabel, statusLabel);
 
-            Label appliedLabel = new Label("Applied: " + (app.getCreatedAt() != null ? app.getCreatedAt().toString() : "Unknown"));
-            appliedLabel.setStyle("-fx-text-fill: #666; -fx-font-size: 11;");
+            HBox metaBar = new HBox(14);
+            String appliedAt = app.getCreatedAt() != null
+                    ? app.getCreatedAt().toLocalDateTime().format(DATE_FORMATTER)
+                    : "Unknown";
+            Label appliedLabel = new Label("Applied: " + appliedAt);
+            appliedLabel.getStyleClass().add("job-offer-card-meta");
+            metaBar.getChildren().add(appliedLabel);
 
             if (app.getScore() != null) {
                 Label scoreLabel = new Label("Score: " + app.getScore() + "/100");
-                scoreLabel.setStyle("-fx-text-fill: #2196F3; -fx-font-weight: bold;");
-                cellContent.getChildren().addAll(titleBar, appliedLabel, scoreLabel);
+                scoreLabel.getStyleClass().add("job-offer-score-badge");
+                metaBar.getChildren().add(scoreLabel);
+                cellContent.getChildren().addAll(titleBar, metaBar);
             } else {
-                cellContent.getChildren().addAll(titleBar, appliedLabel);
+                cellContent.getChildren().addAll(titleBar, metaBar);
             }
 
             setGraphic(cellContent);
+            setText(null);
             setOnMouseClicked(event -> AppNavigator.showJobApplicationReview(app));
         }
     }
 
-    private String getStatusColor(String status) {
-        return switch (status) {
-            case "ACCEPTED" -> "#4CAF50";
-            case "SUBMITTED" -> "#2196F3";
-            case "REVIEWED" -> "#FF9800";
-            case "REJECTED" -> "#f44336";
-            default -> "#9E9E9E";
-        };
+    private void applyApplicationStatusStyle(Label statusLabel, String status) {
+        statusLabel.getStyleClass().add("job-offer-status-chip");
+        if (status == null) {
+            return;
+        }
+        String normalized = status.trim().toUpperCase();
+        switch (normalized) {
+            case "ACCEPTED" -> statusLabel.getStyleClass().add("job-offer-status-active");
+            case "SUBMITTED" -> statusLabel.getStyleClass().add("job-offer-status-info");
+            case "REVIEWED" -> statusLabel.getStyleClass().add("job-offer-status-pending");
+            case "REJECTED" -> statusLabel.getStyleClass().add("job-offer-status-rejected");
+            default -> {
+            }
+        }
     }
 }

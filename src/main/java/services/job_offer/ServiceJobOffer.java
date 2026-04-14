@@ -1,5 +1,6 @@
 package services.job_offer;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import entities.job_offer.JobOffer;
 import services.IService;
 import services.ServiceSupport;
@@ -7,15 +8,18 @@ import services.ServiceSupport;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ServiceJobOffer extends ServiceSupport implements IService<JobOffer> {
 
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     @Override
     public void add(JobOffer jobOffer) {
         String sql = "INSERT INTO job_offer (partner_id, title, type, location, description, requirements, status, created_at, updated_at, published_at, expires_at, required_skills, preferred_skills, min_experience_years, min_education, required_languages) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             statement.setInt(1, jobOffer.getUser().getId());
             statement.setString(2, jobOffer.getTitle());
             statement.setString(3, jobOffer.getType());
@@ -27,14 +31,24 @@ public class ServiceJobOffer extends ServiceSupport implements IService<JobOffer
             statement.setTimestamp(9, jobOffer.getUpdatedAt());
             setNullableTimestamp(statement, 10, jobOffer.getPublishedAt());
             setNullableTimestamp(statement, 11, jobOffer.getExpiresAt());
-            setNullableString(statement, 12, jobOffer.getRequiredSkills());
-            setNullableString(statement, 13, jobOffer.getPreferredSkills());
+            setNullableString(statement, 12, toJsonArrayOrNull(jobOffer.getRequiredSkills()));
+            setNullableString(statement, 13, toJsonArrayOrNull(jobOffer.getPreferredSkills()));
             setNullableInteger(statement, 14, jobOffer.getMinExperienceYears());
             setNullableString(statement, 15, jobOffer.getMinEducation());
-            setNullableString(statement, 16, jobOffer.getRequiredLanguages());
-            statement.executeUpdate();
+            setNullableString(statement, 16, toJsonArrayOrNull(jobOffer.getRequiredLanguages()));
+
+            int affectedRows = statement.executeUpdate();
+            if (affectedRows != 1) {
+                throw new SQLException("Failed to insert job offer: affected rows = " + affectedRows);
+            }
+
+            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    jobOffer.setId(generatedKeys.getInt(1));
+                }
+            }
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            throw new RuntimeException("Failed to add job offer", e);
         }
     }
 
@@ -53,15 +67,19 @@ public class ServiceJobOffer extends ServiceSupport implements IService<JobOffer
             statement.setTimestamp(9, jobOffer.getUpdatedAt());
             setNullableTimestamp(statement, 10, jobOffer.getPublishedAt());
             setNullableTimestamp(statement, 11, jobOffer.getExpiresAt());
-            setNullableString(statement, 12, jobOffer.getRequiredSkills());
-            setNullableString(statement, 13, jobOffer.getPreferredSkills());
+            setNullableString(statement, 12, toJsonArrayOrNull(jobOffer.getRequiredSkills()));
+            setNullableString(statement, 13, toJsonArrayOrNull(jobOffer.getPreferredSkills()));
             setNullableInteger(statement, 14, jobOffer.getMinExperienceYears());
             setNullableString(statement, 15, jobOffer.getMinEducation());
-            setNullableString(statement, 16, jobOffer.getRequiredLanguages());
+            setNullableString(statement, 16, toJsonArrayOrNull(jobOffer.getRequiredLanguages()));
             statement.setInt(17, jobOffer.getId());
-            statement.executeUpdate();
+
+            int affectedRows = statement.executeUpdate();
+            if (affectedRows != 1) {
+                throw new SQLException("Failed to update job offer with id " + jobOffer.getId() + ": affected rows = " + affectedRows);
+            }
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            throw new RuntimeException("Failed to update job offer", e);
         }
     }
 
@@ -70,9 +88,13 @@ public class ServiceJobOffer extends ServiceSupport implements IService<JobOffer
         String sql = "DELETE FROM job_offer WHERE id = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, jobOffer.getId());
-            statement.executeUpdate();
+
+            int affectedRows = statement.executeUpdate();
+            if (affectedRows != 1) {
+                throw new SQLException("Failed to delete job offer with id " + jobOffer.getId() + ": affected rows = " + affectedRows);
+            }
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            throw new RuntimeException("Failed to delete job offer", e);
         }
     }
 
@@ -97,11 +119,11 @@ public class ServiceJobOffer extends ServiceSupport implements IService<JobOffer
                 jobOffer.setUpdatedAt(resultSet.getTimestamp("updated_at"));
                 jobOffer.setPublishedAt(resultSet.getTimestamp("published_at"));
                 jobOffer.setExpiresAt(resultSet.getTimestamp("expires_at"));
-                jobOffer.setRequiredSkills(resultSet.getString("required_skills"));
-                jobOffer.setPreferredSkills(resultSet.getString("preferred_skills"));
+                jobOffer.setRequiredSkills(fromJsonArrayToDisplay(resultSet.getString("required_skills")));
+                jobOffer.setPreferredSkills(fromJsonArrayToDisplay(resultSet.getString("preferred_skills")));
                 jobOffer.setMinExperienceYears(getNullableInteger(resultSet, "min_experience_years"));
                 jobOffer.setMinEducation(resultSet.getString("min_education"));
-                jobOffer.setRequiredLanguages(resultSet.getString("required_languages"));
+                jobOffer.setRequiredLanguages(fromJsonArrayToDisplay(resultSet.getString("required_languages")));
                 jobOffers.add(jobOffer);
             }
         } catch (SQLException e) {
@@ -109,5 +131,81 @@ public class ServiceJobOffer extends ServiceSupport implements IService<JobOffer
         }
 
         return jobOffers;
+    }
+
+    private String toJsonArrayOrNull(String rawValue) {
+        if (rawValue == null) {
+            return null;
+        }
+
+        String trimmed = rawValue.trim();
+        if (trimmed.isEmpty()) {
+            return null;
+        }
+
+        if (looksLikeJson(trimmed)) {
+            return trimmed;
+        }
+
+        String[] parts = trimmed.split(",");
+        StringBuilder builder = new StringBuilder("[");
+        int itemCount = 0;
+
+        for (String part : parts) {
+            if (part == null) {
+                continue;
+            }
+            String item = part.trim();
+            if (item.isEmpty()) {
+                continue;
+            }
+
+            if (itemCount > 0) {
+                builder.append(',');
+            }
+            builder.append('"').append(escapeJson(item)).append('"');
+            itemCount++;
+        }
+
+        if (itemCount == 0) {
+            return null;
+        }
+
+        builder.append(']');
+        return builder.toString();
+    }
+
+    private String fromJsonArrayToDisplay(String rawValue) {
+        if (rawValue == null) {
+            return null;
+        }
+
+        String trimmed = rawValue.trim();
+        if (trimmed.isEmpty()) {
+            return "";
+        }
+
+        if (!looksLikeJson(trimmed)) {
+            return rawValue;
+        }
+
+        try {
+            String[] values = OBJECT_MAPPER.readValue(trimmed, String[].class);
+            return String.join(", ", values);
+        } catch (Exception exception) {
+            return rawValue;
+        }
+    }
+
+    private boolean looksLikeJson(String value) {
+        return (value.startsWith("[") && value.endsWith("]"))
+                || (value.startsWith("{") && value.endsWith("}"))
+                || (value.startsWith("\"") && value.endsWith("\""));
+    }
+
+    private String escapeJson(String value) {
+        return value
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"");
     }
 }

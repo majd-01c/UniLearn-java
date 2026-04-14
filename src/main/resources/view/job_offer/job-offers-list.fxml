@@ -2,17 +2,62 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<VBox fx:id="rootContainer" spacing="15" style="-fx-padding: 20;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.job_offer.JobOfferListController">
-    <VBox.vgrow priority="never">
-        <HBox spacing="10" style="-fx-padding: 10; -fx-background-color: #f5f5f5; -fx-border-radius: 5;">
-            <TextField fx:id="searchField" promptText="Search job offers..." HBox.hgrow="ALWAYS" prefWidth="300"/>
-            <ComboBox fx:id="filterStatus" prefWidth="120"/>
-            <ComboBox fx:id="filterType" prefWidth="120"/>
-            <Button fx:id="createJobOfferButton" text="+ Create Offer" style="-fx-padding: 8 16; -fx-font-size: 12;" onAction="#onCreateJobOffer"/>
-        </HBox>
-    </VBox.vgrow>
+<VBox fx:id="rootContainer" spacing="15" styleClass="job-offer-root" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.job_offer.JobOfferListController">
+    <HBox spacing="12" alignment="CENTER_LEFT" styleClass="job-offer-surface-card job-offer-header-card">
+        <VBox spacing="2" HBox.hgrow="ALWAYS">
+            <Label text="💼 Job Offers" styleClass="job-offer-page-title"/>
+            <Label text="Find internships, apprenticeships, and full-time opportunities." styleClass="job-offer-page-subtitle" wrapText="true"/>
+        </VBox>
+        <Button fx:id="myApplicationsButton" text="My Applications" styleClass="ghost-button" onAction="#onOpenMyApplications" visible="false" managed="false"/>
+        <Button fx:id="partnerApplicationsButton" text="Applications to Review" styleClass="ghost-button" onAction="#onOpenPartnerApplications" visible="false" managed="false"/>
+        <Button fx:id="myOffersButton" text="My Offers" styleClass="ghost-button" onAction="#onShowMyOffers" visible="false" managed="false"/>
+        <Button fx:id="otherOffersButton" text="Other Offers" styleClass="ghost-button" onAction="#onShowOtherOffers" visible="false" managed="false"/>
+        <Button fx:id="createJobOfferButton" text="+ New Offer" styleClass="primary-button" onAction="#onCreateJobOffer"/>
+    </HBox>
 
-    <VBox.vgrow priority="always">
-        <ListView fx:id="jobOffersListView" VBox.vgrow="ALWAYS" style="-fx-control-inner-background: #ffffff;"/>
-    </VBox.vgrow>
+    <HBox spacing="10" VBox.vgrow="NEVER" styleClass="job-offer-surface-card job-offer-toolbar">
+        <TextField fx:id="searchField" promptText="Search job offers..." styleClass="job-offer-search-field" HBox.hgrow="ALWAYS" prefWidth="300"/>
+        <ComboBox fx:id="filterStatus" prefWidth="140" styleClass="job-offer-filter-combo"/>
+        <ComboBox fx:id="filterType" prefWidth="140" styleClass="job-offer-filter-combo"/>
+    </HBox>
+
+    <VBox fx:id="adminModerationPanel" spacing="10" visible="false" managed="false" styleClass="job-offer-surface-card job-offer-admin-panel">
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <Label text="Admin Moderation" styleClass="job-offer-section-title"/>
+            <Label text="Approve, reject, or move offers back to pending review." styleClass="job-offer-page-subtitle"/>
+        </HBox>
+
+        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="job-offer-admin-stats-row">
+            <VBox spacing="2" styleClass="job-offer-admin-stat-card">
+                <Label text="Pending" styleClass="job-offer-admin-stat-label"/>
+                <Label fx:id="adminPendingCountLabel" text="0" styleClass="job-offer-admin-stat-value"/>
+            </VBox>
+            <VBox spacing="2" styleClass="job-offer-admin-stat-card">
+                <Label text="Active" styleClass="job-offer-admin-stat-label"/>
+                <Label fx:id="adminActiveCountLabel" text="0" styleClass="job-offer-admin-stat-value"/>
+            </VBox>
+            <VBox spacing="2" styleClass="job-offer-admin-stat-card">
+                <Label text="Rejected" styleClass="job-offer-admin-stat-label"/>
+                <Label fx:id="adminRejectedCountLabel" text="0" styleClass="job-offer-admin-stat-value"/>
+            </VBox>
+            <VBox spacing="2" styleClass="job-offer-admin-stat-card">
+                <Label text="Closed" styleClass="job-offer-admin-stat-label"/>
+                <Label fx:id="adminClosedCountLabel" text="0" styleClass="job-offer-admin-stat-value"/>
+            </VBox>
+        </HBox>
+
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <Button text="Show All" styleClass="ghost-button" onAction="#onAdminFilterAll"/>
+            <Button text="Pending Queue" styleClass="ghost-button" onAction="#onAdminFilterPending"/>
+            <Button text="Approved" styleClass="ghost-button" onAction="#onAdminFilterActive"/>
+            <Button text="Rejected" styleClass="ghost-button" onAction="#onAdminFilterRejected"/>
+        </HBox>
+    </VBox>
+
+    <ScrollPane fx:id="jobOffersScrollPane" fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="job-offer-grid-scroll">
+        <VBox spacing="14">
+            <TilePane fx:id="jobOffersGrid" hgap="16" vgap="16" prefColumns="3" tileAlignment="TOP_LEFT" styleClass="job-offer-grid"/>
+            <Label fx:id="emptyStateLabel" text="No job offers match your filters yet." styleClass="job-offer-empty-label" visible="false" managed="false"/>
+        </VBox>
+    </ScrollPane>
 </VBox>

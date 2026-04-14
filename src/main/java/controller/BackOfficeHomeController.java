@@ -107,6 +107,11 @@ public class BackOfficeHomeController implements Initializable {
     }
 
     @FXML
+    private void onOpenJobOfferManagement() {
+        AppNavigator.showJobOffers();
+    }
+
+    @FXML
     private void onOpenProfile() {
         AppNavigator.showProfile();
     }

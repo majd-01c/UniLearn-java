@@ -8,6 +8,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import services.job_offer.ServiceJobApplication;
+import services.job_offer.ServiceJobOffer;
 import util.AppNavigator;
 import util.RoleGuard;
 
@@ -54,10 +55,12 @@ public class ApplicationReviewController implements Initializable {
     private JobApplication application;
     private User currentUser;
     private ServiceJobApplication serviceJobApplication;
+    private ServiceJobOffer serviceJobOffer;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         serviceJobApplication = new ServiceJobApplication();
+        serviceJobOffer = new ServiceJobOffer();
     }
 
     public void setApplication(JobApplication app) {
@@ -88,10 +91,12 @@ public class ApplicationReviewController implements Initializable {
 
         if (application.getScore() != null) {
             scoreLabel.setText("Score: " + application.getScore() + "/100");
-            scoreLabel.setStyle("-fx-font-size: 14; -fx-font-weight: bold; -fx-text-fill: #2196F3;");
+            if (!scoreLabel.getStyleClass().contains("job-offer-score-highlight")) {
+                scoreLabel.getStyleClass().add("job-offer-score-highlight");
+            }
         } else {
             scoreLabel.setText("Score: Not yet evaluated");
-            scoreLabel.setStyle("-fx-font-size: 14;");
+            scoreLabel.getStyleClass().remove("job-offer-score-highlight");
         }
 
         scoreBreakdownArea.setText(application.getScoreBreakdown() != null ? application.getScoreBreakdown() : "No breakdown available");
@@ -113,13 +118,11 @@ public class ApplicationReviewController implements Initializable {
             return;
         }
 
-        boolean isOfferOwner = offer.getUser().getId().equals(currentUser.getId());
         boolean isAdmin = RoleGuard.isAdmin(currentUser);
-        boolean canReview = isOfferOwner || isAdmin;
-        boolean isSubmitted = "SUBMITTED".equals(application.getStatus());
+        boolean canReview = isAdmin || isCurrentUserOfferOwner(offer);
 
-        approveButton.setDisable(!(canReview && isSubmitted));
-        rejectButton.setDisable(!(canReview && isSubmitted));
+        approveButton.setDisable(!canReview);
+        rejectButton.setDisable(!canReview);
     }
 
     @FXML
@@ -186,16 +189,32 @@ public class ApplicationReviewController implements Initializable {
 
     @FXML
     private void onBack() {
-        AppNavigator.showMyJobApplications();
+        AppNavigator.showPartnerApplications();
     }
 
     private boolean canReview() {
         JobOffer offer = application.getJobOffer();
-        if (offer == null) return false;
-        
-        boolean isOfferOwner = offer.getUser().getId().equals(currentUser.getId());
-        boolean isAdmin = RoleGuard.isAdmin(currentUser);
-        return isOfferOwner || isAdmin;
+        if (offer == null || currentUser == null) {
+            return false;
+        }
+
+        return RoleGuard.isAdmin(currentUser) || isCurrentUserOfferOwner(offer);
+    }
+
+    private boolean isCurrentUserOfferOwner(JobOffer offerReference) {
+        if (offerReference == null || currentUser == null) {
+            return false;
+        }
+
+        try {
+            return serviceJobOffer.getALL().stream()
+                    .anyMatch(offer -> offer != null
+                            && offer.getId() == offerReference.getId()
+                            && offer.getUser() != null
+                            && offer.getUser().getId().equals(currentUser.getId()));
+        } catch (Exception exception) {
+            return false;
+        }
     }
 
     private void showInfo(String title, String message) {

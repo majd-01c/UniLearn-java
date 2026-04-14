@@ -55,6 +55,15 @@ public class JobOfferFormController implements Initializable {
     @FXML
     private Button cancelButton;
 
+    @FXML
+    private Label formTitleLabel;
+
+    @FXML
+    private Label formSubtitleLabel;
+
+    @FXML
+    private Label modeBadgeLabel;
+
     private JobOffer jobOffer;
     private User currentUser;
     private ServiceJobOffer serviceJobOffer;
@@ -73,6 +82,7 @@ public class JobOfferFormController implements Initializable {
     public void setJobOffer(JobOffer offer) {
         this.jobOffer = offer;
         this.isNewOffer = (offer == null);
+        updateFormModeLabels();
         if (offer != null) {
             populateForm(offer);
         }
@@ -80,6 +90,36 @@ public class JobOfferFormController implements Initializable {
 
     public void setCurrentUser(User user) {
         this.currentUser = user;
+    }
+
+    private void updateFormModeLabels() {
+        if (saveButton == null) {
+            return;
+        }
+
+        if (isNewOffer) {
+            saveButton.setText("Create Offer");
+            if (formTitleLabel != null) {
+                formTitleLabel.setText("Create Job Offer");
+            }
+            if (formSubtitleLabel != null) {
+                formSubtitleLabel.setText("Build a polished offer card that fits the partner dashboard and feels like the website version.");
+            }
+            if (modeBadgeLabel != null) {
+                modeBadgeLabel.setText("NEW OFFER");
+            }
+        } else {
+            saveButton.setText("Update Offer");
+            if (formTitleLabel != null) {
+                formTitleLabel.setText("Edit Job Offer");
+            }
+            if (formSubtitleLabel != null) {
+                formSubtitleLabel.setText("Update the offer details while keeping the same visual style.");
+            }
+            if (modeBadgeLabel != null) {
+                modeBadgeLabel.setText("EDIT MODE");
+            }
+        }
     }
 
     private void setupTypeCombo() {
@@ -131,10 +171,17 @@ public class JobOfferFormController implements Initializable {
 
         try {
             if (isNewOffer) {
+                if (currentUser == null || currentUser.getId() <= 0) {
+                    showError("Validation Error", "Current partner account is missing. Please login again.");
+                    return;
+                }
                 jobOffer = new JobOffer();
                 jobOffer.setUser(currentUser);
                 jobOffer.setStatus("PENDING");
                 jobOffer.setCreatedAt(new Timestamp(Instant.now().toEpochMilli()));
+            } else if (jobOffer == null || jobOffer.getId() <= 0) {
+                showError("Validation Error", "Cannot update this offer because its ID is invalid.");
+                return;
             }
 
             jobOffer.setTitle(titleField.getText());
@@ -159,7 +206,10 @@ public class JobOfferFormController implements Initializable {
 
             AppNavigator.showJobOffers();
         } catch (Exception e) {
-            showError("Error", "Failed to save job offer: " + e.getMessage());
+            String causeMessage = e.getCause() != null && e.getCause().getMessage() != null
+                    ? e.getCause().getMessage()
+                    : e.getMessage();
+            showError("Error", "Failed to save job offer: " + causeMessage);
         }
     }
 

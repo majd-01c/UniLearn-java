@@ -640,7 +640,11 @@ public class AppShellController implements Initializable {
     public void showJobOffersView() {
         if (!ensureAuthenticated())
             return;
-        setHeader("Job Opportunities", "Browse and apply to job offers");
+        if (RoleGuard.isAdmin(currentUser)) {
+            setHeader("Job Offers Management", "Approve, reject, edit, close, and delete offers");
+        } else {
+            setHeader("Job Opportunities", "Browse and apply to job offers");
+        }
         loadCenter("/view/job_offer/job-offers-list.fxml", controller -> {
             if (controller instanceof JobOfferListController c) {
                 c.setCurrentUser(currentUser);
@@ -693,6 +697,23 @@ public class AppShellController implements Initializable {
         setHeader("My Job Applications", "Track and manage your applications");
         loadCenter("/view/job_offer/my-applications.fxml", controller -> {
             if (controller instanceof MyApplicationsController c) {
+                c.setCurrentUser(currentUser);
+            }
+        });
+    }
+
+    public void showPartnerApplicationsView() {
+        if (!ensureAuthenticated())
+            return;
+        if (RoleGuard.isStudent(currentUser)) {
+            showWarning("Access Denied", "Only partners and administrators can review applications.");
+            showJobOffersView();
+            return;
+        }
+
+        setHeader("Applications to Review", "Review candidates who applied to your offers");
+        loadCenter("/view/job_offer/partner-applications.fxml", controller -> {
+            if (controller instanceof PartnerApplicationsController c) {
                 c.setCurrentUser(currentUser);
             }
         });

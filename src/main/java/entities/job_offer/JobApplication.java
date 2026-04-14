@@ -7,6 +7,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -20,7 +21,13 @@ import java.sql.Timestamp;
  */
 @Entity
 @Table(name="job_application"
-    , uniqueConstraints = @UniqueConstraint(columnNames={"offer_id", "student_id"}) 
+    , uniqueConstraints = @UniqueConstraint(columnNames={"offer_id", "student_id"})
+    , indexes = {
+        @Index(name = "idx_app_status", columnList = "status"),
+        @Index(name = "idx_app_created_at", columnList = "created_at"),
+        @Index(name = "idx_student_id", columnList = "student_id"),
+        @Index(name = "idx_offer_id", columnList = "offer_id")
+    }
 )
 public class JobApplication  implements java.io.Serializable {
 
