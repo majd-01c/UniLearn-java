@@ -604,16 +604,25 @@
 
 .job-offer-readonly-area {
     -fx-background-color: derive(-ul-surface-1, 2%);
+    -fx-control-inner-background: derive(-ul-surface-1, 2%);
     -fx-border-color: -ul-outline;
     -fx-border-width: 1;
     -fx-border-radius: 10;
     -fx-background-radius: 10;
+    -fx-background-insets: 0;
     -fx-text-fill: -ul-text-body;
 }
 
 .job-offer-readonly-area .content,
 .job-offer-readonly-area .text {
-    -fx-background-color: transparent;
+    -fx-background-color: derive(-ul-surface-1, 2%);
+    -fx-text-fill: -ul-text-body;
+}
+
+.job-offer-readonly-area .viewport,
+.job-offer-readonly-area .text-input,
+.job-offer-readonly-area .text-input:focused {
+    -fx-background-color: derive(-ul-surface-1, 2%);
     -fx-text-fill: -ul-text-body;
 }
 
