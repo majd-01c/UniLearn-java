@@ -61,6 +61,16 @@ public class ApplicationReviewController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         serviceJobApplication = new ServiceJobApplication();
         serviceJobOffer = new ServiceJobOffer();
+
+        // Ensure reject button keeps themed style even if FXML class parsing is inconsistent.
+        if (rejectButton != null) {
+            if (!rejectButton.getStyleClass().contains("ghost-button")) {
+                rejectButton.getStyleClass().add("ghost-button");
+            }
+            if (!rejectButton.getStyleClass().contains("job-offer-danger-button")) {
+                rejectButton.getStyleClass().add("job-offer-danger-button");
+            }
+        }
     }
 
     public void setApplication(JobApplication app) {
