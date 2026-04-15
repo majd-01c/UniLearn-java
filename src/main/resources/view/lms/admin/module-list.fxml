@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?><?import javafx.scene.control.*?><?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.lms.AdminModuleController" styleClass="lms-root" spacing="16">
+    <padding><Insets top="8" right="8" bottom="8" left="8"/></padding>
+    <HBox spacing="12" alignment="CENTER_LEFT">
+        <Label text="Modules" styleClass="lms-page-title"/><Region HBox.hgrow="ALWAYS"/>
+        <TextField fx:id="searchField" promptText="Search..." prefWidth="220" styleClass="lms-input"/>
+        <Button text="+ New Module" onAction="#onNew" styleClass="primary-button"/>
+    </HBox>
+    <TableView fx:id="table" VBox.vgrow="ALWAYS" styleClass="lms-table">
+        <columns>
+            <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
+            <TableColumn fx:id="colName" text="Name" prefWidth="250"/>
+            <TableColumn fx:id="colDuration" text="Duration" prefWidth="150"/>
+            <TableColumn fx:id="colCreated" text="Created" prefWidth="160"/>
+            <TableColumn fx:id="colActions" text="Actions" prefWidth="180"/>
+        </columns>
+        <placeholder><Label text="No modules found" styleClass="empty-state"/></placeholder>
+    </TableView>
+</VBox>

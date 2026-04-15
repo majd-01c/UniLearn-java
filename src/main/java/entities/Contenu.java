@@ -1,5 +1,5 @@
 package entities;
-// Generated Apr 7, 2026, 3:00:13 PM by Hibernate Tools 6.6.42.Final
+// Generated 11 avr. 2026, 15:58:41 by Hibernate Tools 6.6.42.Final
 
 
 import jakarta.persistence.Column;
@@ -44,14 +44,16 @@ public class Contenu  implements java.io.Serializable {
     }
 
 	
-    public Contenu(String title, String type, byte published, Timestamp createdAt, Timestamp updatedAt) {
+    public Contenu(Integer id, String title, String type, byte published, Timestamp createdAt, Timestamp updatedAt) {
+        this.id = id;
         this.title = title;
         this.type = type;
         this.published = published;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
-    public Contenu(String title, String fileName, String fileType, String type, byte published, Timestamp createdAt, Timestamp updatedAt, Integer fileSize, Set<BuildProgramContenu> buildProgramContenus, Set<ClasseContenu> classeContenus, Set<Assessment> assessments, Set<Quiz> quizs, Set<CourseContenu> courseContenus) {
+    public Contenu(Integer id, String title, String fileName, String fileType, String type, byte published, Timestamp createdAt, Timestamp updatedAt, Integer fileSize, Set<BuildProgramContenu> buildProgramContenus, Set<ClasseContenu> classeContenus, Set<Assessment> assessments, Set<Quiz> quizs, Set<CourseContenu> courseContenus) {
+       this.id = id;
        this.title = title;
        this.fileName = fileName;
        this.fileType = fileType;

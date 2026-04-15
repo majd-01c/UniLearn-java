@@ -1,0 +1,58 @@
+.root {
+    -fx-font-family: "Segoe UI", "Noto Sans", "Arial";
+
+    -ul-radius-sm: 8;
+    -ul-radius-md: 12;
+    -ul-radius-lg: 16;
+
+    -ul-space-1: 4;
+    -ul-space-2: 8;
+    -ul-space-3: 12;
+    -ul-space-4: 16;
+    -ul-space-5: 20;
+    -ul-space-6: 24;
+
+    -ul-front-primary: #0891b2;
+    -ul-front-secondary: #22d3ee;
+    -ul-back-primary: #7c3aed;
+    -ul-back-secondary: #a855f7;
+
+    -ul-success: #1f8b4c;
+    -ul-warning: #c97a12;
+    -ul-danger: #c0392b;
+    -ul-info: #2563eb;
+}
+
+.theme-light {
+    -ul-surface-0: #f6f9ff;
+    -ul-surface-1: #eef3fb;
+    -ul-surface-2: #ffffff;
+    -ul-surface-3: #dce7f5;
+
+    -ul-rail-0: #0f2f4d;
+    -ul-rail-1: #123a5d;
+
+    -ul-text-primary: #10243c;
+    -ul-text-secondary: #52667d;
+    -ul-text-muted: #6e8298;
+
+    -ul-outline: #cfdbeb;
+    -ul-shadow: rgba(10, 34, 56, 0.12);
+}
+
+.theme-dark {
+    -ul-surface-0: #0c1421;
+    -ul-surface-1: #121d2e;
+    -ul-surface-2: #182438;
+    -ul-surface-3: #21324b;
+
+    -ul-rail-0: #10192a;
+    -ul-rail-1: #15223a;
+
+    -ul-text-primary: #e7eef7;
+    -ul-text-secondary: #b4c2d6;
+    -ul-text-muted: #8ea0b8;
+
+    -ul-outline: #304663;
+    -ul-shadow: rgba(0, 0, 0, 0.35);
+}

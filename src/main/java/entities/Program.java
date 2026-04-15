@@ -1,5 +1,5 @@
 package entities;
-// Generated Apr 7, 2026, 3:00:13 PM by Hibernate Tools 6.6.42.Final
+// Generated 11 avr. 2026, 15:58:41 by Hibernate Tools 6.6.42.Final
 
 
 import jakarta.persistence.Column;
@@ -39,13 +39,15 @@ public class Program  implements java.io.Serializable {
     }
 
 	
-    public Program(String name, byte published, Timestamp createdAt, Timestamp updatedAt) {
+    public Program(Integer id, String name, byte published, Timestamp createdAt, Timestamp updatedAt) {
+        this.id = id;
         this.name = name;
         this.published = published;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
-    public Program(String name, byte published, Timestamp createdAt, Timestamp updatedAt, Set<BuildProgram> buildPrograms, Set<ProgramChatMessage> programChatMessages, Set<ProgramModule> programModules, Set<Classe> classes) {
+    public Program(Integer id, String name, byte published, Timestamp createdAt, Timestamp updatedAt, Set<BuildProgram> buildPrograms, Set<ProgramChatMessage> programChatMessages, Set<ProgramModule> programModules, Set<Classe> classes) {
+       this.id = id;
        this.name = name;
        this.published = published;
        this.createdAt = createdAt;

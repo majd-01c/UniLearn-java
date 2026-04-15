@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.lms.AdminClasseDetailController" styleClass="lms-scroll" fitToWidth="true">
+<VBox styleClass="lms-root" spacing="20">
+    <padding><Insets top="8" right="8" bottom="8" left="8"/></padding>
+    
+    <HBox styleClass="breadcrumb-bar">
+        <Button text="Classes" onAction="#onBackToList" styleClass="breadcrumb-link"/>
+        <Label text=" › " styleClass="breadcrumb-sep"/>
+        <Label fx:id="breadcrumb" text="" styleClass="breadcrumb-current"/>
+    </HBox>
+    
+    <!-- Info Card -->
+    <VBox styleClass="lms-card" spacing="12">
+        <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+        <HBox spacing="12" alignment="CENTER_LEFT">
+            <Label fx:id="className" styleClass="card-title"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="statusBadge" styleClass="badge"/>
+        </HBox>
+        <HBox spacing="16">
+            <Label fx:id="programLabel" styleClass="card-text"/>
+            <Label fx:id="capacityLabel" styleClass="card-text"/>
+            <Label fx:id="datesLabel" styleClass="card-text"/>
+        </HBox>
+        <ProgressBar fx:id="capacityBar" maxWidth="1.7976931348623157E308" styleClass="capacity-bar"/>
+    </VBox>
+    
+    <!-- ENROLLED STUDENTS LIST -->
+    <VBox styleClass="lms-card" spacing="0">
+        <padding><Insets top="16" right="16" bottom="0" left="16"/></padding>
+        <HBox alignment="CENTER_LEFT" spacing="8">
+            <Label text="👥 ENROLLED STUDENTS" styleClass="card-title" style="-fx-font-size: 14px; -fx-text-fill: #1a237e;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="studentCountBadge" styleClass="badge badge-info" style="-fx-background-radius: 20;"/>
+        </HBox>
+        <Region prefHeight="12"/>
+        <!-- Header row -->
+        <HBox spacing="12" style="-fx-opacity: 0.6; -fx-padding: 0 0 8 0;">
+            <Label text="STUDENT" styleClass="card-text" style="-fx-font-weight: bold;" prefWidth="300"/>
+            <Label text="ENROLLED AT" styleClass="card-text" style="-fx-font-weight: bold;" prefWidth="180"/>
+            <Label text="STATUS" styleClass="card-text" style="-fx-font-weight: bold;" prefWidth="100"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label text="ACTIONS" styleClass="card-text" style="-fx-font-weight: bold;"/>
+        </HBox>
+        <Separator/>
+        <VBox fx:id="enrolledStudentsContainer" spacing="0"/>
+        <Label fx:id="noStudentsLabel" text="No students enrolled yet." styleClass="card-text" style="-fx-padding: 16;" visible="false" managed="false"/>
+        <Region prefHeight="8"/>
+    </VBox>
+    
+    <!-- ENROLL STUDENTS AVAILABLE -->
+    <VBox styleClass="lms-card" spacing="12">
+        <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+        <Label text="👤+ ENROLL STUDENTS" styleClass="card-title" style="-fx-font-size: 14px; -fx-text-fill: #004d40;"/>
+        <Separator/>
+        <FlowPane fx:id="availableStudentsContainer" hgap="12" vgap="12"/>
+        <Label fx:id="noAvailableStudentsLabel" text="No available students to enroll." styleClass="card-text" visible="false" managed="false"/>
+    </VBox>
+    
+    <!-- ASSIGNED TEACHERS LIST -->
+    <VBox styleClass="lms-card" spacing="0">
+        <padding><Insets top="16" right="16" bottom="0" left="16"/></padding>
+        <HBox alignment="CENTER_LEFT" spacing="8">
+            <Label text="👨‍🏫 ASSIGNED TEACHERS" styleClass="card-title" style="-fx-font-size: 14px; -fx-text-fill: #e65100;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="teacherCountBadge" styleClass="badge badge-warning" style="-fx-background-radius: 20;"/>
+        </HBox>
+        <Region prefHeight="12"/>
+        <!-- Header row -->
+        <HBox spacing="12" style="-fx-opacity: 0.6; -fx-padding: 0 0 8 0;">
+            <Label text="TEACHER" styleClass="card-text" style="-fx-font-weight: bold;" prefWidth="250"/>
+            <Label text="MODULE" styleClass="card-text" style="-fx-font-weight: bold;" prefWidth="180"/>
+            <Label text="STATUS" styleClass="card-text" style="-fx-font-weight: bold;" prefWidth="100"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label text="ACTIONS" styleClass="card-text" style="-fx-font-weight: bold;"/>
+        </HBox>
+        <Separator/>
+        <VBox fx:id="assignedTeachersContainer" spacing="0"/>
+        <Label fx:id="noTeachersLabel" text="No teachers assigned yet." styleClass="card-text" style="-fx-padding: 16;" visible="false" managed="false"/>
+        <Region prefHeight="8"/>
+    </VBox>
+
+    <!-- ASSIGN TEACHERS AVAILABLE -->
+    <VBox styleClass="lms-card" spacing="12">
+        <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+        <Label text="👨‍🏫+ ASSIGN TEACHERS" styleClass="card-title" style="-fx-font-size: 14px; -fx-text-fill: #b71c1c;"/>
+        <Separator/>
+        <FlowPane fx:id="availableTeachersContainer" hgap="12" vgap="12"/>
+        <Label fx:id="noAvailableTeachersLabel" text="No available teachers to assign." styleClass="card-text" visible="false" managed="false"/>
+    </VBox>
+
+    <!-- CLASS MODULES LIST -->
+    <VBox styleClass="lms-card" spacing="0">
+        <padding><Insets top="16" right="16" bottom="0" left="16"/></padding>
+        <HBox alignment="CENTER_LEFT" spacing="8">
+            <Label text="📚 CLASS MODULES" styleClass="card-title" style="-fx-font-size: 14px; -fx-text-fill: #4a148c;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="moduleCountBadge" styleClass="badge badge-info" style="-fx-background-radius: 20;"/>
+        </HBox>
+        <Region prefHeight="12"/>
+        <HBox spacing="12" style="-fx-opacity: 0.6; -fx-padding: 0 0 8 0;">
+            <Label text="MODULE" styleClass="card-text" style="-fx-font-weight: bold;" prefWidth="300"/>
+            <Label text="CREATED BY" styleClass="card-text" style="-fx-font-weight: bold;" prefWidth="250"/>
+        </HBox>
+        <Separator/>
+        <VBox fx:id="modulesContainer" spacing="0"/>
+        <Label fx:id="noModulesLabel" text="No modules generated yet." styleClass="card-text" style="-fx-padding: 16;" visible="false" managed="false"/>
+        <Region prefHeight="8"/>
+    </VBox>
+    
+</VBox>
+</ScrollPane>

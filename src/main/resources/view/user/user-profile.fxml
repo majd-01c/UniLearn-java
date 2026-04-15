@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controller.UserProfileController">
+    <center>
+        <VBox spacing="12.0" alignment="CENTER">
+            <padding>
+                <Insets top="20.0" right="22.0" bottom="20.0" left="22.0"/>
+            </padding>
+            <children>
+                <Label text="My Profile" style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
+                <GridPane hgap="10.0" vgap="10.0" maxWidth="500.0">
+                    <children>
+                        <Label text="Role" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                        <Label fx:id="roleLabel" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                        <Label text="Status" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                        <Label fx:id="statusLabel" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                        <Label text="Name" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                        <TextField fx:id="nameField" onAction="#handleSaveProfile" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+                        <Label text="Email" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                        <TextField fx:id="emailField" onAction="#handleSaveProfile" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+                        <Label text="Phone" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                        <TextField fx:id="phoneField" onAction="#handleSaveProfile" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+
+                        <Label text="Location" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+                        <TextField fx:id="locationField" onAction="#handleSaveProfile" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                    </children>
+                </GridPane>
+                <HBox spacing="10.0">
+                    <children>
+                        <Button fx:id="saveProfileButton" text="Save Profile" onAction="#handleSaveProfile" prefWidth="130.0"/>
+                        <Button fx:id="backToDashboardButton" text="Back to Home" onAction="#handleBackToDashboard" prefWidth="140.0"/>
+                        <Button fx:id="logoutButton" text="Logout" onAction="#handleLogout" prefWidth="110.0"/>
+                    </children>
+                </HBox>
+                <Label fx:id="messageLabel" style="-fx-text-fill: #c0392b;"/>
+            </children>
+        </VBox>
+    </center>
+</BorderPane>

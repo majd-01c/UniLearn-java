@@ -1,10 +1,12 @@
 package entities;
-// Generated Apr 7, 2026, 3:00:13 PM by Hibernate Tools 6.6.42.Final
+// Generated 11 avr. 2026, 15:58:41 by Hibernate Tools 6.6.42.Final
 
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import static jakarta.persistence.GenerationType.IDENTITY;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -21,28 +23,27 @@ import jakarta.persistence.UniqueConstraint;
 public class BuildProgramContenu  implements java.io.Serializable {
 
 
-     private int id;
+     private Integer id;
      private Contenu contenu;
      private BuildProgramCourse buildProgramCourse;
 
     public BuildProgramContenu() {
     }
 
-    public BuildProgramContenu(int id, Contenu contenu, BuildProgramCourse buildProgramCourse) {
-       this.id = id;
+    public BuildProgramContenu(Contenu contenu, BuildProgramCourse buildProgramCourse) {
        this.contenu = contenu;
        this.buildProgramCourse = buildProgramCourse;
     }
    
-     @Id 
+     @Id @GeneratedValue(strategy=IDENTITY)
 
     
     @Column(name="id", unique=true, nullable=false)
-    public int getId() {
+    public Integer getId() {
         return this.id;
     }
     
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

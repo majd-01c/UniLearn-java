@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<ScrollPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.job_offer.JobOfferDetailController" fitToWidth="true" styleClass="job-offer-scroll">
+    <VBox spacing="15" styleClass="job-offer-root">
+        <!-- Header Section -->
+        <HBox spacing="15" styleClass="job-offer-surface-card job-offer-detail-hero">
+            <VBox spacing="8" HBox.hgrow="ALWAYS">
+                <Label fx:id="titleLabel" styleClass="job-offer-page-title"/>
+                <HBox spacing="10">
+                    <Label fx:id="typeLabel" styleClass="job-offer-chip"/>
+                    <Label fx:id="statusLabel" styleClass="job-offer-status-chip"/>
+                </HBox>
+                <Label text="Review the opportunity details before applying or managing the post." styleClass="job-offer-page-subtitle" wrapText="true"/>
+            </VBox>
+            <VBox spacing="10">
+                <Button fx:id="editButton" text="Edit" styleClass="ghost-button" onAction="#onEdit"/>
+                <Button fx:id="deleteButton" text="Delete" styleClass="ghost-button job-offer-danger-button" onAction="#onDelete"/>
+            </VBox>
+        </HBox>
+
+        <TilePane hgap="14" vgap="14" prefColumns="4" tileAlignment="TOP_LEFT" styleClass="job-offer-detail-grid">
+            <VBox spacing="6" styleClass="job-offer-surface-card job-offer-detail-field-card job-offer-detail-info-card">
+                <Label text="Location" styleClass="job-offer-section-label"/>
+                <Label fx:id="locationLabel" styleClass="job-offer-detail-mini-value" wrapText="true"/>
+            </VBox>
+            <VBox spacing="6" styleClass="job-offer-surface-card job-offer-detail-field-card job-offer-detail-info-card">
+                <Label text="Posted by" styleClass="job-offer-section-label"/>
+                <Label fx:id="postedByLabel" styleClass="job-offer-detail-mini-value" wrapText="true"/>
+            </VBox>
+            <VBox spacing="6" styleClass="job-offer-surface-card job-offer-detail-field-card job-offer-detail-info-card">
+                <Label text="Minimum Education" styleClass="job-offer-section-label"/>
+                <Label fx:id="educationLabel" styleClass="job-offer-detail-mini-value" wrapText="true"/>
+            </VBox>
+            <VBox spacing="6" styleClass="job-offer-surface-card job-offer-detail-field-card job-offer-detail-info-card">
+                <Label text="Experience Required" styleClass="job-offer-section-label"/>
+                <Label fx:id="experienceLabel" styleClass="job-offer-detail-mini-value" wrapText="true"/>
+            </VBox>
+            <VBox spacing="6" styleClass="job-offer-surface-card job-offer-detail-field-card job-offer-detail-info-card">
+                <Label text="Required Skills" styleClass="job-offer-section-label"/>
+                <Label fx:id="requiredSkillsLabel" styleClass="job-offer-body-text" wrapText="true"/>
+            </VBox>
+            <VBox spacing="6" styleClass="job-offer-surface-card job-offer-detail-field-card job-offer-detail-info-card">
+                <Label text="Preferred Skills" styleClass="job-offer-section-label"/>
+                <Label fx:id="preferredSkillsLabel" styleClass="job-offer-body-text" wrapText="true"/>
+            </VBox>
+            <VBox spacing="6" styleClass="job-offer-surface-card job-offer-detail-field-card job-offer-detail-info-card">
+                <Label text="Languages" styleClass="job-offer-section-label"/>
+                <Label fx:id="languagesLabel" styleClass="job-offer-body-text" wrapText="true"/>
+            </VBox>
+            <VBox spacing="6" styleClass="job-offer-surface-card job-offer-detail-field-card job-offer-detail-content-card">
+                <Label text="Description" styleClass="job-offer-section-label"/>
+                <Label fx:id="descriptionLabel" styleClass="job-offer-body-text" wrapText="true"/>
+            </VBox>
+            <VBox spacing="6" styleClass="job-offer-surface-card job-offer-detail-field-card job-offer-detail-content-card">
+                <Label text="Requirements" styleClass="job-offer-section-label"/>
+                <Label fx:id="requirementsLabel" styleClass="job-offer-body-text" wrapText="true"/>
+            </VBox>
+        </TilePane>
+
+        <!-- Action Buttons -->
+        <HBox spacing="10" alignment="CENTER" styleClass="job-offer-surface-card">
+            <Button fx:id="applyButton" text="Apply Now" styleClass="primary-button" onAction="#onApply"/>
+            <Button fx:id="backButton" text="Back" styleClass="ghost-button" onAction="#onBack"/>
+        </HBox>
+    </VBox>
+</ScrollPane>

@@ -1,12 +1,10 @@
 package entities;
-// Generated Apr 7, 2026, 3:00:13 PM by Hibernate Tools 6.6.42.Final
+// Generated 11 avr. 2026, 15:58:41 by Hibernate Tools 6.6.42.Final
 
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import static jakarta.persistence.GenerationType.IDENTITY;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -24,7 +22,7 @@ import java.sql.Timestamp;
 public class DocumentRequest  implements java.io.Serializable {
 
 
-     private Integer id;
+     private int id;
      private User user;
      private String documentType;
      private String additionalInfo;
@@ -37,13 +35,15 @@ public class DocumentRequest  implements java.io.Serializable {
     }
 
 	
-    public DocumentRequest(User user, String documentType, String status, Timestamp requestedAt) {
+    public DocumentRequest(int id, User user, String documentType, String status, Timestamp requestedAt) {
+        this.id = id;
         this.user = user;
         this.documentType = documentType;
         this.status = status;
         this.requestedAt = requestedAt;
     }
-    public DocumentRequest(User user, String documentType, String additionalInfo, String status, Timestamp requestedAt, Timestamp deliveredAt, String documentPath) {
+    public DocumentRequest(int id, User user, String documentType, String additionalInfo, String status, Timestamp requestedAt, Timestamp deliveredAt, String documentPath) {
+       this.id = id;
        this.user = user;
        this.documentType = documentType;
        this.additionalInfo = additionalInfo;
@@ -53,15 +53,15 @@ public class DocumentRequest  implements java.io.Serializable {
        this.documentPath = documentPath;
     }
    
-     @Id @GeneratedValue(strategy=IDENTITY)
+     @Id 
 
     
     @Column(name="id", unique=true, nullable=false)
-    public Integer getId() {
+    public int getId() {
         return this.id;
     }
     
-    public void setId(Integer id) {
+    public void setId(int id) {
         this.id = id;
     }
 

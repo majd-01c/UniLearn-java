@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Pagination?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controller.UserListController"
+            styleClass="user-list-root">
+    <top>
+        <VBox spacing="10.0" styleClass="user-list-toolbar">
+            <padding>
+                <Insets top="14.0" right="14.0" bottom="10.0" left="14.0"/>
+            </padding>
+            <children>
+                <Label text="User Management" styleClass="card-title"/>
+                <HBox spacing="8.0">
+                    <children>
+                        <TextField fx:id="searchField" promptText="Search by email, first name, last name" prefWidth="320.0"/>
+                        <ComboBox fx:id="roleFilterComboBox" prefWidth="150.0"/>
+                        <ComboBox fx:id="statusFilterComboBox" prefWidth="130.0"/>
+                        <Button text="Refresh" onAction="#onRefreshUsers" styleClass="ghost-button"/>
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </top>
+
+    <center>
+        <TableView fx:id="userTable">
+            <columns>
+                <TableColumn fx:id="idColumn" text="ID" prefWidth="90.0"/>
+                <TableColumn fx:id="emailColumn" text="Email" prefWidth="300.0"/>
+                <TableColumn fx:id="roleColumn" text="Role" prefWidth="150.0"/>
+                <TableColumn fx:id="statusColumn" text="Status" prefWidth="130.0"/>
+                <TableColumn fx:id="createdDateColumn" text="Created" prefWidth="220.0"/>
+            </columns>
+        </TableView>
+    </center>
+
+    <bottom>
+        <VBox spacing="10.0" styleClass="user-list-actions">
+            <padding>
+                <Insets top="10.0" right="14.0" bottom="14.0" left="14.0"/>
+            </padding>
+            <children>
+                <Pagination fx:id="pagination"/>
+                <HBox spacing="8.0">
+                    <children>
+                        <Button text="Create User" onAction="#onCreateUser" prefWidth="130.0" styleClass="primary-button"/>
+                        <Button text="Edit" onAction="#onEditUser" prefWidth="110.0" styleClass="ghost-button"/>
+                        <Button text="Delete" onAction="#onDeleteUser" prefWidth="110.0" styleClass="ghost-button"/>
+                        <Button text="Toggle Status" onAction="#onToggleStatus" prefWidth="130.0" styleClass="ghost-button"/>
+                        <Button text="Change My Password" onAction="#onChangeMyPassword" prefWidth="170.0" styleClass="ghost-button"/>
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </bottom>
+</BorderPane>

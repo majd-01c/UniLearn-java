@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controller.forum.ForumEditTopicController"
+      spacing="16.0" styleClass="forum-root">
+    <padding>
+        <Insets top="22.0" right="22.0" bottom="22.0" left="22.0"/>
+    </padding>
+
+    <Label text="✏️ Edit Topic" styleClass="forum-page-title"/>
+
+    <VBox spacing="12.0" styleClass="forum-card" maxWidth="700.0">
+        <!-- Category -->
+        <VBox spacing="4.0">
+            <Label text="Category" styleClass="forum-form-label"/>
+            <ComboBox fx:id="categoryComboBox" maxWidth="1.7976931348623157E308" styleClass="forum-combo-box"/>
+        </VBox>
+
+        <!-- Title -->
+        <VBox spacing="4.0">
+            <Label text="Title" styleClass="forum-form-label"/>
+            <TextField fx:id="titleField" styleClass="forum-text-field"/>
+            <Label fx:id="titleErrorLabel" text="" styleClass="forum-error-label"/>
+        </VBox>
+
+        <!-- Content -->
+        <VBox spacing="4.0">
+            <Label text="Content" styleClass="forum-form-label"/>
+            <TextArea fx:id="contentArea" prefRowCount="8" styleClass="forum-text-area"/>
+            <Label fx:id="contentErrorLabel" text="" styleClass="forum-error-label"/>
+        </VBox>
+
+        <!-- Actions -->
+        <HBox spacing="12.0">
+            <Button text="Save Changes" onAction="#onSaveTopic" styleClass="primary-button"/>
+            <Button text="Cancel" onAction="#onCancel" styleClass="ghost-button"/>
+        </HBox>
+    </VBox>
+</VBox>

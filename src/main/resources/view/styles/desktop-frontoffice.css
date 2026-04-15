@@ -1,0 +1,27 @@
+.frontoffice-home-root {
+    -fx-background-color: linear-gradient(to bottom right, derive(-ul-front-primary, 72%), derive(-ul-front-secondary, 80%));
+}
+
+.frontoffice-card {
+    -fx-border-color: derive(-ul-front-primary, 45%);
+}
+
+.frontoffice-chip {
+    -fx-background-color: linear-gradient(to right, -ul-front-primary, -ul-front-secondary);
+    -fx-text-fill: #ffffff;
+    -fx-background-radius: 999;
+    -fx-padding: 5 10;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+}
+
+.frontoffice-widget {
+    -fx-background-color: derive(-ul-surface-2, -2%);
+    -fx-border-color: derive(-ul-front-primary, 50%);
+}
+
+.frontoffice-heading {
+    -fx-text-fill: -ul-text-primary;
+    -fx-font-size: 18px;
+    -fx-font-weight: 700;
+}

@@ -1,12 +1,10 @@
 package entities;
-// Generated Apr 7, 2026, 3:00:13 PM by Hibernate Tools 6.6.42.Final
+// Generated 11 avr. 2026, 15:58:41 by Hibernate Tools 6.6.42.Final
 
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import static jakarta.persistence.GenerationType.IDENTITY;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -26,7 +24,7 @@ import java.util.Set;
 public class Quiz  implements java.io.Serializable {
 
 
-     private Integer id;
+     private int id;
      private Contenu contenu;
      private String title;
      private String description;
@@ -42,14 +40,16 @@ public class Quiz  implements java.io.Serializable {
     }
 
 	
-    public Quiz(Contenu contenu, String title, byte shuffleQuestions, byte shuffleChoices, byte showCorrectAnswers) {
+    public Quiz(int id, Contenu contenu, String title, byte shuffleQuestions, byte shuffleChoices, byte showCorrectAnswers) {
+        this.id = id;
         this.contenu = contenu;
         this.title = title;
         this.shuffleQuestions = shuffleQuestions;
         this.shuffleChoices = shuffleChoices;
         this.showCorrectAnswers = showCorrectAnswers;
     }
-    public Quiz(Contenu contenu, String title, String description, Integer passingScore, Integer timeLimit, byte shuffleQuestions, byte shuffleChoices, byte showCorrectAnswers, Set<Question> questions, Set<UserAnswer> userAnswers) {
+    public Quiz(int id, Contenu contenu, String title, String description, Integer passingScore, Integer timeLimit, byte shuffleQuestions, byte shuffleChoices, byte showCorrectAnswers, Set<Question> questions, Set<UserAnswer> userAnswers) {
+       this.id = id;
        this.contenu = contenu;
        this.title = title;
        this.description = description;
@@ -62,15 +62,15 @@ public class Quiz  implements java.io.Serializable {
        this.userAnswers = userAnswers;
     }
    
-     @Id @GeneratedValue(strategy=IDENTITY)
+     @Id 
 
     
     @Column(name="id", unique=true, nullable=false)
-    public Integer getId() {
+    public int getId() {
         return this.id;
     }
     
-    public void setId(Integer id) {
+    public void setId(int id) {
         this.id = id;
     }
 

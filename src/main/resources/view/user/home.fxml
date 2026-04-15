@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controller.HomeController"
+      spacing="16.0" styleClass="home-root">
+    <padding>
+        <Insets top="22.0" right="22.0" bottom="22.0" left="22.0"/>
+    </padding>
+    <children>
+        <VBox spacing="8.0" styleClass="home-card">
+            <children>
+                <Label fx:id="welcomeLabel" text="Welcome to UniLearn" styleClass="home-title"/>
+                <Label fx:id="roleLabel" text="Role: -" styleClass="home-role"/>
+                <Label fx:id="summaryLabel" text="Your desktop workspace is ready." wrapText="true" styleClass="home-summary"/>
+            </children>
+        </VBox>
+
+        <HBox spacing="12.0">
+            <children>
+                <VBox spacing="10.0" styleClass="home-card" prefWidth="280.0">
+                    <children>
+                        <Label text="User Management" styleClass="card-title"/>
+                        <Label text="Admin area for account lifecycle, roles, and status control." wrapText="true" styleClass="card-text"/>
+                        <Region prefHeight="4.0"/>
+                        <Button fx:id="openUsersButton" text="Open Users" onAction="#onOpenUsers" styleClass="primary-button"/>
+                    </children>
+                </VBox>
+
+                <VBox spacing="10.0" styleClass="home-card" prefWidth="280.0">
+                    <children>
+                        <Label text="My Profile" styleClass="card-title"/>
+                        <Label text="Review and update your personal information and account details." wrapText="true" styleClass="card-text"/>
+                        <Region prefHeight="4.0"/>
+                        <Button fx:id="openProfileButton" text="Open Profile" onAction="#onOpenProfile" styleClass="ghost-button"/>
+                    </children>
+                </VBox>
+
+                <VBox spacing="10.0" styleClass="home-card" prefWidth="280.0">
+                    <children>
+                        <Label text="Security" styleClass="card-title"/>
+                        <Label text="Update your account password using the secure desktop flow." wrapText="true" styleClass="card-text"/>
+                        <Region prefHeight="4.0"/>
+                        <Button fx:id="openChangePasswordButton" text="Change Password" onAction="#onOpenChangePassword" styleClass="ghost-button"/>
+                    </children>
+                </VBox>
+            </children>
+        </HBox>
+    </children>
+</VBox>

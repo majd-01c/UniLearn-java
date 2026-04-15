@@ -1,0 +1,227 @@
+package entities.forum;
+
+import entities.User;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import static jakarta.persistence.GenerationType.IDENTITY;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.Transient;
+import java.sql.Timestamp;
+import java.util.HashSet;
+import java.util.Set;
+
+@Entity
+@Table(name = "forum_topic")
+public class ForumTopic implements java.io.Serializable {
+
+    private int id;
+    private User user;
+    private ForumCategory forumCategory;
+    private String title;
+    private String content;
+    private String status;
+    private byte isPinned;
+    private int viewCount;
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
+    private Timestamp lastActivityAt;
+    private Set<ForumComment> forumComments = new HashSet<>(0);
+
+    public ForumTopic() {
+    }
+
+    public ForumTopic(int id, User user, ForumCategory forumCategory, String title, String content, String status, byte isPinned, int viewCount, Timestamp createdAt, Timestamp updatedAt) {
+        this.id = id;
+        this.user = user;
+        this.forumCategory = forumCategory;
+        this.title = title;
+        this.content = content;
+        this.status = status;
+        this.isPinned = isPinned;
+        this.viewCount = viewCount;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
+
+    public ForumTopic(int id, User user, ForumCategory forumCategory, String title, String content, String status, byte isPinned, int viewCount, Timestamp createdAt, Timestamp updatedAt, Timestamp lastActivityAt, Set<ForumComment> forumComments) {
+        this.id = id;
+        this.user = user;
+        this.forumCategory = forumCategory;
+        this.title = title;
+        this.content = content;
+        this.status = status;
+        this.isPinned = isPinned;
+        this.viewCount = viewCount;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.lastActivityAt = lastActivityAt;
+        this.forumComments = forumComments;
+    }
+
+    @Id
+    @GeneratedValue(strategy = IDENTITY)
+    @Column(name = "id", unique = true, nullable = false)
+    public int getId() {
+        return this.id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id", nullable = false)
+    public User getUser() {
+        return this.user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    public ForumCategory getForumCategory() {
+        return this.forumCategory;
+    }
+
+    public void setForumCategory(ForumCategory forumCategory) {
+        this.forumCategory = forumCategory;
+    }
+
+    @Column(name = "title", nullable = false, length = 255)
+    public String getTitle() {
+        return this.title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    @Column(name = "content", nullable = false)
+    public String getContent() {
+        return this.content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    @Column(name = "status", nullable = false, length = 255)
+    public String getStatus() {
+        return this.status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    @Column(name = "is_pinned", nullable = false)
+    public byte getIsPinned() {
+        return this.isPinned;
+    }
+
+    public void setIsPinned(byte isPinned) {
+        this.isPinned = isPinned;
+    }
+
+    @Column(name = "view_count", nullable = false)
+    public int getViewCount() {
+        return this.viewCount;
+    }
+
+    public void setViewCount(int viewCount) {
+        this.viewCount = viewCount;
+    }
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "created_at", nullable = false, length = 19)
+    public Timestamp getCreatedAt() {
+        return this.createdAt;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "updated_at", nullable = false, length = 19)
+    public Timestamp getUpdatedAt() {
+        return this.updatedAt;
+    }
+
+    public void setUpdatedAt(Timestamp updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "last_activity_at", length = 19)
+    public Timestamp getLastActivityAt() {
+        return this.lastActivityAt;
+    }
+
+    public void setLastActivityAt(Timestamp lastActivityAt) {
+        this.lastActivityAt = lastActivityAt;
+    }
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "forumTopic")
+    public Set<ForumComment> getForumComments() {
+        return this.forumComments;
+    }
+
+    public void setForumComments(Set<ForumComment> forumComments) {
+        this.forumComments = forumComments;
+    }
+
+    // === Helper methods ===
+
+    @Transient
+    public TopicStatus getTopicStatus() {
+        return TopicStatus.fromValue(this.status);
+    }
+
+    public void setTopicStatus(TopicStatus topicStatus) {
+        this.status = topicStatus.getValue();
+    }
+
+    @Transient
+    public boolean isLocked() {
+        return TopicStatus.LOCKED.getValue().equalsIgnoreCase(this.status);
+    }
+
+    @Transient
+    public boolean isSolved() {
+        return TopicStatus.SOLVED.getValue().equalsIgnoreCase(this.status);
+    }
+
+    @Transient
+    public boolean isOpen() {
+        return TopicStatus.OPEN.getValue().equalsIgnoreCase(this.status);
+    }
+
+    @Transient
+    public boolean isPinnedTopic() {
+        return this.isPinned == 1;
+    }
+
+    public void incrementViewCount() {
+        this.viewCount++;
+    }
+
+    public void updateLastActivity() {
+        this.lastActivityAt = new Timestamp(System.currentTimeMillis());
+    }
+
+    @Transient
+    public int getCommentsCount() {
+        return this.forumComments != null ? this.forumComments.size() : 0;
+    }
+}

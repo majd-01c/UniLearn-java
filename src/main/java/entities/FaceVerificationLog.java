@@ -1,10 +1,12 @@
 package entities;
-// Generated Apr 7, 2026, 3:00:13 PM by Hibernate Tools 6.6.42.Final
+// Generated 11 avr. 2026, 15:58:41 by Hibernate Tools 6.6.42.Final
 
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import static jakarta.persistence.GenerationType.IDENTITY;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -22,7 +24,7 @@ import java.sql.Timestamp;
 public class FaceVerificationLog  implements java.io.Serializable {
 
 
-     private int id;
+     private Integer id;
      private User user;
      private String action;
      private Double distance;
@@ -33,14 +35,12 @@ public class FaceVerificationLog  implements java.io.Serializable {
     }
 
 	
-    public FaceVerificationLog(int id, User user, String action, Timestamp createdAt) {
-        this.id = id;
+    public FaceVerificationLog(User user, String action, Timestamp createdAt) {
         this.user = user;
         this.action = action;
         this.createdAt = createdAt;
     }
-    public FaceVerificationLog(int id, User user, String action, Double distance, String ipAddress, Timestamp createdAt) {
-       this.id = id;
+    public FaceVerificationLog(User user, String action, Double distance, String ipAddress, Timestamp createdAt) {
        this.user = user;
        this.action = action;
        this.distance = distance;
@@ -48,15 +48,15 @@ public class FaceVerificationLog  implements java.io.Serializable {
        this.createdAt = createdAt;
     }
    
-     @Id 
+     @Id @GeneratedValue(strategy=IDENTITY)
 
     
     @Column(name="id", unique=true, nullable=false)
-    public int getId() {
+    public Integer getId() {
         return this.id;
     }
     
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

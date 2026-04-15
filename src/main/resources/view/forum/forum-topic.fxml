@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<ScrollPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controller.forum.ForumTopicController"
+            fitToWidth="true" styleClass="forum-scroll-pane">
+    <VBox spacing="16.0" styleClass="forum-root">
+        <padding>
+            <Insets top="22.0" right="22.0" bottom="22.0" left="22.0"/>
+        </padding>
+
+        <!-- Back -->
+        <HBox spacing="8.0">
+            <Button text="← Forum" onAction="#onBackToForum" styleClass="ghost-button"/>
+            <Button text="← Category" onAction="#onBackToCategory" styleClass="ghost-button"/>
+        </HBox>
+
+        <!-- Topic Header Card -->
+        <VBox spacing="10.0" styleClass="forum-card">
+            <HBox spacing="8.0" alignment="CENTER_LEFT">
+                <Label fx:id="pinnedBadge" text="📌 Pinned" styleClass="forum-pinned-badge"/>
+                <Label fx:id="topicStatusLabel" text="Open" styleClass="forum-status-badge"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="topicViewsLabel" text="👁 0" styleClass="forum-item-subtitle"/>
+            </HBox>
+
+            <Label fx:id="topicTitleLabel" text="Topic Title" styleClass="forum-topic-title" wrapText="true"/>
+            <Label fx:id="topicMetaLabel" text="by Author in Category • Date" styleClass="forum-item-subtitle"/>
+            <Label fx:id="topicContentLabel" text="Topic content..." styleClass="forum-topic-content" wrapText="true"/>
+
+            <!-- Topic Actions -->
+            <HBox fx:id="topicActionsBox" spacing="8.0" alignment="CENTER_LEFT"/>
+        </VBox>
+
+        <!-- Comments Section -->
+        <VBox spacing="4.0">
+            <Label text="💬 Comments" styleClass="forum-card-title"/>
+            <VBox fx:id="commentsContainer" spacing="8.0"/>
+        </VBox>
+
+        <!-- Comment Form -->
+        <VBox fx:id="commentFormBox" spacing="8.0" styleClass="forum-card">
+            <Label text="Post a Comment" styleClass="forum-card-title"/>
+            <TextArea fx:id="commentInput" promptText="Write your comment..." prefRowCount="4" styleClass="forum-text-area"/>
+            <HBox spacing="8.0">
+                <Button fx:id="submitCommentButton" text="Post Comment" onAction="#onSubmitComment" styleClass="primary-button"/>
+            </HBox>
+        </VBox>
+    </VBox>
+</ScrollPane>

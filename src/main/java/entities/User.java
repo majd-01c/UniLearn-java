@@ -1,7 +1,13 @@
 package entities;
-// Generated Apr 7, 2026, 3:00:13 PM by Hibernate Tools 6.6.42.Final
+// Generated 11 avr. 2026, 15:58:41 by Hibernate Tools 6.6.42.Final
 
 
+import entities.forum.ForumComment;
+import entities.forum.ForumCommentReaction;
+import entities.forum.ForumTopic;
+import entities.job_offer.GeneralChatMessage;
+import entities.job_offer.JobApplication;
+import entities.job_offer.JobOffer;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

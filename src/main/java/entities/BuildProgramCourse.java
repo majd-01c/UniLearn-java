@@ -1,10 +1,12 @@
 package entities;
-// Generated Apr 7, 2026, 3:00:13 PM by Hibernate Tools 6.6.42.Final
+// Generated 11 avr. 2026, 15:58:41 by Hibernate Tools 6.6.42.Final
 
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import static jakarta.persistence.GenerationType.IDENTITY;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -24,7 +26,7 @@ import java.util.Set;
 public class BuildProgramCourse  implements java.io.Serializable {
 
 
-     private int id;
+     private Integer id;
      private BuildProgramModule buildProgramModule;
      private Course course;
      private Set<BuildProgramContenu> buildProgramContenus = new HashSet<BuildProgramContenu>(0);
@@ -33,27 +35,25 @@ public class BuildProgramCourse  implements java.io.Serializable {
     }
 
 	
-    public BuildProgramCourse(int id, BuildProgramModule buildProgramModule, Course course) {
-        this.id = id;
+    public BuildProgramCourse(BuildProgramModule buildProgramModule, Course course) {
         this.buildProgramModule = buildProgramModule;
         this.course = course;
     }
-    public BuildProgramCourse(int id, BuildProgramModule buildProgramModule, Course course, Set<BuildProgramContenu> buildProgramContenus) {
-       this.id = id;
+    public BuildProgramCourse(BuildProgramModule buildProgramModule, Course course, Set<BuildProgramContenu> buildProgramContenus) {
        this.buildProgramModule = buildProgramModule;
        this.course = course;
        this.buildProgramContenus = buildProgramContenus;
     }
    
-     @Id 
+     @Id @GeneratedValue(strategy=IDENTITY)
 
     
     @Column(name="id", unique=true, nullable=false)
-    public int getId() {
+    public Integer getId() {
         return this.id;
     }
     
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

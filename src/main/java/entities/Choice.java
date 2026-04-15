@@ -1,12 +1,10 @@
 package entities;
-// Generated Apr 7, 2026, 3:00:13 PM by Hibernate Tools 6.6.42.Final
+// Generated 11 avr. 2026, 15:58:41 by Hibernate Tools 6.6.42.Final
 
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import static jakarta.persistence.GenerationType.IDENTITY;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -24,7 +22,7 @@ import java.util.Set;
 public class Choice  implements java.io.Serializable {
 
 
-     private Integer id;
+     private int id;
      private Question question;
      private String choiceText;
      private byte isCorrect;
@@ -35,13 +33,15 @@ public class Choice  implements java.io.Serializable {
     }
 
 	
-    public Choice(Question question, String choiceText, byte isCorrect, int position) {
+    public Choice(int id, Question question, String choiceText, byte isCorrect, int position) {
+        this.id = id;
         this.question = question;
         this.choiceText = choiceText;
         this.isCorrect = isCorrect;
         this.position = position;
     }
-    public Choice(Question question, String choiceText, byte isCorrect, int position, Set<Answer> answers) {
+    public Choice(int id, Question question, String choiceText, byte isCorrect, int position, Set<Answer> answers) {
+       this.id = id;
        this.question = question;
        this.choiceText = choiceText;
        this.isCorrect = isCorrect;
@@ -49,15 +49,15 @@ public class Choice  implements java.io.Serializable {
        this.answers = answers;
     }
    
-     @Id @GeneratedValue(strategy=IDENTITY)
+     @Id 
 
     
     @Column(name="id", unique=true, nullable=false)
-    public Integer getId() {
+    public int getId() {
         return this.id;
     }
     
-    public void setId(Integer id) {
+    public void setId(int id) {
         this.id = id;
     }
 

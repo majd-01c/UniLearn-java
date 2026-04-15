@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?><?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controller.lms.AdminProgramController"
+      styleClass="lms-root" spacing="16">
+    <padding><Insets top="8" right="8" bottom="8" left="8"/></padding>
+
+    <!-- Header Bar -->
+    <HBox spacing="12" alignment="CENTER_LEFT">
+        <Label text="Programs" styleClass="lms-page-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <TextField fx:id="searchField" promptText="Search by name..." prefWidth="220" styleClass="lms-input"/>
+        <ComboBox fx:id="statusFilter" promptText="All" prefWidth="130"/>
+        <Button text="+ New Program" onAction="#onNewProgram" styleClass="primary-button"/>
+    </HBox>
+
+    <!-- Stats Row -->
+    <HBox fx:id="statsRow" spacing="12">
+        <VBox styleClass="stat-card" spacing="2"><Label fx:id="totalLabel" text="0" styleClass="stat-value"/><Label text="Total Programs" styleClass="stat-label"/></VBox>
+        <VBox styleClass="stat-card" spacing="2"><Label fx:id="publishedLabel" text="0" styleClass="stat-value"/><Label text="Published" styleClass="stat-label"/></VBox>
+        <VBox styleClass="stat-card" spacing="2"><Label fx:id="draftLabel" text="0" styleClass="stat-value"/><Label text="Draft" styleClass="stat-label"/></VBox>
+    </HBox>
+
+    <!-- Cards container -->
+    <ScrollPane VBox.vgrow="ALWAYS" styleClass="lms-scroll" fitToWidth="true" style="-fx-background-color: transparent;">
+        <FlowPane fx:id="cardsContainer" hgap="16" vgap="16">
+            <padding><Insets top="4" right="4" bottom="4" left="4"/></padding>
+        </FlowPane>
+    </ScrollPane>
+</VBox>

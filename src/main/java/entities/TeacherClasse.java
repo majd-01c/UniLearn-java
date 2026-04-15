@@ -1,5 +1,5 @@
 package entities;
-// Generated Apr 7, 2026, 3:00:13 PM by Hibernate Tools 6.6.42.Final
+// Generated 11 avr. 2026, 15:58:41 by Hibernate Tools 6.6.42.Final
 
 
 import jakarta.persistence.Column;
@@ -42,14 +42,16 @@ public class TeacherClasse  implements java.io.Serializable {
     }
 
 	
-    public TeacherClasse(User user, Classe classe, Timestamp assignedAt, byte isActive, byte hasCreatedModule) {
+    public TeacherClasse(Integer id, User user, Classe classe, Timestamp assignedAt, byte isActive, byte hasCreatedModule) {
+        this.id = id;
         this.user = user;
         this.classe = classe;
         this.assignedAt = assignedAt;
         this.isActive = isActive;
         this.hasCreatedModule = hasCreatedModule;
     }
-    public TeacherClasse(User user, Classe classe, Module module, Timestamp assignedAt, byte isActive, byte hasCreatedModule, Set<ClassMeeting> classMeetings) {
+    public TeacherClasse(Integer id, User user, Classe classe, Module module, Timestamp assignedAt, byte isActive, byte hasCreatedModule, Set<ClassMeeting> classMeetings) {
+       this.id = id;
        this.user = user;
        this.classe = classe;
        this.module = module;

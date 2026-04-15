@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:id="rootContainer"
+      fx:controller="controller.BackOfficeHomeController"
+      spacing="16.0" styleClass="home-root admin-home-root animate-enter">
+    <padding>
+        <Insets top="22.0" right="22.0" bottom="22.0" left="22.0"/>
+    </padding>
+    <children>
+        <HBox spacing="12.0">
+            <children>
+                <VBox spacing="8.0" styleClass="home-card admin-card stagger-card" HBox.hgrow="ALWAYS">
+                    <children>
+                        <HBox spacing="8.0" alignment="CENTER_LEFT">
+                            <children>
+                                <Label text="BackOffice" styleClass="admin-title-chip"/>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Button text="Open User List" onAction="#onOpenUsers" styleClass="admin-primary-button"/>
+                            </children>
+                        </HBox>
+                        <Label fx:id="welcomeLabel" text="Welcome to BackOffice" styleClass="home-title"/>
+                        <Label fx:id="roleLabel" text="Role: ADMIN" styleClass="home-role"/>
+                        <Label text="Admin dashboard for user lifecycle, moderation shortcuts, and operational controls."
+                               wrapText="true" styleClass="home-summary"/>
+                    </children>
+                </VBox>
+
+                <VBox spacing="10.0" styleClass="home-card admin-card admin-side-panel stagger-card" prefWidth="290.0">
+                    <children>
+                        <Label text="Account &amp; Services" styleClass="card-title"/>
+                        <Label text="Quick links for profile, moderation, and class/program operations." wrapText="true" styleClass="card-text"/>
+                        <Region prefHeight="4.0"/>
+                        <Button text="My Profile" onAction="#onOpenProfile" styleClass="ghost-button"/>
+                        <Button text="Manage Job Offers" onAction="#onOpenJobOfferManagement" styleClass="ghost-button"/>
+                        <Button text="Program/Class Shortcut" onAction="#onOpenProgramManagement" styleClass="ghost-button"/>
+                        <Button text="Moderation Shortcut" onAction="#onOpenModeration" styleClass="ghost-button"/>
+                    </children>
+                </VBox>
+            </children>
+        </HBox>
+
+        <HBox spacing="12.0">
+            <children>
+                <VBox spacing="6.0" styleClass="home-card admin-card stagger-card" prefWidth="220.0">
+                    <children>
+                        <Label text="Total Users" styleClass="admin-stat-title"/>
+                        <Label fx:id="totalUsersStatLabel" text="-" styleClass="admin-stat-value"/>
+                    </children>
+                </VBox>
+
+                <VBox spacing="6.0" styleClass="home-card admin-card stagger-card" prefWidth="220.0">
+                    <children>
+                        <Label text="Active Accounts" styleClass="admin-stat-title"/>
+                        <Label fx:id="activeUsersStatLabel" text="-" styleClass="admin-stat-value"/>
+                    </children>
+                </VBox>
+
+                <VBox spacing="6.0" styleClass="home-card admin-card stagger-card" prefWidth="220.0">
+                    <children>
+                        <Label text="Inactive Accounts" styleClass="admin-stat-title"/>
+                        <Label fx:id="inactiveUsersStatLabel" text="-" styleClass="admin-stat-value"/>
+                    </children>
+                </VBox>
+
+                <VBox spacing="6.0" styleClass="home-card admin-card stagger-card" prefWidth="220.0">
+                    <children>
+                        <Label text="Recent Users" styleClass="admin-stat-title"/>
+                        <Label fx:id="recentUsersStatLabel" text="-" styleClass="admin-stat-value"/>
+                    </children>
+                </VBox>
+            </children>
+        </HBox>
+
+        <VBox spacing="10.0" styleClass="home-card admin-card stagger-card">
+            <children>
+                <Label text="Quick Stats" styleClass="card-title"/>
+                <Label fx:id="usersCountLabel" text="Users: -" styleClass="card-text"/>
+                <Label fx:id="pendingActionsLabel" text="Pending actions: -" styleClass="card-text"/>
+                <Label fx:id="recentActivityLabel" text="Recent activity: -" styleClass="card-text"/>
+                <Region prefHeight="4.0"/>
+                <HBox spacing="10.0">
+                    <children>
+                        <Button text="Open User List" onAction="#onOpenUsers" styleClass="primary-button"/>
+                        <Button text="Manage Job Offers" onAction="#onOpenJobOfferManagement" styleClass="ghost-button"/>
+                        <Button text="My Profile" onAction="#onOpenProfile" styleClass="ghost-button"/>
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </children>
+</VBox>

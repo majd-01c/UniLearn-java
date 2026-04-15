@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?><?import javafx.scene.control.*?><?import javafx.scene.layout.*?>
+<ScrollPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.lms.StudentCourseViewController" styleClass="lms-scroll" fitToWidth="true">
+<VBox styleClass="lms-root" spacing="16"><padding><Insets top="8" right="8" bottom="8" left="8"/></padding>
+    <HBox styleClass="breadcrumb-bar"><Button text="My Learning" onAction="#onBackToLearning" styleClass="breadcrumb-link"/><Label text=" › " styleClass="breadcrumb-sep"/><Label fx:id="breadcrumb" text="" styleClass="breadcrumb-current"/></HBox>
+    <VBox styleClass="lms-card" spacing="8"><Label fx:id="courseTitle" styleClass="card-title"/></VBox>
+    <Label text="Content" styleClass="lms-page-title"/>
+    <VBox fx:id="contentContainer" spacing="8"/>
+    <Label fx:id="emptyLabel" text="No content available in this course yet." styleClass="empty-state" visible="false" managed="false"/>
+</VBox>
+</ScrollPane>

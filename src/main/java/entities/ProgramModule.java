@@ -1,5 +1,5 @@
 package entities;
-// Generated Apr 7, 2026, 3:00:13 PM by Hibernate Tools 6.6.42.Final
+// Generated 11 avr. 2026, 15:58:41 by Hibernate Tools 6.6.42.Final
 
 
 import jakarta.persistence.Column;
@@ -30,7 +30,8 @@ public class ProgramModule  implements java.io.Serializable {
     public ProgramModule() {
     }
 
-    public ProgramModule(Program program, Module module) {
+    public ProgramModule(Integer id, Program program, Module module) {
+       this.id = id;
        this.program = program;
        this.module = module;
     }
