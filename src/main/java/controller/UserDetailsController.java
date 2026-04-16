@@ -18,6 +18,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import service.AuthenticationService;
 import service.ProfileService;
+import service.ThemeManager;
 import service.UserDetailsService;
 import service.UserService;
 import util.AppNavigator;
@@ -35,6 +36,15 @@ import java.util.ResourceBundle;
 public class UserDetailsController implements Initializable {
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private static final String[] DIALOG_STYLESHEETS = {
+            "/view/styles/desktop-tokens.css",
+            "/view/styles/desktop-shell.css",
+            "/view/styles/desktop-components.css",
+            "/view/styles/desktop-admin.css",
+            "/view/styles/desktop-frontoffice.css",
+            "/view/styles/desktop-animations.css",
+            "/view/styles/unilearn-desktop.css"
+    };
 
     @FXML
     private Label emailValueLabel;
@@ -144,11 +154,24 @@ public class UserDetailsController implements Initializable {
             dialogStage.setTitle("Edit User");
             dialogStage.initModality(Modality.APPLICATION_MODAL);
             dialogStage.initOwner(emailValueLabel.getScene().getWindow());
-            dialogStage.setScene(new Scene(root));
+            Scene dialogScene = new Scene(root);
+            applyDialogStyles(dialogScene);
+            dialogStage.setScene(dialogScene);
             dialogStage.showAndWait();
         } catch (IOException exception) {
             showError("Open form failed", "Could not open edit form: " + exception.getMessage());
         }
+    }
+
+    private void applyDialogStyles(Scene scene) {
+        for (String stylesheetPath : DIALOG_STYLESHEETS) {
+            URL stylesheetUrl = getClass().getResource(stylesheetPath);
+            if (stylesheetUrl != null) {
+                scene.getStylesheets().add(stylesheetUrl.toExternalForm());
+            }
+        }
+
+        ThemeManager.getInstance().applySavedTheme(scene);
     }
 
     @FXML
@@ -206,7 +229,9 @@ public class UserDetailsController implements Initializable {
     private void bindUserData() {
         emailValueLabel.setText(safeText(currentUser.getEmail()));
         roleValueLabel.setText(toDisplayRole(currentUser.getRole()));
-        statusValueLabel.setText(currentUser.getIsActive() == (byte) 1 ? "Active" : "Inactive");
+        boolean active = currentUser.getIsActive() == (byte) 1;
+        statusValueLabel.setText(active ? "Active" : "Inactive");
+        applyStatusChipStyle(active);
         verificationStatusValueLabel.setText(buildVerificationStatus());
         lastLoginValueLabel.setText(resolveLastLogin());
 
@@ -387,10 +412,15 @@ public class UserDetailsController implements Initializable {
 
         String normalizedRole = role.trim().toUpperCase();
         if (normalizedRole.startsWith("ROLE_")) {
-            return normalizedRole.substring("ROLE_".length());
+            normalizedRole = normalizedRole.substring("ROLE_".length());
         }
 
-        return normalizedRole;
+        return normalizedRole.replace('_', ' ');
+    }
+
+    private void applyStatusChipStyle(boolean active) {
+        statusValueLabel.getStyleClass().removeAll("user-details-status-active", "user-details-status-inactive");
+        statusValueLabel.getStyleClass().add(active ? "user-details-status-active" : "user-details-status-inactive");
     }
 
     private String formatTimestamp(Timestamp timestamp) {

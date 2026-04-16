@@ -10,91 +10,120 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
 <BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
             prefWidth="980.0" prefHeight="680.0"
-            fx:controller="controller.UserDetailsController">
+            fx:controller="controller.UserDetailsController"
+            styleClass="user-details-root">
 
     <top>
-        <VBox spacing="6.0">
+        <VBox spacing="6.0" styleClass="user-details-hero">
             <padding>
                 <Insets top="14.0" right="16.0" bottom="8.0" left="16.0"/>
             </padding>
             <children>
-                <Label text="User Details" style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
-                <Label text="Read-only profile and activity summary" style="-fx-text-fill: #5f6b7a;"/>
+                <Label text="User Details" styleClass="home-title"/>
+                <Label text="Read-only profile and activity summary" styleClass="home-summary"/>
             </children>
         </VBox>
     </top>
 
     <center>
-        <ScrollPane fitToWidth="true" fitToHeight="true">
+        <ScrollPane fitToWidth="true" fitToHeight="true" hbarPolicy="NEVER" styleClass="user-details-scroll">
             <content>
-                <VBox spacing="14.0">
+                <VBox spacing="14.0" styleClass="user-details-content">
                     <padding>
                         <Insets top="8.0" right="16.0" bottom="12.0" left="16.0"/>
                     </padding>
                     <children>
                         <HBox spacing="18.0" alignment="TOP_LEFT">
                             <children>
-                                <VBox spacing="8.0" prefWidth="230.0" alignment="TOP_CENTER">
+                                <VBox spacing="10.0" prefWidth="240.0" alignment="TOP_CENTER" styleClass="user-details-profile-card">
                                     <children>
-                                        <ImageView fx:id="profileImageView" fitWidth="180.0" fitHeight="180.0" preserveRatio="true" smooth="true"/>
-                                        <Label fx:id="profileImageStatusLabel" text="No profile picture available" wrapText="true" style="-fx-text-fill: #6b7280;"/>
+                                        <Label text="Profile" styleClass="user-details-section-label"/>
+                                        <StackPane prefWidth="196.0" prefHeight="196.0" styleClass="user-details-avatar-shell">
+                                            <children>
+                                                <ImageView fx:id="profileImageView" fitWidth="180.0" fitHeight="180.0" preserveRatio="true" smooth="true"/>
+                                            </children>
+                                        </StackPane>
+                                        <Label fx:id="profileImageStatusLabel" text="No profile picture available" wrapText="true" styleClass="user-details-avatar-status"/>
                                     </children>
                                 </VBox>
 
-                                <GridPane hgap="10.0" vgap="8.0">
+                                <VBox spacing="10.0" styleClass="user-details-info-card" HBox.hgrow="ALWAYS">
                                     <children>
-                                        <Label text="Email" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                                        <Label fx:id="emailValueLabel" GridPane.rowIndex="0" GridPane.columnIndex="1" wrapText="true"/>
+                                        <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                            <children>
+                                                <Label text="Account Snapshot" styleClass="card-title"/>
+                                                <Region HBox.hgrow="ALWAYS"/>
+                                                <Label fx:id="statusValueLabel" styleClass="user-details-chip"/>
+                                            </children>
+                                        </HBox>
 
-                                        <Label text="Role" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                                        <Label fx:id="roleValueLabel" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                                        <GridPane hgap="12.0" vgap="9.0">
+                                            <children>
+                                                <Label text="Email" styleClass="user-details-key" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                                <Label fx:id="emailValueLabel" styleClass="user-details-value" GridPane.rowIndex="0" GridPane.columnIndex="1" wrapText="true" maxWidth="540.0"/>
 
-                                        <Label text="Status" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-                                        <Label fx:id="statusValueLabel" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                                                <Label text="Role" styleClass="user-details-key" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                                <Label fx:id="roleValueLabel" styleClass="user-details-chip user-details-chip-role" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
 
-                                        <Label text="Verification" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-                                        <Label fx:id="verificationStatusValueLabel" GridPane.rowIndex="3" GridPane.columnIndex="1" wrapText="true"/>
+                                                <Label text="Verification" styleClass="user-details-key" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                                                <Label fx:id="verificationStatusValueLabel" styleClass="user-details-value" GridPane.rowIndex="2" GridPane.columnIndex="1" wrapText="true" maxWidth="540.0"/>
 
-                                        <Label text="Last Login" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-                                        <Label fx:id="lastLoginValueLabel" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                                                <Label text="Last Login" styleClass="user-details-key" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                                                <Label fx:id="lastLoginValueLabel" styleClass="user-details-value" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
 
-                                        <Label text="First Name" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-                                        <Label fx:id="firstNameValueLabel" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+                                                <Label text="First Name" styleClass="user-details-key" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                                                <Label fx:id="firstNameValueLabel" styleClass="user-details-value" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
 
-                                        <Label text="Last Name" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
-                                        <Label fx:id="lastNameValueLabel" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+                                                <Label text="Last Name" styleClass="user-details-key" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                                                <Label fx:id="lastNameValueLabel" styleClass="user-details-value" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
 
-                                        <Label text="Phone" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
-                                        <Label fx:id="phoneValueLabel" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+                                                <Label text="Phone" styleClass="user-details-key" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+                                                <Label fx:id="phoneValueLabel" styleClass="user-details-value" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
 
-                                        <Label text="Description" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
-                                        <Label fx:id="descriptionValueLabel" GridPane.rowIndex="8" GridPane.columnIndex="1" wrapText="true"/>
+                                                <Label text="Description" styleClass="user-details-key" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+                                                <Label fx:id="descriptionValueLabel" styleClass="user-details-value" GridPane.rowIndex="7" GridPane.columnIndex="1" wrapText="true" maxWidth="540.0"/>
 
-                                        <Label text="Created At" GridPane.rowIndex="9" GridPane.columnIndex="0"/>
-                                        <Label fx:id="createdAtValueLabel" GridPane.rowIndex="9" GridPane.columnIndex="1"/>
+                                                <Label text="Created At" styleClass="user-details-key" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
+                                                <Label fx:id="createdAtValueLabel" styleClass="user-details-value" GridPane.rowIndex="8" GridPane.columnIndex="1"/>
 
-                                        <Label text="Updated At" GridPane.rowIndex="10" GridPane.columnIndex="0"/>
-                                        <Label fx:id="updatedAtValueLabel" GridPane.rowIndex="10" GridPane.columnIndex="1"/>
+                                                <Label text="Updated At" styleClass="user-details-key" GridPane.rowIndex="9" GridPane.columnIndex="0"/>
+                                                <Label fx:id="updatedAtValueLabel" styleClass="user-details-value" GridPane.rowIndex="9" GridPane.columnIndex="1"/>
+                                            </children>
+                                        </GridPane>
                                     </children>
-                                </GridPane>
+                                </VBox>
                             </children>
                         </HBox>
 
-                        <VBox spacing="6.0">
+                        <VBox spacing="8.0" styleClass="user-details-panel">
                             <children>
-                                <Label fx:id="eventsCountLabel" text="Events Created: 0" style="-fx-font-weight: bold;"/>
-                                <ListView fx:id="eventsListView" prefHeight="160.0"/>
+                                <HBox spacing="8.0" alignment="CENTER_LEFT">
+                                    <children>
+                                        <Label text="Events" styleClass="card-title"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <Label fx:id="eventsCountLabel" text="Events Created: 0" styleClass="user-details-chip user-details-chip-info"/>
+                                    </children>
+                                </HBox>
+                                <ListView fx:id="eventsListView" prefHeight="170.0" styleClass="user-details-list"/>
                             </children>
                         </VBox>
 
-                        <VBox spacing="6.0">
+                        <VBox spacing="8.0" styleClass="user-details-panel">
                             <children>
-                                <Label fx:id="gradesCountLabel" text="Grades: student=0 | teacher=0" style="-fx-font-weight: bold;"/>
-                                <ListView fx:id="gradesListView" prefHeight="160.0"/>
+                                <HBox spacing="8.0" alignment="CENTER_LEFT">
+                                    <children>
+                                        <Label text="Grades" styleClass="card-title"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <Label fx:id="gradesCountLabel" text="Grades: student=0 | teacher=0" styleClass="user-details-chip user-details-chip-info"/>
+                                    </children>
+                                </HBox>
+                                <ListView fx:id="gradesListView" prefHeight="170.0" styleClass="user-details-list"/>
                             </children>
                         </VBox>
                     </children>
@@ -104,14 +133,14 @@
     </center>
 
     <bottom>
-        <HBox spacing="10.0" alignment="CENTER_RIGHT">
+        <HBox spacing="10.0" alignment="CENTER_RIGHT" styleClass="user-details-actions">
             <BorderPane.margin>
                 <Insets top="8.0" right="16.0" bottom="14.0" left="16.0"/>
             </BorderPane.margin>
             <children>
-                <Button text="Go Back" onAction="#onGoBack"/>
-                <Button text="Edit" onAction="#onEdit"/>
-                <Button text="Delete" onAction="#onDelete"/>
+                <Button text="Go Back" onAction="#onGoBack" styleClass="ghost-button" prefWidth="120.0"/>
+                <Button text="Edit" onAction="#onEdit" styleClass="primary-button" prefWidth="110.0"/>
+                <Button text="Delete" onAction="#onDelete" styleClass="danger-button" prefWidth="110.0"/>
             </children>
         </HBox>
     </bottom>

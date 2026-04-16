@@ -171,10 +171,25 @@
 
 .side-danger-button {
     -fx-background-color: -ul-danger;
+    -fx-text-fill: #ffffff;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: rgba(255, 255, 255, 0.2);
+    -fx-border-width: 1;
+    -fx-padding: 10 12;
+    -fx-font-weight: 700;
+    -fx-font-size: 13px;
+    -fx-cursor: hand;
+    -fx-alignment: CENTER-LEFT;
 }
 
 .side-danger-button:hover {
     -fx-background-color: -ul-danger-hover;
+    -fx-border-color: rgba(255, 255, 255, 0.32);
+}
+
+.side-danger-button:pressed {
+    -fx-opacity: 0.94;
 }
 
 /* ----- Header ----- */

@@ -206,6 +206,11 @@ public class AppShellController implements Initializable {
             return;
         }
 
+        if (currentUser.getMustChangePassword() == (byte) 1) {
+            showChangePasswordView();
+            return;
+        }
+
         showHomeView();
     }
 

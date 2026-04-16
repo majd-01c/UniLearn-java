@@ -70,7 +70,7 @@
                         <Button fx:id="navChangePasswordButton" text="⚿  Change Password" onAction="#onNavChangePassword" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
 
                         <Region VBox.vgrow="ALWAYS"/>
-                        <Button text="⏻  Logout" onAction="#onNavLogout" maxWidth="1.7976931348623157E308" styleClass="side-button side-danger-button"/>
+                        <Button text="⏻  Logout" onAction="#onNavLogout" maxWidth="1.7976931348623157E308" styleClass="side-danger-button"/>
                     </children>
                 </VBox>
             </content>
