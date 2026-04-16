@@ -1,10 +1,13 @@
-package services;
+package services.job_offer;
 
-import entities.JobApplication;
+import entities.job_offer.JobApplication;
+import services.IService;
+import services.ServiceSupport;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,30 +15,39 @@ public class ServiceJobApplication extends ServiceSupport implements IService<Jo
 
     @Override
     public void add(JobApplication application) {
-        String sql = "INSERT INTO job_application (id, student_id, offer_id, message, cv_file_name, status, created_at, updated_at, score, score_breakdown, scored_at, extracted_data, status_notified, status_notified_at, status_message) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, application.getId());
-            statement.setInt(2, application.getUser().getId());
-            statement.setInt(3, application.getJobOffer().getId());
-            setNullableString(statement, 4, application.getMessage());
-            setNullableString(statement, 5, application.getCvFileName());
-            statement.setString(6, application.getStatus());
-            statement.setTimestamp(7, application.getCreatedAt());
-            setNullableTimestamp(statement, 8, application.getUpdatedAt());
-            setNullableInteger(statement, 9, application.getScore());
-            setNullableString(statement, 10, application.getScoreBreakdown());
-            setNullableTimestamp(statement, 11, application.getScoredAt());
-            setNullableString(statement, 12, application.getExtractedData());
+        String sql = "INSERT INTO job_application (student_id, offer_id, message, cv_file_name, status, created_at, updated_at, score, score_breakdown, scored_at, extracted_data, status_notified, status_notified_at, status_message) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            statement.setInt(1, application.getUser().getId());
+            statement.setInt(2, application.getJobOffer().getId());
+            setNullableString(statement, 3, application.getMessage());
+            setNullableString(statement, 4, application.getCvFileName());
+            statement.setString(5, application.getStatus());
+            statement.setTimestamp(6, application.getCreatedAt());
+            setNullableTimestamp(statement, 7, application.getUpdatedAt());
+            setNullableInteger(statement, 8, application.getScore());
+            setNullableString(statement, 9, application.getScoreBreakdown());
+            setNullableTimestamp(statement, 10, application.getScoredAt());
+            setNullableString(statement, 11, application.getExtractedData());
             if (application.getStatusNotified() == null) {
-                statement.setNull(13, java.sql.Types.TINYINT);
+                statement.setNull(12, java.sql.Types.TINYINT);
             } else {
-                statement.setByte(13, application.getStatusNotified());
+                statement.setByte(12, application.getStatusNotified());
             }
-            setNullableTimestamp(statement, 14, application.getStatusNotifiedAt());
-            setNullableString(statement, 15, application.getStatusMessage());
-            statement.executeUpdate();
+            setNullableTimestamp(statement, 13, application.getStatusNotifiedAt());
+            setNullableString(statement, 14, application.getStatusMessage());
+
+            int affectedRows = statement.executeUpdate();
+            if (affectedRows != 1) {
+                throw new SQLException("Failed to insert job application: affected rows = " + affectedRows);
+            }
+
+            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    application.setId(generatedKeys.getInt(1));
+                }
+            }
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            throw new RuntimeException("Failed to add job application", e);
         }
     }
 
@@ -62,9 +74,13 @@ public class ServiceJobApplication extends ServiceSupport implements IService<Jo
             setNullableTimestamp(statement, 13, application.getStatusNotifiedAt());
             setNullableString(statement, 14, application.getStatusMessage());
             statement.setInt(15, application.getId());
-            statement.executeUpdate();
+
+            int affectedRows = statement.executeUpdate();
+            if (affectedRows != 1) {
+                throw new SQLException("Failed to update job application with id " + application.getId() + ": affected rows = " + affectedRows);
+            }
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            throw new RuntimeException("Failed to update job application", e);
         }
     }
 
@@ -73,9 +89,13 @@ public class ServiceJobApplication extends ServiceSupport implements IService<Jo
         String sql = "DELETE FROM job_application WHERE id = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, application.getId());
-            statement.executeUpdate();
+
+            int affectedRows = statement.executeUpdate();
+            if (affectedRows != 1) {
+                throw new SQLException("Failed to delete job application with id " + application.getId() + ": affected rows = " + affectedRows);
+            }
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            throw new RuntimeException("Failed to delete job application", e);
         }
     }
 

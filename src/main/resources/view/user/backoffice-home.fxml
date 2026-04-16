@@ -39,6 +39,7 @@
                         <Label text="Quick links for profile, moderation, and class/program operations." wrapText="true" styleClass="card-text"/>
                         <Region prefHeight="4.0"/>
                         <Button text="My Profile" onAction="#onOpenProfile" styleClass="ghost-button"/>
+                        <Button text="Manage Job Offers" onAction="#onOpenJobOfferManagement" styleClass="ghost-button"/>
                         <Button text="Open Evaluation" onAction="#onOpenEvaluation" styleClass="ghost-button"/>
                         <Button text="Program/Class Shortcut" onAction="#onOpenProgramManagement" styleClass="ghost-button"/>
                         <Button text="Moderation Shortcut" onAction="#onOpenModeration" styleClass="ghost-button"/>
@@ -89,6 +90,7 @@
                 <HBox spacing="10.0">
                     <children>
                         <Button text="Open User List" onAction="#onOpenUsers" styleClass="primary-button"/>
+                        <Button text="Manage Job Offers" onAction="#onOpenJobOfferManagement" styleClass="ghost-button"/>
                         <Button text="My Profile" onAction="#onOpenProfile" styleClass="ghost-button"/>
                     </children>
                 </HBox>

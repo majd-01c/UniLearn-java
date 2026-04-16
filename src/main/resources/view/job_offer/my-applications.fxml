@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.job_offer.MyApplicationsController" spacing="15" styleClass="job-offer-root">
+    <HBox spacing="10" VBox.vgrow="NEVER" styleClass="job-offer-surface-card job-offer-toolbar">
+            <Label text="📨 My Applications" styleClass="job-offer-page-title"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label text="Filter:" styleClass="job-offer-page-subtitle"/>
+            <ComboBox fx:id="filterStatus" prefWidth="150" styleClass="job-offer-filter-combo"/>
+            <Button text="Back to Job Offers" onAction="#onBack" styleClass="ghost-button"/>
+    </HBox>
+
+    <ListView fx:id="applicationListView" VBox.vgrow="ALWAYS" styleClass="job-offer-list-view"/>
+
+    <Label fx:id="noAppsLabel" text="No applications yet. Browse job offers and apply now!" 
+            styleClass="job-offer-empty-label" visible="false"/>
+</VBox>

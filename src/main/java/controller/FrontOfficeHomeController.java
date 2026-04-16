@@ -91,7 +91,7 @@ public class FrontOfficeHomeController implements Initializable {
 
     @FXML
     private void onOpenOpportunities() {
-        showInfo("Opportunities", "Opportunities module shortcut is ready for wiring.");
+        AppNavigator.showJobOffers();
     }
 
     @FXML

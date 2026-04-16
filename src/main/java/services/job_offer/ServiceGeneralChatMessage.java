@@ -1,6 +1,8 @@
-package services;
+package services.job_offer;
 
-import entities.GeneralChatMessage;
+import entities.job_offer.GeneralChatMessage;
+import services.IService;
+import services.ServiceSupport;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

@@ -7,6 +7,8 @@ import entities.User;
 import entities.forum.ForumCategory;
 import entities.forum.ForumComment;
 import entities.forum.ForumTopic;
+import entities.job_offer.JobOffer;
+import entities.job_offer.JobApplication;
 
 import java.util.List;
 
@@ -104,6 +106,46 @@ public final class AppNavigator {
     public static void showForumAdminCategories() {
         if (appShellController != null) {
             appShellController.showForumAdminCategoriesView();
+        }
+    }
+
+    // ========================
+    // JOB OFFER NAVIGATION
+    // ========================
+
+    public static void showJobOffers() {
+        if (appShellController != null) {
+            appShellController.showJobOffersView();
+        }
+    }
+
+    public static void showJobOfferDetail(JobOffer jobOffer) {
+        if (appShellController != null) {
+            appShellController.showJobOfferDetailView(jobOffer);
+        }
+    }
+
+    public static void showJobOfferForm(JobOffer jobOffer) {
+        if (appShellController != null) {
+            appShellController.showJobOfferFormView(jobOffer);
+        }
+    }
+
+    public static void showMyJobApplications() {
+        if (appShellController != null) {
+            appShellController.showMyJobApplicationsView();
+        }
+    }
+
+    public static void showPartnerApplications() {
+        if (appShellController != null) {
+            appShellController.showPartnerApplicationsView();
+        }
+    }
+
+    public static void showJobApplicationReview(JobApplication application) {
+        if (appShellController != null) {
+            appShellController.showJobApplicationReviewView(application);
         }
     }
 }

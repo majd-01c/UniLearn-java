@@ -2,10 +2,13 @@ package controller;
 
 import controller.lms.*;
 import controller.forum.*;
+import controller.job_offer.*;
 import entities.User;
 import entities.forum.ForumCategory;
 import entities.forum.ForumComment;
 import entities.forum.ForumTopic;
+import entities.job_offer.JobOffer;
+import entities.job_offer.JobApplication;
 import javafx.animation.FadeTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -74,6 +77,8 @@ public class AppShellController implements Initializable {
     private Button navEvaluationComplaintsButton;
     @FXML
     private Button navEvaluationDocumentsButton;
+    @FXML
+    private Button navJobOffersButton;
     @FXML
     private StackPane contentHost;
 
@@ -654,6 +659,108 @@ public class AppShellController implements Initializable {
         loadCenter("/view/forum/forum-admin-categories.fxml", null);
     }
 
+    // ========================
+    // JOB OFFER NAVIGATION
+    // ========================
+
+    public void showJobOffersView() {
+        if (!ensureAuthenticated())
+            return;
+        if (RoleGuard.isAdmin(currentUser)) {
+            setHeader("Job Offers Management", "Approve, reject, edit, close, and delete offers");
+        } else {
+            setHeader("Job Opportunities", "Browse and apply to job offers");
+        }
+        loadCenter("/view/job_offer/job-offers-list.fxml", controller -> {
+            if (controller instanceof JobOfferListController c) {
+                c.setCurrentUser(currentUser);
+            }
+        });
+    }
+
+    public void showJobOfferDetailView(JobOffer jobOffer) {
+        if (!ensureAuthenticated())
+            return;
+        if (jobOffer == null || jobOffer.getId() <= 0) {
+            showWarning("Job offer unavailable", "Selected job offer is not available.");
+            return;
+        }
+        setHeader("Job Offer Detail", jobOffer.getTitle() != null ? jobOffer.getTitle() : "Opportunity");
+        loadCenter("/view/job_offer/job-offer-detail.fxml", controller -> {
+            if (controller instanceof JobOfferDetailController c) {
+                c.setJobOffer(jobOffer);
+                c.setCurrentUser(currentUser);
+            }
+        });
+    }
+
+    public void showJobOfferFormView(JobOffer jobOffer) {
+        if (!ensureAuthenticated())
+            return;
+        // Only partners (non-admin users managing offers) can create/edit
+        if (jobOffer != null && !jobOffer.getUser().getId().equals(currentUser.getId()) && !RoleGuard.isAdmin(currentUser)) {
+            showWarning("Access Denied", "You can only manage your own job offers.");
+            showJobOffersView();
+            return;
+        }
+        setHeader(jobOffer == null ? "Create New Job Offer" : "Edit Job Offer", "Employer form");
+        loadCenter("/view/job_offer/job-offer-form.fxml", controller -> {
+            if (controller instanceof JobOfferFormController c) {
+                c.setJobOffer(jobOffer);
+                c.setCurrentUser(currentUser);
+            }
+        });
+    }
+
+    public void showMyJobApplicationsView() {
+        if (!ensureAuthenticated())
+            return;
+        if (!RoleGuard.isStudent(currentUser)) {
+            showWarning("Access Denied", "Only students can view applications.");
+            showJobOffersView();
+            return;
+        }
+        setHeader("My Job Applications", "Track and manage your applications");
+        loadCenter("/view/job_offer/my-applications.fxml", controller -> {
+            if (controller instanceof MyApplicationsController c) {
+                c.setCurrentUser(currentUser);
+            }
+        });
+    }
+
+    public void showPartnerApplicationsView() {
+        if (!ensureAuthenticated())
+            return;
+        if (RoleGuard.isStudent(currentUser)) {
+            showWarning("Access Denied", "Only partners and administrators can review applications.");
+            showJobOffersView();
+            return;
+        }
+
+        setHeader("Applications to Review", "Review candidates who applied to your offers");
+        loadCenter("/view/job_offer/partner-applications.fxml", controller -> {
+            if (controller instanceof PartnerApplicationsController c) {
+                c.setCurrentUser(currentUser);
+            }
+        });
+    }
+
+    public void showJobApplicationReviewView(JobApplication application) {
+        if (!ensureAuthenticated())
+            return;
+        if (application == null || application.getId() <= 0) {
+            showWarning("Application unavailable", "Selected application is not available.");
+            return;
+        }
+        setHeader("Application Review", "Review candidate application");
+        loadCenter("/view/job_offer/application-review.fxml", controller -> {
+            if (controller instanceof ApplicationReviewController c) {
+                c.setApplication(application);
+                c.setCurrentUser(currentUser);
+            }
+        });
+    }
+
     // ==================== FXML Handlers ====================
     @FXML
     private void onNavHome() {
@@ -668,6 +775,11 @@ public class AppShellController implements Initializable {
     @FXML
     private void onNavForum() {
         showForumView();
+    }
+
+    @FXML
+    private void onNavJobOffers() {
+        showJobOffersView();
     }
 
     @FXML
