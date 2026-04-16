@@ -31,6 +31,7 @@ public final class RoleGuard {
     public static final String ROLE_ADMIN   = "ADMIN";
     public static final String ROLE_TEACHER = "TEACHER";
     public static final String ROLE_STUDENT = "STUDENT";
+    public static final String ROLE_PARTNER = "BUSINESS_PARTNER";
 
     private RoleGuard() {}
 
@@ -45,6 +46,7 @@ public final class RoleGuard {
     public static boolean isAdmin(User u)   { return ROLE_ADMIN.equals(normalize(u)); }
     public static boolean isTeacher(User u) { return ROLE_TEACHER.equals(normalize(u)); }
     public static boolean isStudent(User u) { return ROLE_STUDENT.equals(normalize(u)); }
+    public static boolean isPartner(User u) { return ROLE_PARTNER.equals(normalize(u)); }
 
     public static void requireAdmin(User u) {
         if (!isAdmin(u)) throw new SecurityException("Access denied: administrator privileges required.");
