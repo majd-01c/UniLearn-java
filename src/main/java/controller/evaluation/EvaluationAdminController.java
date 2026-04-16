@@ -4,19 +4,26 @@ import entities.DocumentRequest;
 import entities.Reclamation;
 import entities.Schedule;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import service.evaluation.EvaluationService;
 
+import java.io.File;
 import java.sql.Time;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -39,7 +46,7 @@ public class EvaluationAdminController {
     @FXML
     private ComboBox<String> complaintsSortBox;
     @FXML
-    private TextField reclamationStatusField;
+    private ComboBox<String> reclamationStatusCombo;
     @FXML
     private TextArea reclamationResponseArea;
 
@@ -48,9 +55,11 @@ public class EvaluationAdminController {
     @FXML
     private ComboBox<String> documentsSortBox;
     @FXML
-    private TextField documentStatusField;
+    private ComboBox<String> documentStatusCombo;
     @FXML
-    private TextField documentPathField;
+    private VBox pdfDropZone;
+    @FXML
+    private Label pdfFileNameLabel;
 
     @FXML
     private VBox schedulesCardsBox;
@@ -82,7 +91,7 @@ public class EvaluationAdminController {
     @FXML
     private Label selectedScheduleLabel;
     @FXML
-    private Button deleteSelectedScheduleButton;
+    private Button deleteScheduleButton;
 
     @FXML
     private Label feedbackLabel;
@@ -91,12 +100,18 @@ public class EvaluationAdminController {
     private Integer selectedReclamationId;
     private Integer selectedDocumentId;
     private Integer selectedScheduleId;
+    private String selectedDocumentPath;
 
     @FXML
     public void initialize() {
         scheduleDayField.setText("monday");
         scheduleStartTimeField.setText("08:00");
         scheduleEndTimeField.setText("10:00");
+
+        reclamationStatusCombo.getItems().setAll("pending", "resolved", "rejected", "approved");
+        reclamationStatusCombo.getSelectionModel().select("pending");
+        documentStatusCombo.getItems().setAll("pending", "processing", "approved", "rejected", "delivered");
+        documentStatusCombo.getSelectionModel().select("pending");
 
         complaintsSortBox.getItems().setAll("NEW", "OLD", "A-Z");
         complaintsSortBox.getSelectionModel().select("NEW");
@@ -135,7 +150,7 @@ public class EvaluationAdminController {
             if (selectedReclamationId == null) {
                 throw new IllegalArgumentException("Please select a complaint card first.");
             }
-            String status = normalizeStatus(reclamationStatusField.getText(), "Reclamation status", ALLOWED_RECLAMATION_STATUS);
+            String status = normalizeStatus(reclamationStatusCombo.getValue(), "Reclamation status", ALLOWED_RECLAMATION_STATUS);
             String response = requireNotBlank(reclamationResponseArea.getText(), "Admin response");
             service.updateReclamationStatus(selectedReclamationId, status, response);
             refreshReclamations();
@@ -151,8 +166,8 @@ public class EvaluationAdminController {
             if (selectedDocumentId == null) {
                 throw new IllegalArgumentException("Please select a document request card first.");
             }
-            String status = normalizeStatus(documentStatusField.getText(), "Document status", ALLOWED_DOCUMENT_STATUS);
-            String path = requireNotBlank(documentPathField.getText(), "Document path");
+            String status = normalizeStatus(documentStatusCombo.getValue(), "Document status", ALLOWED_DOCUMENT_STATUS);
+            String path = requireNotBlank(selectedDocumentPath, "Document path (browse or drag a PDF)");
             service.updateDocumentRequest(selectedDocumentId, status, path);
             refreshDocumentRequests();
             showFeedback("Document request updated.");
@@ -225,6 +240,10 @@ public class EvaluationAdminController {
             if (selectedScheduleId == null) {
                 throw new IllegalArgumentException("Please select a schedule card first.");
             }
+            if (!confirmDeletion("Delete selected schedule?")) {
+                showFeedback("Deletion cancelled.");
+                return;
+            }
             service.deleteSchedule(selectedScheduleId);
             clearSelectedSchedule();
             refreshSchedules();
@@ -232,6 +251,46 @@ public class EvaluationAdminController {
         } catch (Exception e) {
             showFeedback("Delete schedule failed: " + e.getMessage());
         }
+    }
+
+    @FXML
+    private void onPdfDragOver(DragEvent event) {
+        Dragboard dragboard = event.getDragboard();
+        if (dragboard.hasFiles() && hasPdfFile(dragboard.getFiles())) {
+            event.acceptTransferModes(TransferMode.COPY);
+        }
+        event.consume();
+    }
+
+    @FXML
+    private void onPdfDropped(DragEvent event) {
+        Dragboard dragboard = event.getDragboard();
+        boolean success = false;
+        if (dragboard.hasFiles()) {
+            File pdf = firstPdfFile(dragboard.getFiles());
+            if (pdf != null) {
+                selectedDocumentPath = pdf.getAbsolutePath();
+                pdfFileNameLabel.setText(pdf.getName());
+                showFeedback("PDF selected: " + pdf.getName());
+                success = true;
+            }
+        }
+        event.setDropCompleted(success);
+        event.consume();
+    }
+
+    @FXML
+    private void onBrowsePdf() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Select PDF");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF files", "*.pdf"));
+        File pdf = chooser.showOpenDialog(feedbackLabel.getScene() == null ? null : feedbackLabel.getScene().getWindow());
+        if (pdf == null) {
+            return;
+        }
+        selectedDocumentPath = pdf.getAbsolutePath();
+        pdfFileNameLabel.setText(pdf.getName());
+        showFeedback("PDF selected: " + pdf.getName());
     }
 
     private void refreshAll() {
@@ -307,7 +366,7 @@ public class EvaluationAdminController {
         selectButton.setOnAction(event -> {
             selectedReclamationId = row.getId();
             selectedReclamationLabel.setText("Selected complaint: " + safe(row.getSubject()));
-            reclamationStatusField.setText(safe(row.getStatus()));
+            reclamationStatusCombo.getSelectionModel().select(safe(row.getStatus()).toLowerCase(Locale.ROOT));
             reclamationResponseArea.setText(row.getAdminResponse() == null ? "" : row.getAdminResponse());
         });
 
@@ -340,8 +399,9 @@ public class EvaluationAdminController {
         selectButton.setOnAction(event -> {
             selectedDocumentId = row.getId();
             selectedDocumentLabel.setText("Selected request: " + safe(row.getDocumentType()));
-            documentStatusField.setText(safe(row.getStatus()));
-            documentPathField.setText(row.getDocumentPath() == null ? "" : row.getDocumentPath());
+            documentStatusCombo.getSelectionModel().select(safe(row.getStatus()).toLowerCase(Locale.ROOT));
+            selectedDocumentPath = row.getDocumentPath();
+            pdfFileNameLabel.setText(selectedDocumentPath == null || selectedDocumentPath.isBlank() ? "No file selected" : new File(selectedDocumentPath).getName());
         });
 
         card.getChildren().addAll(header, studentLabel, infoLabel, pathLabel, selectButton);
@@ -369,7 +429,9 @@ public class EvaluationAdminController {
         selectButton.setOnAction(event -> {
             selectedScheduleId = row.getId();
             selectedScheduleLabel.setText("Selected schedule: " + safe(courseTitle) + " / " + safe(className));
-            deleteSelectedScheduleButton.setDisable(false);
+            if (deleteScheduleButton != null) {
+                deleteScheduleButton.setDisable(false);
+            }
         });
 
         card.getChildren().addAll(title, timeLabel, classLabel, courseLabel, teacherLabel, roomLabel, selectButton);
@@ -443,20 +505,21 @@ public class EvaluationAdminController {
         setLengthField(scheduleTeacherNameField, 150);
         setLengthField(scheduleCourseNameField, 150);
         setLengthField(scheduleClassNameField, 150);
-        setLengthField(reclamationStatusField, 25);
-        setLengthField(documentStatusField, 25);
-        setLengthField(documentPathField, 255);
         setLengthField(scheduleRoomField, 100);
         setTimeField(scheduleStartTimeField);
         setTimeField(scheduleEndTimeField);
-        deleteSelectedScheduleButton.setDisable(true);
+        if (deleteScheduleButton != null) {
+            deleteScheduleButton.setDisable(true);
+        }
         clearSelectedSchedule();
     }
 
     private void clearSelectedSchedule() {
         selectedScheduleId = null;
         selectedScheduleLabel.setText("Selected schedule: none");
-        deleteSelectedScheduleButton.setDisable(true);
+        if (deleteScheduleButton != null) {
+            deleteScheduleButton.setDisable(true);
+        }
     }
 
     private void setLengthField(TextField field, int maxLength) {
@@ -509,5 +572,30 @@ public class EvaluationAdminController {
 
     private void showFeedback(String text) {
         feedbackLabel.setText(text);
+    }
+
+    private boolean hasPdfFile(List<File> files) {
+        return firstPdfFile(files) != null;
+    }
+
+    private File firstPdfFile(List<File> files) {
+        if (files == null) {
+            return null;
+        }
+        for (File file : files) {
+            if (file != null && file.getName() != null && file.getName().toLowerCase(Locale.ROOT).endsWith(".pdf")) {
+                return file;
+            }
+        }
+        return null;
+    }
+
+    private boolean confirmDeletion(String message) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirm Delete");
+        alert.setHeaderText("Please confirm deletion");
+        alert.setContentText(message);
+        alert.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
+        return alert.showAndWait().orElse(ButtonType.NO) == ButtonType.YES;
     }
 }

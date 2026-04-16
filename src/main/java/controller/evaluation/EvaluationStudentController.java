@@ -6,15 +6,21 @@ import entities.Grade;
 import entities.Reclamation;
 import entities.Schedule;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputControl;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import security.UserSession;
 import service.evaluation.EvaluationService;
 
+import java.awt.Desktop;
+import java.io.File;
+import java.net.URI;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -80,10 +86,15 @@ public class EvaluationStudentController {
 
     @FXML
     public void initialize() {
-        studentIdField.setText(String.valueOf(UserSession.getCurrentUserId().orElse(1)));
-        studentIdField.setEditable(false);
-        studentIdField.setDisable(true);
-        classIdField.setText("1");
+        int currentStudentId = resolveStudentId();
+        if (studentIdField != null) {
+            studentIdField.setText(String.valueOf(currentStudentId));
+            studentIdField.setEditable(false);
+            studentIdField.setDisable(true);
+        }
+        if (classIdField != null) {
+            classIdField.setText("1");
+        }
         installInputValidation();
 
         docTypeBox.getItems().setAll(
@@ -98,6 +109,26 @@ public class EvaluationStudentController {
 
         showSection(gradesPane);
         refreshAll();
+    }
+
+    @FXML
+    private void showGrades() {
+        onOpenGrades();
+    }
+
+    @FXML
+    private void showSchedule() {
+        onOpenSchedule();
+    }
+
+    @FXML
+    private void showComplaints() {
+        onOpenComplaints();
+    }
+
+    @FXML
+    private void showDocuments() {
+        onOpenDocuments();
     }
 
     @FXML
@@ -128,7 +159,7 @@ public class EvaluationStudentController {
     public void openSection(String sectionKey) {
         String normalized = sectionKey == null ? "GRADES" : sectionKey.trim().toUpperCase();
         switch (normalized) {
-            case "RECOMMENDATIONS" -> showSection(recommendationsPane);
+            case "RECOMMENDATIONS" -> showSection(recommendationsPane != null ? recommendationsPane : gradesPane);
             case "SCHEDULE" -> showSection(schedulePane);
             case "COMPLAINTS" -> showSection(complaintsPane);
             case "DOCUMENTS" -> showSection(documentsPane);
@@ -144,7 +175,7 @@ public class EvaluationStudentController {
     @FXML
     private void onCreateComplaint() {
         try {
-            int studentId = requirePositiveInt(studentIdField.getText(), "Student ID");
+            int studentId = resolveStudentId();
             String courseName = requireNotBlank(complaintCourseNameField.getText(), "Course name");
             String subject = requireNotBlank(complaintSubjectField.getText(), "Complaint subject");
             String description = requireNotBlank(complaintDescriptionArea.getText(), "Complaint description");
@@ -173,7 +204,7 @@ public class EvaluationStudentController {
     @FXML
     private void onCreateDocumentRequest() {
         try {
-            int studentId = requirePositiveInt(studentIdField.getText(), "Student ID");
+            int studentId = resolveStudentId();
             String docType = docTypeBox.getValue();
             if (docType == null || docType.isBlank()) {
                 throw new IllegalArgumentException("Please select a document type.");
@@ -194,8 +225,8 @@ public class EvaluationStudentController {
 
     private void refreshAll() {
         try {
-            int studentId = intValue(studentIdField.getText());
-            int classId = intValue(classIdField.getText());
+            int studentId = resolveStudentId();
+            int classId = resolveClassId();
 
             List<Grade> grades = service.getGradesByStudent(studentId);
             renderGrades(grades);
@@ -243,12 +274,22 @@ public class EvaluationStudentController {
             return;
         }
         for (DocumentRequest row : rows) {
-            docRequestsCardsBox.getChildren().add(dataCard(
+            String documentPath = row.getDocumentPath();
+            VBox card = dataCard(
                     "Request #" + row.getId(),
                     "Type: " + safe(row.getDocumentType()),
                     "Status: " + safe(row.getStatus()),
-                    "Path: " + safe(row.getDocumentPath())
-            ));
+                    "Path: " + safe(documentPath)
+            );
+            if (documentPath != null && !documentPath.isBlank()) {
+                Button downloadButton = new Button("Download / Open");
+                downloadButton.getStyleClass().add("eval-ghost-btn");
+                downloadButton.setOnAction(event -> openDocument(documentPath));
+                HBox actions = new HBox(downloadButton);
+                actions.setAlignment(Pos.CENTER_LEFT);
+                card.getChildren().add(actions);
+            }
+            docRequestsCardsBox.getChildren().add(card);
         }
     }
 
@@ -270,6 +311,9 @@ public class EvaluationStudentController {
     }
 
     private void renderRecommendations(List<EvaluationService.RecommendationRow> rows) {
+        if (recommendationsCardsBox == null) {
+            return;
+        }
         recommendationsCardsBox.getChildren().clear();
         if (rows.isEmpty()) {
             recommendationsCardsBox.getChildren().add(emptyCard("No recommendations available"));
@@ -336,6 +380,9 @@ public class EvaluationStudentController {
     }
 
     private void setVisibleManaged(VBox pane, boolean visible) {
+        if (pane == null) {
+            return;
+        }
         pane.setVisible(visible);
         pane.setManaged(visible);
     }
@@ -345,11 +392,37 @@ public class EvaluationStudentController {
     }
 
     private void installInputValidation() {
-        setIntegerField(classIdField);
-        setLengthField(complaintSubjectField, 150);
-        setLengthField(complaintCourseNameField, 150);
-        setLengthField(docInfoArea, 500);
-        setLengthField(complaintDescriptionArea, 1000);
+        if (classIdField != null) {
+            setIntegerField(classIdField);
+        }
+        if (complaintSubjectField != null) {
+            setLengthField(complaintSubjectField, 150);
+        }
+        if (complaintCourseNameField != null) {
+            setLengthField(complaintCourseNameField, 150);
+        }
+        if (docInfoArea != null) {
+            setLengthField(docInfoArea, 500);
+        }
+        if (complaintDescriptionArea != null) {
+            setLengthField(complaintDescriptionArea, 1000);
+        }
+    }
+
+    private int resolveStudentId() {
+        if (studentIdField != null && studentIdField.getText() != null && !studentIdField.getText().isBlank()) {
+            return requirePositiveInt(studentIdField.getText(), "Student ID");
+        }
+        return UserSession.getCurrentUserId()
+                .filter(id -> id > 0)
+                .orElseThrow(() -> new IllegalStateException("No authenticated student found in session."));
+    }
+
+    private int resolveClassId() {
+        if (classIdField != null && classIdField.getText() != null && !classIdField.getText().isBlank()) {
+            return requirePositiveInt(classIdField.getText(), "Class ID");
+        }
+        return 1;
     }
 
     private void setIntegerField(TextField field) {
@@ -410,5 +483,34 @@ public class EvaluationStudentController {
 
     private void showFeedback(String text) {
         feedbackLabel.setText(new SimpleDateFormat("HH:mm:ss").format(new java.util.Date()) + " - " + text);
+    }
+
+    private void openDocument(String documentPath) {
+        try {
+            if (documentPath == null || documentPath.isBlank()) {
+                throw new IllegalArgumentException("No document uploaded yet.");
+            }
+            if (!Desktop.isDesktopSupported()) {
+                throw new IllegalStateException("Desktop actions are not supported on this system.");
+            }
+
+            String normalized = documentPath.trim();
+            Desktop desktop = Desktop.getDesktop();
+
+            if (normalized.startsWith("http://") || normalized.startsWith("https://")) {
+                desktop.browse(URI.create(normalized));
+                showFeedback("Opened document URL.");
+                return;
+            }
+
+            File file = new File(normalized);
+            if (!file.exists()) {
+                throw new IllegalArgumentException("Document file not found: " + normalized);
+            }
+            desktop.open(file);
+            showFeedback("Opened document file.");
+        } catch (Exception exception) {
+            showFeedback("Unable to open document: " + exception.getMessage());
+        }
     }
 }

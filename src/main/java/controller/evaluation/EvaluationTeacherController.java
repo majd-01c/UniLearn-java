@@ -7,12 +7,14 @@ import evaluation.AssessmentType;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import javafx.scene.control.Alert;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import security.UserSession;
@@ -180,6 +182,10 @@ public class EvaluationTeacherController {
         try {
             if (selectedAssessmentId == null) {
                 throw new IllegalArgumentException("Please select an assessment card first.");
+            }
+            if (!confirmDeletion("Delete this assessment? This action cannot be undone.")) {
+                showFeedback("Deletion cancelled.");
+                return;
             }
             service.deleteAssessment(selectedAssessmentId);
             selectedAssessmentId = null;
@@ -510,5 +516,14 @@ public class EvaluationTeacherController {
 
     private void showFeedback(String text) {
         feedbackLabel.setText(text);
+    }
+
+    private boolean confirmDeletion(String message) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirm Delete");
+        alert.setHeaderText("Please confirm deletion");
+        alert.setContentText(message);
+        alert.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
+        return alert.showAndWait().orElse(ButtonType.NO) == ButtonType.YES;
     }
 }

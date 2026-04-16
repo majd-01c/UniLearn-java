@@ -16,7 +16,8 @@
 
 <VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="controller.evaluation.EvaluationTeacherController"
-      spacing="12.0" styleClass="eval-root eval-student-root">
+    spacing="12.0" styleClass="eval-root eval-student-root"
+    stylesheets="@../../styles/evaluation.css">
 
     <padding>
         <Insets top="14.0" right="14.0" bottom="14.0" left="14.0"/>
@@ -39,7 +40,7 @@
         </children>
     </VBox>
 
-    <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+    <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS" styleClass="eval-tabpane">
         <tabs>
             <Tab text="Assessments">
                 <content>

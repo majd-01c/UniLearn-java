@@ -1,28 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.layout.VBox?>
 
-<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="controller.evaluation.EvaluationShellController"
-            styleClass="eval-shell-root">
-
-    <top>
-        <VBox spacing="8.0" styleClass="eval-shell-header">
-            <padding>
-                <Insets top="14.0" right="16.0" bottom="14.0" left="16.0"/>
-            </padding>
-            <children>
-                <Label text="Evaluation Module" styleClass="eval-title"/>
-            </children>
-        </VBox>
-    </top>
-
-    <center>
-        <StackPane fx:id="roleContentHost" styleClass="eval-role-host"/>
-    </center>
-
-</BorderPane>
+<StackPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="controller.evaluation.EvaluationShellController"
+           fx:id="roleContentHost"
+           prefWidth="1000.0"
+           prefHeight="700.0"/>
