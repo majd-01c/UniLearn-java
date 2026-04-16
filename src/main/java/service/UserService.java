@@ -31,6 +31,26 @@ public class UserService {
                 .collect(java.util.stream.Collectors.toList());
     }
 
+    /**
+     * Returns all active users whose role is PARTNER (or ROLE_PARTNER).
+     * Used by the admin job-offer form to let the admin assign an offer to a partner.
+     */
+    public List<User> getPartnerUsers() {
+        Session session = HibernateSessionFactory.getSession();
+        try {
+            Query<User> query = session.createQuery(
+                    "from User u where (lower(u.role) = 'partner' or lower(u.role) = 'role_partner') and u.isActive = 1 order by u.name asc, u.email asc",
+                    User.class
+            );
+            return query.getResultList();
+        } catch (Exception exception) {
+            LOGGER.error("Failed to fetch partner users", exception);
+            throw new IllegalStateException("Unable to fetch partner users", exception);
+        } finally {
+            HibernateSessionFactory.closeSession();
+        }
+    }
+
     public List<User> getAllUsers(int page, int pageSize) {
         Session session = HibernateSessionFactory.getSession();
         try {
