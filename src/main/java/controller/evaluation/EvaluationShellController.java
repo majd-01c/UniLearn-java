@@ -14,10 +14,6 @@ public class EvaluationShellController {
 
     @FXML
     private StackPane roleContentHost;
-    @FXML
-    private Label subtitleLabel;
-    @FXML
-    private Label connectedUserLabel;
 
     private String initialStudentSection = "GRADES";
     private String resolvedRole = "STUDENT";
@@ -37,23 +33,18 @@ public class EvaluationShellController {
     public void initialize() {
         String currentRole = UserSession.getCurrentUserRole();
         resolvedRole = currentRole == null ? "STUDENT" : currentRole.trim().toUpperCase();
-        connectedUserLabel.setText("Connected as: " + resolvedRole + " #" + UserSession.getCurrentUserId().map(String::valueOf).orElse("-"));
         initialized = true;
         openRoleForSession(resolvedRole);
     }
 
     private void openRoleForSession(String normalizedRole) {
-        String moduleLabel;
         String viewPath;
         if ("ADMIN".equals(normalizedRole)) {
             viewPath = "/view/evaluation/admin/module.fxml";
-            moduleLabel = "Admin Evaluation";
         } else if ("TEACHER".equals(normalizedRole) || "TRAINER".equals(normalizedRole)) {
             viewPath = "/view/evaluation/teacher/module.fxml";
-            moduleLabel = "Teacher Evaluation";
         } else {
             viewPath = "/view/evaluation/student/module.fxml";
-            moduleLabel = "Student Evaluation";
         }
 
         try {
@@ -71,7 +62,6 @@ public class EvaluationShellController {
                 }
             }
             roleContentHost.getChildren().setAll(view);
-            subtitleLabel.setText(moduleLabel + " workspace");
         } catch (IOException exception) {
             Label error = new Label("Unable to load role view: " + exception.getMessage());
             roleContentHost.getChildren().setAll(error);

@@ -4,6 +4,8 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
@@ -14,7 +16,8 @@
 
 <VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="controller.evaluation.EvaluationStudentController"
-      spacing="12.0" styleClass="eval-root eval-student-root">
+      spacing="12.0" styleClass="eval-root eval-student-root"
+    stylesheets="@../../styles/evaluation.css">
 
     <padding>
         <Insets top="14.0" right="14.0" bottom="14.0" left="14.0"/>
@@ -22,58 +25,68 @@
 
     <VBox spacing="10.0" styleClass="eval-student-hero">
         <children>
-            <Label text="Student Evaluation" styleClass="eval-page-title"/>
-            <Label text="Track grades, recommendations, schedule, complaints, and document requests in one flow." styleClass="eval-page-subtitle" wrapText="true"/>
+            <Label text="📊 Student Evaluation" styleClass="eval-page-title"/>
+            <Label text="Track your grades, schedule, complaints and document requests." styleClass="eval-page-subtitle" wrapText="true"/>
             <HBox spacing="8.0" alignment="CENTER_LEFT" styleClass="eval-control-row">
                 <children>
-                    <Label text="Student ID" styleClass="eval-label"/>
-                    <TextField fx:id="studentIdField" prefWidth="90.0" styleClass="eval-pill-input"/>
-                    <Label text="Class ID" styleClass="eval-label"/>
-                    <TextField fx:id="classIdField" prefWidth="90.0" styleClass="eval-pill-input"/>
-                    <Button text="Refresh" onAction="#onRefreshAll" styleClass="eval-primary-btn"/>
+                    <Button text="🔄 Refresh" onAction="#onRefreshAll" styleClass="eval-primary-btn"/>
+                    <Label fx:id="feedbackLabel" styleClass="eval-feedback"/>
                 </children>
             </HBox>
-            <Label fx:id="feedbackLabel" styleClass="eval-feedback"/>
         </children>
     </VBox>
 
     <GridPane hgap="10.0" vgap="10.0" styleClass="eval-summary-grid">
         <children>
-            <VBox spacing="2.0" styleClass="eval-kpi-card" GridPane.columnIndex="0" GridPane.rowIndex="0">
+            <VBox spacing="2.0" styleClass="eval-kpi-card eval-kpi-total" GridPane.columnIndex="0" GridPane.rowIndex="0">
                 <children>
                     <Label text="Total Grades" styleClass="eval-kpi-label"/>
                     <Label fx:id="totalGradesLabel" text="0" styleClass="eval-summary-value"/>
                 </children>
             </VBox>
-            <VBox spacing="2.0" styleClass="eval-kpi-card" GridPane.columnIndex="1" GridPane.rowIndex="0">
+            <VBox spacing="2.0" styleClass="eval-kpi-card eval-kpi-passed" GridPane.columnIndex="1" GridPane.rowIndex="0">
                 <children>
-                    <Label text="Passed" styleClass="eval-kpi-label"/>
+                    <Label text="✅ Passed" styleClass="eval-kpi-label"/>
                     <Label fx:id="passedLabel" text="0" styleClass="eval-summary-value"/>
                 </children>
             </VBox>
-            <VBox spacing="2.0" styleClass="eval-kpi-card" GridPane.columnIndex="2" GridPane.rowIndex="0">
+            <VBox spacing="2.0" styleClass="eval-kpi-card eval-kpi-failed" GridPane.columnIndex="2" GridPane.rowIndex="0">
                 <children>
-                    <Label text="Failed" styleClass="eval-kpi-label"/>
+                    <Label text="❌ Failed" styleClass="eval-kpi-label"/>
                     <Label fx:id="failedLabel" text="0" styleClass="eval-summary-value"/>
                 </children>
             </VBox>
-            <VBox spacing="2.0" styleClass="eval-kpi-card" GridPane.columnIndex="3" GridPane.rowIndex="0">
+            <VBox spacing="2.0" styleClass="eval-kpi-card eval-kpi-avg" GridPane.columnIndex="3" GridPane.rowIndex="0">
                 <children>
-                    <Label text="Average" styleClass="eval-kpi-label"/>
+                    <Label text="📈 Average" styleClass="eval-kpi-label"/>
                     <Label fx:id="averageLabel" text="0.00" styleClass="eval-summary-value"/>
                 </children>
             </VBox>
         </children>
     </GridPane>
 
+    <HBox spacing="8.0" alignment="CENTER_LEFT" styleClass="eval-tab-bar">
+        <children>
+            <Label text="Section" styleClass="eval-label"/>
+            <MenuButton text="☰ Open Section" styleClass="eval-tab-btn">
+                <items>
+                    <MenuItem text="📋 Grades" onAction="#showGrades"/>
+                    <MenuItem text="📅 Schedule" onAction="#showSchedule"/>
+                    <MenuItem text="📝 Complaints" onAction="#showComplaints"/>
+                    <MenuItem text="📄 Documents" onAction="#showDocuments"/>
+                </items>
+            </MenuButton>
+        </children>
+    </HBox>
+
     <StackPane VBox.vgrow="ALWAYS" styleClass="eval-content-host">
         <children>
+
+            <!-- GRADES -->
             <VBox fx:id="gradesPane" spacing="10.0" styleClass="eval-panel" visible="true" managed="true">
-                <padding>
-                    <Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/>
-                </padding>
+                <padding><Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/></padding>
                 <children>
-                    <Label text="Grades" styleClass="eval-card-title"/>
+                    <Label text="My Grades" styleClass="eval-card-title"/>
                     <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="eval-scroll-clean">
                         <content>
                             <VBox fx:id="gradesCardsBox" spacing="8.0"/>
@@ -82,26 +95,11 @@
                 </children>
             </VBox>
 
-            <VBox fx:id="recommendationsPane" spacing="10.0" styleClass="eval-panel" visible="false" managed="false">
-                <padding>
-                    <Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/>
-                </padding>
-                <children>
-                    <Label text="Recommendations" styleClass="eval-card-title"/>
-                    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="eval-scroll-clean">
-                        <content>
-                            <VBox fx:id="recommendationsCardsBox" spacing="8.0"/>
-                        </content>
-                    </ScrollPane>
-                </children>
-            </VBox>
-
+            <!-- SCHEDULE -->
             <VBox fx:id="schedulePane" spacing="10.0" styleClass="eval-panel" visible="false" managed="false">
-                <padding>
-                    <Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/>
-                </padding>
+                <padding><Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/></padding>
                 <children>
-                    <Label text="Schedule" styleClass="eval-card-title"/>
+                    <Label text="My Schedule" styleClass="eval-card-title"/>
                     <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="eval-scroll-clean">
                         <content>
                             <VBox fx:id="scheduleCardsBox" spacing="8.0"/>
@@ -110,22 +108,26 @@
                 </children>
             </VBox>
 
+            <!-- COMPLAINTS -->
             <VBox fx:id="complaintsPane" spacing="10.0" styleClass="eval-panel" visible="false" managed="false">
-                <padding>
-                    <Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/>
-                </padding>
+                <padding><Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/></padding>
                 <children>
-                    <Label text="Complaints" styleClass="eval-card-title"/>
-                    <HBox spacing="8.0" alignment="CENTER_LEFT">
+                    <Label text="My Complaints" styleClass="eval-card-title"/>
+                    <VBox spacing="8.0" styleClass="eval-form-card">
                         <children>
-                            <Label text="Subject"/>
-                            <TextField fx:id="complaintSubjectField" prefWidth="220.0"/>
-                            <Label text="Course Name"/>
-                            <TextField fx:id="complaintCourseNameField" prefWidth="180.0" promptText="Example: Java Basics"/>
-                            <Button text="Create Complaint" onAction="#onCreateComplaint" styleClass="eval-primary-btn"/>
+                            <Label text="New Complaint" styleClass="eval-section-label"/>
+                            <HBox spacing="8.0" alignment="CENTER_LEFT">
+                                <children>
+                                    <Label text="Subject" styleClass="eval-label"/>
+                                    <TextField fx:id="complaintSubjectField" prefWidth="220.0" promptText="e.g. Grade dispute" styleClass="eval-pill-input"/>
+                                    <Label text="Course" styleClass="eval-label"/>
+                                    <TextField fx:id="complaintCourseNameField" prefWidth="180.0" promptText="e.g. Java Basics" styleClass="eval-pill-input"/>
+                                </children>
+                            </HBox>
+                            <TextArea fx:id="complaintDescriptionArea" promptText="Describe your complaint..." prefHeight="80.0" styleClass="eval-textarea"/>
+                            <Button text="➕ Submit Complaint" onAction="#onCreateComplaint" styleClass="eval-primary-btn"/>
                         </children>
-                    </HBox>
-                    <TextArea fx:id="complaintDescriptionArea" promptText="Complaint description" prefHeight="90.0"/>
+                    </VBox>
                     <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="eval-scroll-clean">
                         <content>
                             <VBox fx:id="complaintsCardsBox" spacing="8.0"/>
@@ -134,20 +136,24 @@
                 </children>
             </VBox>
 
+            <!-- DOCUMENTS -->
             <VBox fx:id="documentsPane" spacing="10.0" styleClass="eval-panel" visible="false" managed="false">
-                <padding>
-                    <Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/>
-                </padding>
+                <padding><Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/></padding>
                 <children>
                     <Label text="Document Requests" styleClass="eval-card-title"/>
-                    <HBox spacing="8.0" alignment="CENTER_LEFT">
+                    <VBox spacing="8.0" styleClass="eval-form-card">
                         <children>
-                            <Label text="Type"/>
-                            <ComboBox fx:id="docTypeBox" prefWidth="220.0"/>
-                            <Button text="Create Request" onAction="#onCreateDocumentRequest" styleClass="eval-primary-btn"/>
+                            <Label text="New Request" styleClass="eval-section-label"/>
+                            <HBox spacing="8.0" alignment="CENTER_LEFT">
+                                <children>
+                                    <Label text="Type" styleClass="eval-label"/>
+                                    <ComboBox fx:id="docTypeBox" prefWidth="220.0" promptText="Select document type"/>
+                                </children>
+                            </HBox>
+                            <TextArea fx:id="docInfoArea" promptText="Additional information..." prefHeight="80.0" styleClass="eval-textarea"/>
+                            <Button text="📄 Submit Request" onAction="#onCreateDocumentRequest" styleClass="eval-primary-btn"/>
                         </children>
-                    </HBox>
-                    <TextArea fx:id="docInfoArea" promptText="Additional information" prefHeight="90.0"/>
+                    </VBox>
                     <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="eval-scroll-clean">
                         <content>
                             <VBox fx:id="docRequestsCardsBox" spacing="8.0"/>
@@ -155,7 +161,7 @@
                     </ScrollPane>
                 </children>
             </VBox>
+
         </children>
     </StackPane>
-
 </VBox>
