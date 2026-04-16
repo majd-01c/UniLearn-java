@@ -2,11 +2,10 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Separator?>
-<?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextArea?>
@@ -17,131 +16,178 @@
 
 <VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="controller.evaluation.EvaluationAdminController"
-      spacing="10.0" styleClass="eval-root">
+      spacing="12.0" styleClass="eval-root eval-student-root"
+    stylesheets="@../../styles/evaluation.css">
 
     <padding>
-        <Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/>
+        <Insets top="14.0" right="14.0" bottom="14.0" left="14.0"/>
     </padding>
 
-    <HBox spacing="8.0" alignment="CENTER_LEFT">
+    <VBox spacing="10.0" styleClass="eval-student-hero">
         <children>
-            <Button text="Refresh" onAction="#onRefreshAll" styleClass="eval-primary-btn"/>
-            <Label fx:id="feedbackLabel" styleClass="eval-feedback"/>
+            <Label text="🛡 Admin Evaluation Panel" styleClass="eval-page-title"/>
+            <Label text="Manage complaints, document requests and schedules." styleClass="eval-page-subtitle" wrapText="true"/>
+            <HBox spacing="8.0" alignment="CENTER_LEFT" styleClass="eval-control-row">
+                <children>
+                    <Button text="🔄 Refresh All" onAction="#onRefreshAll" styleClass="eval-primary-btn"/>
+                    <Label fx:id="feedbackLabel" styleClass="eval-feedback"/>
+                </children>
+            </HBox>
         </children>
-    </HBox>
+    </VBox>
 
-    <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+    <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS" styleClass="eval-tabpane">
         <tabs>
-            <Tab text="Complaints">
+
+            <!-- COMPLAINTS TAB -->
+            <Tab text="📝 Complaints">
                 <content>
-                    <VBox spacing="8.0" padding="10.0">
+                    <VBox spacing="10.0" styleClass="eval-panel">
+                        <padding><Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/></padding>
                         <children>
+                            <VBox spacing="8.0" styleClass="eval-form-card">
+                                <children>
+                                    <Label text="Respond to Complaint" styleClass="eval-section-label"/>
+                                    <Label fx:id="selectedReclamationLabel" text="No complaint selected — click a card below" styleClass="eval-page-subtitle"/>
+                                    <HBox spacing="8.0" alignment="CENTER_LEFT">
+                                        <children>
+                                            <Label text="Status" styleClass="eval-label"/>
+                                            <ComboBox fx:id="reclamationStatusCombo" prefWidth="200.0"/>
+                                        </children>
+                                    </HBox>
+                                    <TextArea fx:id="reclamationResponseArea" promptText="Write your response to the student..." prefHeight="80.0" styleClass="eval-textarea"/>
+                                    <Button text="✅ Update Complaint" onAction="#onUpdateReclamation" styleClass="eval-primary-btn"/>
+                                </children>
+                            </VBox>
+
                             <HBox spacing="8.0" alignment="CENTER_LEFT">
                                 <children>
-                                    <Label text="ID"/>
-                                    <TextField fx:id="reclamationIdField" prefWidth="90.0"/>
-                                    <Label text="Status"/>
-                                    <TextField fx:id="reclamationStatusField" prefWidth="130.0"/>
-                                    <Button text="Update" onAction="#onUpdateReclamation" styleClass="eval-primary-btn"/>
+                                    <Label text="Sort by" styleClass="eval-label"/>
+                                    <ComboBox fx:id="complaintsSortBox" prefWidth="150.0" onAction="#onSortComplaintsChanged"/>
                                 </children>
                             </HBox>
-                            <TextArea fx:id="reclamationResponseArea" promptText="Admin response" prefHeight="90.0"/>
-                            <TableView fx:id="reclamationsTable" VBox.vgrow="ALWAYS">
-                                <columns>
-                                    <TableColumn fx:id="reclamationIdCol" text="ID" prefWidth="80.0"/>
-                                    <TableColumn fx:id="reclamationStudentCol" text="Student" prefWidth="120.0"/>
-                                    <TableColumn fx:id="reclamationSubjectCol" text="Subject" prefWidth="250.0"/>
-                                    <TableColumn fx:id="reclamationStatusCol" text="Status" prefWidth="130.0"/>
-                                </columns>
-                            </TableView>
+
+                            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="eval-scroll-clean">
+                                <content>
+                                    <VBox fx:id="reclamationsCardsBox" spacing="8.0"/>
+                                </content>
+                            </ScrollPane>
                         </children>
                     </VBox>
                 </content>
             </Tab>
 
-            <Tab text="Document Requests">
+            <!-- DOCUMENTS TAB -->
+            <Tab text="📄 Document Requests">
                 <content>
-                    <VBox spacing="8.0" padding="10.0">
+                    <VBox spacing="10.0" styleClass="eval-panel">
+                        <padding><Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/></padding>
                         <children>
+                            <VBox spacing="8.0" styleClass="eval-form-card">
+                                <children>
+                                    <Label text="Upload PDF for Selected Request" styleClass="eval-section-label"/>
+                                    <Label fx:id="selectedDocumentLabel" text="No request selected — click a card below" styleClass="eval-page-subtitle"/>
+                                    <HBox spacing="8.0" alignment="CENTER_LEFT">
+                                        <children>
+                                            <Label text="Status" styleClass="eval-label"/>
+                                            <ComboBox fx:id="documentStatusCombo" prefWidth="200.0"/>
+                                        </children>
+                                    </HBox>
+                                    <!-- PDF Drop Zone -->
+                                    <VBox fx:id="pdfDropZone" styleClass="eval-pdf-dropzone" alignment="CENTER" prefHeight="80.0" onDragOver="#onPdfDragOver" onDragDropped="#onPdfDropped">
+                                        <children>
+                                            <Label text="📂 Drag &amp; Drop PDF here" styleClass="eval-pdf-drop-label"/>
+                                            <Label fx:id="pdfFileNameLabel" text="No file selected" styleClass="eval-page-subtitle"/>
+                                        </children>
+                                    </VBox>
+                                    <HBox spacing="8.0" alignment="CENTER_LEFT">
+                                        <children>
+                                            <Button text="📁 Browse PDF" onAction="#onBrowsePdf" styleClass="eval-ghost-btn"/>
+                                            <Button text="✅ Update Request" onAction="#onUpdateDocumentRequest" styleClass="eval-primary-btn"/>
+                                        </children>
+                                    </HBox>
+                                </children>
+                            </VBox>
+
                             <HBox spacing="8.0" alignment="CENTER_LEFT">
                                 <children>
-                                    <Label text="ID"/>
-                                    <TextField fx:id="documentIdField" prefWidth="90.0"/>
-                                    <Label text="Status"/>
-                                    <TextField fx:id="documentStatusField" prefWidth="130.0"/>
-                                    <Label text="Path"/>
-                                    <TextField fx:id="documentPathField" prefWidth="280.0"/>
-                                    <Button text="Update" onAction="#onUpdateDocumentRequest" styleClass="eval-primary-btn"/>
+                                    <Label text="Sort by" styleClass="eval-label"/>
+                                    <ComboBox fx:id="documentsSortBox" prefWidth="150.0" onAction="#onSortDocumentsChanged"/>
                                 </children>
                             </HBox>
-                            <TableView fx:id="documentRequestsTable" VBox.vgrow="ALWAYS">
-                                <columns>
-                                    <TableColumn fx:id="documentIdCol" text="ID" prefWidth="80.0"/>
-                                    <TableColumn fx:id="documentStudentCol" text="Student" prefWidth="120.0"/>
-                                    <TableColumn fx:id="documentTypeCol" text="Type" prefWidth="220.0"/>
-                                    <TableColumn fx:id="documentStatusCol" text="Status" prefWidth="140.0"/>
-                                </columns>
-                            </TableView>
+
+                            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="eval-scroll-clean">
+                                <content>
+                                    <VBox fx:id="documentRequestsCardsBox" spacing="8.0"/>
+                                </content>
+                            </ScrollPane>
                         </children>
                     </VBox>
                 </content>
             </Tab>
 
-            <Tab text="Schedules">
+            <!-- SCHEDULES TAB -->
+            <Tab text="📅 Schedules">
                 <content>
-                    <VBox spacing="8.0" padding="10.0">
+                    <VBox spacing="10.0" styleClass="eval-panel">
+                        <padding><Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/></padding>
                         <children>
-                            <GridPane hgap="8.0" vgap="8.0">
+                            <VBox spacing="8.0" styleClass="eval-form-card">
                                 <children>
-                                    <Label text="Teacher ID" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                                    <TextField fx:id="scheduleTeacherIdField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-                                    <Label text="Course ID" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
-                                    <TextField fx:id="scheduleCourseIdField" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+                                    <Label text="Create New Schedule" styleClass="eval-section-label"/>
+                                    <GridPane hgap="10.0" vgap="8.0">
+                                        <children>
+                                            <Label text="Teacher Name" GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="eval-label"/>
+                                            <TextField fx:id="scheduleTeacherNameField" promptText="Optional" GridPane.columnIndex="1" GridPane.rowIndex="0" styleClass="eval-pill-input"/>
+                                            <Label text="Course *" GridPane.columnIndex="2" GridPane.rowIndex="0" styleClass="eval-label"/>
+                                            <TextField fx:id="scheduleCourseNameField" promptText="e.g. Java Basics" GridPane.columnIndex="3" GridPane.rowIndex="0" styleClass="eval-pill-input"/>
 
-                                    <Label text="Class ID" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                                    <TextField fx:id="scheduleClassIdField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                                    <Label text="Day" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
-                                    <TextField fx:id="scheduleDayField" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+                                            <Label text="Class *" GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="eval-label"/>
+                                            <TextField fx:id="scheduleClassNameField" promptText="e.g. 3A57" GridPane.columnIndex="1" GridPane.rowIndex="1" styleClass="eval-pill-input"/>
+                                            <Label text="Day *" GridPane.columnIndex="2" GridPane.rowIndex="1" styleClass="eval-label"/>
+                                            <TextField fx:id="scheduleDayField" promptText="e.g. Monday" GridPane.columnIndex="3" GridPane.rowIndex="1" styleClass="eval-pill-input"/>
 
-                                    <Label text="Start Time" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-                                    <TextField fx:id="scheduleStartTimeField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-                                    <Label text="End Time" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
-                                    <TextField fx:id="scheduleEndTimeField" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
+                                            <Label text="Start Time *" GridPane.columnIndex="0" GridPane.rowIndex="2" styleClass="eval-label"/>
+                                            <TextField fx:id="scheduleStartTimeField" promptText="HH:mm" GridPane.columnIndex="1" GridPane.rowIndex="2" styleClass="eval-pill-input"/>
+                                            <Label text="End Time *" GridPane.columnIndex="2" GridPane.rowIndex="2" styleClass="eval-label"/>
+                                            <TextField fx:id="scheduleEndTimeField" promptText="HH:mm" GridPane.columnIndex="3" GridPane.rowIndex="2" styleClass="eval-pill-input"/>
 
-                                    <Label text="Start Date" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-                                    <DatePicker fx:id="scheduleStartDatePicker" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-                                    <Label text="End Date" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
-                                    <DatePicker fx:id="scheduleEndDatePicker" GridPane.columnIndex="3" GridPane.rowIndex="3"/>
+                                            <Label text="Start Date" GridPane.columnIndex="0" GridPane.rowIndex="3" styleClass="eval-label"/>
+                                            <DatePicker fx:id="scheduleStartDatePicker" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                                            <Label text="End Date" GridPane.columnIndex="2" GridPane.rowIndex="3" styleClass="eval-label"/>
+                                            <DatePicker fx:id="scheduleEndDatePicker" GridPane.columnIndex="3" GridPane.rowIndex="3"/>
 
-                                    <Label text="Room" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
-                                    <TextField fx:id="scheduleRoomField" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                                            <Label text="Room" GridPane.columnIndex="0" GridPane.rowIndex="4" styleClass="eval-label"/>
+                                            <TextField fx:id="scheduleRoomField" promptText="e.g. B204" GridPane.columnIndex="1" GridPane.rowIndex="4" styleClass="eval-pill-input"/>
+                                        </children>
+                                    </GridPane>
+                                    <HBox spacing="8.0" alignment="CENTER_LEFT">
+                                        <children>
+                                            <Button text="➕ Create Schedule" onAction="#onCreateSchedule" styleClass="eval-primary-btn"/>
+                                            <Button fx:id="deleteScheduleButton" text="🗑 Delete Selected" onAction="#onDeleteSelectedSchedule" styleClass="eval-danger-btn"/>
+                                            <Label fx:id="selectedScheduleLabel" text="No schedule selected" styleClass="eval-page-subtitle"/>
+                                        </children>
+                                    </HBox>
                                 </children>
-                            </GridPane>
+                            </VBox>
 
                             <HBox spacing="8.0" alignment="CENTER_LEFT">
                                 <children>
-                                    <Button text="Create Schedule" onAction="#onCreateSchedule" styleClass="eval-primary-btn"/>
-                                    <Separator prefWidth="16.0"/>
-                                    <Label text="Delete by ID"/>
-                                    <TextField fx:id="scheduleDeleteIdField" prefWidth="90.0"/>
-                                    <Button text="Delete" onAction="#onDeleteSchedule"/>
+                                    <Label text="Sort by" styleClass="eval-label"/>
+                                    <ComboBox fx:id="schedulesSortBox" prefWidth="150.0" onAction="#onSortSchedulesChanged"/>
                                 </children>
                             </HBox>
 
-                            <TableView fx:id="schedulesTable" VBox.vgrow="ALWAYS">
-                                <columns>
-                                    <TableColumn fx:id="scheduleIdCol" text="ID" prefWidth="80.0"/>
-                                    <TableColumn fx:id="scheduleDayCol" text="Day" prefWidth="120.0"/>
-                                    <TableColumn fx:id="scheduleTimeCol" text="Time" prefWidth="200.0"/>
-                                    <TableColumn fx:id="scheduleClassCol" text="Class" prefWidth="180.0"/>
-                                    <TableColumn fx:id="scheduleTeacherCol" text="Teacher" prefWidth="120.0"/>
-                                </columns>
-                            </TableView>
+                            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="eval-scroll-clean">
+                                <content>
+                                    <VBox fx:id="schedulesCardsBox" spacing="8.0"/>
+                                </content>
+                            </ScrollPane>
                         </children>
                     </VBox>
                 </content>
             </Tab>
+
         </tabs>
     </TabPane>
-
 </VBox>

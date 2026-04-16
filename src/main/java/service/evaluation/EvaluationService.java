@@ -11,11 +11,14 @@ import entities.Schedule;
 import entities.User;
 import evaluation.AssessmentType;
 import services.ServiceAssessment;
+import services.ServiceContenu;
 import services.ServiceCourse;
 import services.ServiceDocumentRequest;
 import services.ServiceGrade;
 import services.ServiceReclamation;
 import services.ServiceSchedule;
+import services.ServiceUser;
+import service.lms.ClasseService;
 
 import java.sql.Date;
 import java.sql.Time;
@@ -37,12 +40,17 @@ public class EvaluationService {
     private final ServiceReclamation reclamationService = new ServiceReclamation();
     private final ServiceDocumentRequest documentRequestService = new ServiceDocumentRequest();
     private final ServiceSchedule scheduleService = new ServiceSchedule();
+    private final ServiceContenu contenuService = new ServiceContenu();
+    private final ServiceUser userService = new ServiceUser();
+    private final ClasseService classeService = new ClasseService();
 
     public List<Grade> getGradesByStudent(int studentId) {
         return gradeService.getALL().stream()
                 .filter(g -> g.getUserByStudentId() != null && g.getUserByStudentId().getId() != null)
                 .filter(g -> g.getUserByStudentId().getId() == studentId)
-                .sorted(Comparator.comparing(Grade::getId, Comparator.nullsLast(Integer::compareTo)).reversed())
+                .sorted(Comparator
+                        .comparing((Grade g) -> g.getCreatedAt(), Comparator.nullsLast(Comparator.reverseOrder()))
+                        .thenComparing(Grade::getId, Comparator.nullsLast(Comparator.reverseOrder())))
                 .collect(Collectors.toList());
     }
 
@@ -103,6 +111,7 @@ public class EvaluationService {
         }
 
         rows.sort(Comparator.comparing(RecommendationRow::priorityWeight)
+            .thenComparing(RecommendationRow::getAverage)
             .thenComparing(RecommendationRow::getCourseName));
         return rows;
     }
@@ -111,7 +120,10 @@ public class EvaluationService {
         return scheduleService.getALL().stream()
                 .filter(s -> s.getClasse() != null && s.getClasse().getId() != null)
                 .filter(s -> s.getClasse().getId() == classeId)
-                .sorted(Comparator.comparing(s -> dayOrder(s.getDayOfWeek())))
+            .sorted(Comparator
+                .comparing((Schedule s) -> dayOrder(s.getDayOfWeek()))
+                .thenComparing(Schedule::getStartTime, Comparator.nullsLast(Time::compareTo))
+                .thenComparing(Schedule::getId, Comparator.nullsLast(Integer::compareTo)))
                 .collect(Collectors.toList());
     }
 
@@ -119,7 +131,10 @@ public class EvaluationService {
         return scheduleService.getALL().stream()
                 .filter(s -> s.getUser() != null && s.getUser().getId() != null)
                 .filter(s -> s.getUser().getId() == teacherId)
-                .sorted(Comparator.comparing(s -> dayOrder(s.getDayOfWeek())))
+            .sorted(Comparator
+                .comparing((Schedule s) -> dayOrder(s.getDayOfWeek()))
+                .thenComparing(Schedule::getStartTime, Comparator.nullsLast(Time::compareTo))
+                .thenComparing(Schedule::getId, Comparator.nullsLast(Integer::compareTo)))
                 .collect(Collectors.toList());
     }
 
@@ -127,13 +142,19 @@ public class EvaluationService {
         return reclamationService.getALL().stream()
                 .filter(r -> r.getUser() != null && r.getUser().getId() != null)
                 .filter(r -> r.getUser().getId() == studentId)
-                .sorted(Comparator.comparing(Reclamation::getId, Comparator.nullsLast(Integer::compareTo)).reversed())
+                .sorted(Comparator
+                        .comparing((Reclamation r) -> statusWeight(r.getStatus()))
+                        .thenComparing(Reclamation::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder()))
+                        .thenComparing(Reclamation::getId, Comparator.nullsLast(Comparator.reverseOrder())))
                 .collect(Collectors.toList());
     }
 
     public List<Reclamation> getAllReclamations() {
         return reclamationService.getALL().stream()
-                .sorted(Comparator.comparing(Reclamation::getId, Comparator.nullsLast(Integer::compareTo)).reversed())
+                .sorted(Comparator
+                        .comparing((Reclamation r) -> statusWeight(r.getStatus()))
+                        .thenComparing(Reclamation::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder()))
+                        .thenComparing(Reclamation::getId, Comparator.nullsLast(Comparator.reverseOrder())))
                 .collect(Collectors.toList());
     }
 
@@ -162,6 +183,48 @@ public class EvaluationService {
                 .orElse(null);
     }
 
+    public String resolveClasseName(Integer classeId) {
+        if (classeId == null) {
+            return null;
+        }
+        return classeService.listAll().stream()
+                .filter(c -> c.getId() != null && c.getId().equals(classeId))
+                .map(Classe::getName)
+                .filter(name -> name != null && !name.isBlank())
+                .findFirst()
+                .orElse(null);
+    }
+
+    public String resolveContenuTitle(Integer contenuId) {
+        if (contenuId == null) {
+            return null;
+        }
+        return contenuService.getALL().stream()
+                .filter(c -> c.getId() != null && c.getId().equals(contenuId))
+                .map(Contenu::getTitle)
+                .filter(title -> title != null && !title.isBlank())
+                .findFirst()
+                .orElse(null);
+    }
+
+    public String resolveUserDisplayName(Integer userId) {
+        if (userId == null) {
+            return null;
+        }
+        return userService.getALL().stream()
+                .filter(u -> u.getId() != null && u.getId().equals(userId))
+                .map(u -> {
+                    String name = u.getName();
+                    if (name != null && !name.isBlank()) {
+                        return name;
+                    }
+                    return u.getEmail();
+                })
+                .filter(value -> value != null && !value.isBlank())
+                .findFirst()
+                .orElse(null);
+    }
+
     public Integer findCourseIdByName(String courseName) {
         if (courseName == null || courseName.isBlank()) {
             return null;
@@ -171,6 +234,50 @@ public class EvaluationService {
                 .filter(c -> c.getTitle() != null && c.getId() != null)
                 .filter(c -> c.getTitle().trim().toLowerCase(Locale.ROOT).equals(normalized))
                 .map(Course::getId)
+                .findFirst()
+                .orElse(null);
+    }
+
+    public Integer findClasseIdByName(String classeName) {
+        if (classeName == null || classeName.isBlank()) {
+            return null;
+        }
+        String normalized = classeName.trim().toLowerCase(Locale.ROOT);
+        return classeService.listAll().stream()
+                .filter(c -> c.getName() != null && c.getId() != null)
+                .filter(c -> c.getName().trim().toLowerCase(Locale.ROOT).equals(normalized))
+                .map(Classe::getId)
+                .findFirst()
+                .orElse(null);
+    }
+
+    public Integer findContenuIdByTitle(String contenuTitle) {
+        if (contenuTitle == null || contenuTitle.isBlank()) {
+            return null;
+        }
+        String normalized = contenuTitle.trim().toLowerCase(Locale.ROOT);
+        return contenuService.getALL().stream()
+                .filter(c -> c.getTitle() != null && c.getId() != null)
+                .filter(c -> c.getTitle().trim().toLowerCase(Locale.ROOT).equals(normalized))
+                .map(Contenu::getId)
+                .findFirst()
+                .orElse(null);
+    }
+
+    public Integer findUserIdByName(String userName) {
+        if (userName == null || userName.isBlank()) {
+            return null;
+        }
+        String normalized = userName.trim().toLowerCase(Locale.ROOT);
+        return userService.getALL().stream()
+                .filter(u -> u.getId() != null)
+                .filter(u -> {
+                    String name = u.getName();
+                    String email = u.getEmail();
+                    return (name != null && name.trim().toLowerCase(Locale.ROOT).equals(normalized))
+                            || (email != null && email.trim().toLowerCase(Locale.ROOT).equals(normalized));
+                })
+                .map(User::getId)
                 .findFirst()
                 .orElse(null);
     }
@@ -193,13 +300,19 @@ public class EvaluationService {
         return documentRequestService.getALL().stream()
                 .filter(d -> d.getUser() != null && d.getUser().getId() != null)
                 .filter(d -> d.getUser().getId() == studentId)
-                .sorted(Comparator.comparing(DocumentRequest::getId).reversed())
+                .sorted(Comparator
+                        .comparing((DocumentRequest d) -> statusWeight(d.getStatus()))
+                        .thenComparing(DocumentRequest::getRequestedAt, Comparator.nullsLast(Comparator.reverseOrder()))
+                        .thenComparing(DocumentRequest::getId, Comparator.nullsLast(Comparator.reverseOrder())))
                 .collect(Collectors.toList());
     }
 
     public List<DocumentRequest> getAllDocumentRequests() {
         return documentRequestService.getALL().stream()
-                .sorted(Comparator.comparing(DocumentRequest::getId).reversed())
+                .sorted(Comparator
+                        .comparing((DocumentRequest d) -> statusWeight(d.getStatus()))
+                        .thenComparing(DocumentRequest::getRequestedAt, Comparator.nullsLast(Comparator.reverseOrder()))
+                        .thenComparing(DocumentRequest::getId, Comparator.nullsLast(Comparator.reverseOrder())))
                 .collect(Collectors.toList());
     }
 
@@ -234,7 +347,9 @@ public class EvaluationService {
         return assessmentService.getALL().stream()
                 .filter(a -> a.getUser() != null && a.getUser().getId() != null)
                 .filter(a -> a.getUser().getId() == teacherId)
-                .sorted(Comparator.comparing(Assessment::getId, Comparator.nullsLast(Integer::compareTo)).reversed())
+                .sorted(Comparator
+                        .comparing(Assessment::getDate, Comparator.nullsLast(Comparator.reverseOrder()))
+                        .thenComparing(Assessment::getId, Comparator.nullsLast(Comparator.reverseOrder())))
                 .collect(Collectors.toList());
     }
 
@@ -273,7 +388,9 @@ public class EvaluationService {
         return gradeService.getALL().stream()
                 .filter(g -> g.getAssessment() != null && g.getAssessment().getId() != null)
                 .filter(g -> g.getAssessment().getId() == assessmentId)
-                .sorted(Comparator.comparing(Grade::getId, Comparator.nullsLast(Integer::compareTo)))
+            .sorted(Comparator
+                .comparing(Grade::getScore, Comparator.nullsLast(Double::compareTo)).reversed()
+                .thenComparing(Grade::getId, Comparator.nullsLast(Integer::compareTo)))
                 .collect(Collectors.toList());
     }
 
@@ -308,7 +425,10 @@ public class EvaluationService {
 
     public List<Schedule> getAllSchedules() {
         return scheduleService.getALL().stream()
-                .sorted(Comparator.comparing(Schedule::getId, Comparator.nullsLast(Integer::compareTo)).reversed())
+                .sorted(Comparator
+                        .comparing((Schedule s) -> dayOrder(s.getDayOfWeek()))
+                        .thenComparing(Schedule::getStartTime, Comparator.nullsLast(Time::compareTo))
+                        .thenComparing(Schedule::getId, Comparator.nullsLast(Integer::compareTo)))
                 .collect(Collectors.toList());
     }
 
@@ -399,6 +519,20 @@ public class EvaluationService {
             case "sunday" -> 7;
             default -> 99;
         };
+    }
+
+    private int statusWeight(String status) {
+        if (status == null || status.isBlank()) {
+            return 3;
+        }
+        String normalized = status.trim().toLowerCase(Locale.ROOT);
+        if ("pending".equals(normalized) || "processing".equals(normalized)) {
+            return 1;
+        }
+        if ("approved".equals(normalized) || "resolved".equals(normalized) || "delivered".equals(normalized)) {
+            return 2;
+        }
+        return 3;
     }
 
     public static class StudentSummary {
