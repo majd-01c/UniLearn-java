@@ -35,11 +35,15 @@ public class UserService {
      * Returns all active users whose role is PARTNER (or ROLE_PARTNER).
      * Used by the admin job-offer form to let the admin assign an offer to a partner.
      */
+    /**
+     * Returns all users whose role is BUSINESS_PARTNER (or legacy 'partner' / 'role_partner').
+     * Used by the admin job-offer form to let the admin assign an offer to a partner.
+     */
     public List<User> getPartnerUsers() {
         Session session = HibernateSessionFactory.getSession();
         try {
             Query<User> query = session.createQuery(
-                    "from User u where (lower(u.role) = 'partner' or lower(u.role) = 'role_partner') and u.isActive = 1 order by u.name asc, u.email asc",
+                    "from User u where (lower(u.role) = 'business_partner' or lower(u.role) = 'partner' or lower(u.role) = 'role_partner') order by u.name asc, u.email asc",
                     User.class
             );
             return query.getResultList();
