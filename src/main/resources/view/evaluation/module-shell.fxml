@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
@@ -19,13 +17,6 @@
             </padding>
             <children>
                 <Label text="Evaluation Module" styleClass="eval-title"/>
-                <Label fx:id="subtitleLabel" text="Evaluation workspace" styleClass="eval-subtitle"/>
-                <Label fx:id="connectedUserLabel" text="Connected as: -" styleClass="eval-user-chip"/>
-                <HBox spacing="10.0" styleClass="eval-shell-hint-row">
-                    <children>
-                        <Label text="Role-locked experience based on your active session" styleClass="eval-label"/>
-                    </children>
-                </HBox>
             </children>
         </VBox>
     </top>

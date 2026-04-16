@@ -10,6 +10,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputControl;
 import javafx.scene.layout.VBox;
 import security.UserSession;
 import service.evaluation.EvaluationService;
@@ -17,6 +18,9 @@ import service.evaluation.EvaluationService;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.function.UnaryOperator;
+
+import javafx.scene.control.TextFormatter;
 
 public class EvaluationStudentController {
 
@@ -80,6 +84,7 @@ public class EvaluationStudentController {
         studentIdField.setEditable(false);
         studentIdField.setDisable(true);
         classIdField.setText("1");
+        installInputValidation();
 
         docTypeBox.getItems().setAll(
                 "attestation_stage",
@@ -139,9 +144,22 @@ public class EvaluationStudentController {
     @FXML
     private void onCreateComplaint() {
         try {
-            int studentId = intValue(studentIdField.getText());
-            String courseName = complaintCourseNameField.getText();
-            service.createReclamation(studentId, courseName, complaintSubjectField.getText(), complaintDescriptionArea.getText());
+            int studentId = requirePositiveInt(studentIdField.getText(), "Student ID");
+            String courseName = requireNotBlank(complaintCourseNameField.getText(), "Course name");
+            String subject = requireNotBlank(complaintSubjectField.getText(), "Complaint subject");
+            String description = requireNotBlank(complaintDescriptionArea.getText(), "Complaint description");
+
+            if (subject.length() < 3) {
+                throw new IllegalArgumentException("Complaint subject must have at least 3 characters.");
+            }
+            if (description.length() < 10) {
+                throw new IllegalArgumentException("Complaint description must have at least 10 characters.");
+            }
+            if (service.findCourseIdByName(courseName) == null) {
+                throw new IllegalArgumentException("Course name is invalid. Please enter an existing course title.");
+            }
+
+            service.createReclamation(studentId, courseName, subject, description);
             complaintSubjectField.clear();
             complaintDescriptionArea.clear();
             complaintCourseNameField.clear();
@@ -155,8 +173,17 @@ public class EvaluationStudentController {
     @FXML
     private void onCreateDocumentRequest() {
         try {
-            int studentId = intValue(studentIdField.getText());
-            service.createDocumentRequest(studentId, docTypeBox.getValue(), docInfoArea.getText());
+            int studentId = requirePositiveInt(studentIdField.getText(), "Student ID");
+            String docType = docTypeBox.getValue();
+            if (docType == null || docType.isBlank()) {
+                throw new IllegalArgumentException("Please select a document type.");
+            }
+            String additionalInfo = requireNotBlank(docInfoArea.getText(), "Document request details");
+            if (additionalInfo.length() < 5) {
+                throw new IllegalArgumentException("Document request details must have at least 5 characters.");
+            }
+
+            service.createDocumentRequest(studentId, docType, additionalInfo);
             docInfoArea.clear();
             refreshDocRequests(studentId);
             showFeedback("Document request created.");
@@ -315,6 +342,50 @@ public class EvaluationStudentController {
 
     private int intValue(String value) {
         return Integer.parseInt(value.trim());
+    }
+
+    private void installInputValidation() {
+        setIntegerField(classIdField);
+        setLengthField(complaintSubjectField, 150);
+        setLengthField(complaintCourseNameField, 150);
+        setLengthField(docInfoArea, 500);
+        setLengthField(complaintDescriptionArea, 1000);
+    }
+
+    private void setIntegerField(TextField field) {
+        UnaryOperator<TextFormatter.Change> filter = change -> {
+            String next = change.getControlNewText();
+            return next.matches("\\d*") ? change : null;
+        };
+        field.setTextFormatter(new TextFormatter<>(filter));
+    }
+
+    private void setLengthField(TextInputControl input, int maxLength) {
+        UnaryOperator<TextFormatter.Change> filter = change -> {
+            String next = change.getControlNewText();
+            return next.length() <= maxLength ? change : null;
+        };
+        input.setTextFormatter(new TextFormatter<>(filter));
+    }
+
+    private int requirePositiveInt(String rawValue, String fieldName) {
+        String normalized = requireNotBlank(rawValue, fieldName);
+        try {
+            int parsed = Integer.parseInt(normalized);
+            if (parsed <= 0) {
+                throw new IllegalArgumentException(fieldName + " must be greater than 0.");
+            }
+            return parsed;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(fieldName + " must be a valid integer.");
+        }
+    }
+
+    private String requireNotBlank(String rawValue, String fieldName) {
+        if (rawValue == null || rawValue.trim().isEmpty()) {
+            throw new IllegalArgumentException(fieldName + " is required.");
+        }
+        return rawValue.trim();
     }
 
     private String safe(String value) {
