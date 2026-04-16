@@ -13,6 +13,15 @@
                 <Label fx:id="modeBadgeLabel" text="NEW OFFER" styleClass="job-offer-mode-badge"/>
             </HBox>
 
+            <VBox fx:id="partnerSelectionSection" spacing="14" styleClass="job-offer-section" managed="false" visible="false">
+                <Label text="Assign to Partner *" styleClass="job-offer-section-title"/>
+                <VBox spacing="6">
+                    <Label text="Select Partner Account" styleClass="form-label"/>
+                    <ComboBox fx:id="partnerCombo" promptText="Choose a partner..." styleClass="lms-input job-offer-input" maxWidth="Infinity"/>
+                    <Label text="The offer will be linked to this partner's account. The partner will manage it and see all applications." styleClass="job-offer-form-note" wrapText="true"/>
+                </VBox>
+            </VBox>
+
             <VBox spacing="14" styleClass="job-offer-section">
                 <Label text="Basic Information" styleClass="job-offer-section-title"/>
                 <VBox spacing="6">
@@ -80,11 +89,13 @@
                     <VBox spacing="6" HBox.hgrow="ALWAYS">
                         <Label text="Date de publication" styleClass="form-label"/>
                         <DatePicker fx:id="publishedDatePicker" promptText="mm/dd/yyyy" styleClass="lms-input job-offer-input job-offer-date-picker"/>
+                        <Label fx:id="publishedDateError" text="" styleClass="job-offer-date-error" wrapText="true" managed="false" visible="false"/>
                         <Label text="Laisser vide pour publier immédiatement" styleClass="job-offer-form-note" wrapText="true"/>
                     </VBox>
                     <VBox spacing="6" HBox.hgrow="ALWAYS">
                         <Label text="Date d'expiration" styleClass="form-label"/>
                         <DatePicker fx:id="expiresDatePicker" promptText="mm/dd/yyyy" styleClass="lms-input job-offer-input job-offer-date-picker"/>
+                        <Label fx:id="expiresDateError" text="" styleClass="job-offer-date-error" wrapText="true" managed="false" visible="false"/>
                         <Label text="Optionnel: date de fin de l'offre" styleClass="job-offer-form-note" wrapText="true"/>
                     </VBox>
                 </HBox>

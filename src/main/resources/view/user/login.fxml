@@ -6,9 +6,9 @@
 <?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
@@ -17,41 +17,86 @@
             fx:controller="controller.LoginController"
             styleClass="login-root">
     <center>
-        <VBox alignment="CENTER" spacing="14.0" styleClass="login-card">
-            <padding>
-                <Insets top="30.0" right="30.0" bottom="30.0" left="30.0"/>
-            </padding>
+        <StackPane styleClass="login-stage">
             <children>
-                <Label text="UniLearn Desktop" styleClass="login-title"/>
-                <Label text="Sign in to continue your workspace session." styleClass="login-subtitle"/>
-                <GridPane hgap="10.0" vgap="12.0" maxWidth="420.0">
+                <Region styleClass="login-orb-top" StackPane.alignment="TOP_LEFT"/>
+                <Region styleClass="login-orb-right" StackPane.alignment="CENTER_RIGHT"/>
+                <Region styleClass="login-orb-bottom" StackPane.alignment="BOTTOM_LEFT"/>
+
+                <HBox maxWidth="940.0" prefHeight="510.0" styleClass="login-shell">
                     <children>
-                        <Label text="Email" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                        <TextField fx:id="emailField" promptText="name@unilearn.tn" onAction="#handleLogin"
-                                   GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-                        <Label text="Password" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                        <HBox spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <VBox spacing="16.0" styleClass="login-form-panel" HBox.hgrow="ALWAYS">
+                            <padding>
+                                <Insets top="36.0" right="38.0" bottom="34.0" left="38.0"/>
+                            </padding>
                             <children>
-                                <StackPane HBox.hgrow="ALWAYS">
+                                <Label text="Welcome back" styleClass="login-title"/>
+                                <Label text="Sign in to continue to your UniLearn workspace session." styleClass="login-subtitle" wrapText="true" maxWidth="430.0"/>
+
+                                <VBox spacing="12.0" maxWidth="430.0">
                                     <children>
-                                        <PasswordField fx:id="passwordField" promptText="Password" onAction="#handleLogin"/>
-                                        <TextField fx:id="passwordVisibleField" promptText="Password" onAction="#handleLogin" visible="false" managed="false"/>
+                                        <VBox spacing="6.0">
+                                            <children>
+                                                <Label text="EMAIL" styleClass="field-label"/>
+                                                <TextField fx:id="emailField" promptText="name@unilearn.tn" onAction="#handleLogin" styleClass="login-input"/>
+                                            </children>
+                                        </VBox>
+
+                                        <VBox spacing="6.0">
+                                            <children>
+                                                <Label text="PASSWORD" styleClass="field-label"/>
+                                                <HBox spacing="8.0">
+                                                    <children>
+                                                        <StackPane HBox.hgrow="ALWAYS">
+                                                            <children>
+                                                                <PasswordField fx:id="passwordField" promptText="Password" onAction="#handleLogin" styleClass="login-input"/>
+                                                                <TextField fx:id="passwordVisibleField" promptText="Password" onAction="#handleLogin" styleClass="login-input" visible="false" managed="false"/>
+                                                            </children>
+                                                        </StackPane>
+                                                        <Button fx:id="passwordToggleButton" text="Show" onAction="#handleTogglePasswordVisibility" styleClass="login-toggle-button"/>
+                                                    </children>
+                                                </HBox>
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </VBox>
+
+                                <CheckBox fx:id="rememberMeCheckBox" text="Remember my email" styleClass="login-remember-checkbox"/>
+                                <Button fx:id="loginButton" text="Sign In" onAction="#handleLogin" maxWidth="430.0" styleClass="login-submit-button"/>
+                                <Hyperlink text="Forgot password?" onAction="#handleForgotPassword" styleClass="login-link"/>
+                                <Label fx:id="messageLabel" styleClass="login-message" wrapText="true" maxWidth="430.0"/>
+                            </children>
+                        </VBox>
+
+                        <Region styleClass="login-divider"/>
+
+                        <VBox spacing="14.0" prefWidth="290.0" styleClass="login-side-panel">
+                            <padding>
+                                <Insets top="34.0" right="28.0" bottom="34.0" left="28.0"/>
+                            </padding>
+                            <children>
+                                <StackPane prefWidth="190.0" prefHeight="190.0" styleClass="login-qr-shell">
+                                    <children>
+                                        <Region styleClass="login-qr-inner"/>
+                                        <Label text="Secure&#10;Access" styleClass="login-qr-title"/>
                                     </children>
                                 </StackPane>
-                                <Button fx:id="passwordToggleButton" text="Show" onAction="#handleTogglePasswordVisibility" styleClass="ghost-button"/>
+
+                                <Label text="Workspace Security" styleClass="login-side-title"/>
+                                <Label text="Authentication is protected and role-aware. Your session is isolated and restored on successful sign in." styleClass="login-side-text" wrapText="true"/>
+
+                                <VBox spacing="8.0" styleClass="login-tip-list">
+                                    <children>
+                                        <Label text="Private sessions for each role" styleClass="login-tip-item"/>
+                                        <Label text="Fast access to classes and modules" styleClass="login-tip-item"/>
+                                        <Label text="Built-in account recovery workflow" styleClass="login-tip-item"/>
+                                    </children>
+                                </VBox>
                             </children>
-                        </HBox>
-                    </children>
-                </GridPane>
-                <CheckBox fx:id="rememberMeCheckBox" text="Remember my email"/>
-                <Button fx:id="loginButton" text="Sign In" onAction="#handleLogin" prefWidth="180.0" styleClass="primary-button"/>
-                <HBox alignment="CENTER" spacing="10.0">
-                    <children>
-                        <Hyperlink text="Forgot password?" onAction="#handleForgotPassword"/>
+                        </VBox>
                     </children>
                 </HBox>
-                <Label fx:id="messageLabel" styleClass="form-feedback-error" wrapText="true" maxWidth="420.0"/>
             </children>
-        </VBox>
+        </StackPane>
     </center>
 </BorderPane>

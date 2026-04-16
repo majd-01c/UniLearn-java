@@ -8,10 +8,13 @@ import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import javafx.util.StringConverter;
 import service.lms.ModuleService;
 import service.lms.ProgramService;
 import util.AppNavigator;
+import javafx.geometry.Pos;
+import javafx.geometry.Insets;
 
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -28,11 +31,7 @@ public class AdminProgramDetailController implements Initializable {
     @FXML private Label createdLabel;
     @FXML private Label updatedLabel;
     @FXML private ComboBox<Module> moduleSelector;
-    @FXML private TableView<ProgramModule> moduleTable;
-    @FXML private TableColumn<ProgramModule, String> colModId;
-    @FXML private TableColumn<ProgramModule, String> colModName;
-    @FXML private TableColumn<ProgramModule, String> colModDuration;
-    @FXML private TableColumn<ProgramModule, String> colModActions;
+    @FXML private FlowPane modulesContainer;
 
     private final ProgramService programService = new ProgramService();
     private final ModuleService moduleService = new ModuleService();
@@ -41,18 +40,6 @@ public class AdminProgramDetailController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        colModId.setCellValueFactory(c -> new SimpleStringProperty(String.valueOf(c.getValue().getModule().getId())));
-        colModName.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getModule().getName()));
-        colModDuration.setCellValueFactory(c -> {
-            Module m = c.getValue().getModule();
-            return new SimpleStringProperty(m.getDuration() + " " + m.getPeriodUnit());
-        });
-        colModActions.setCellFactory(col -> new TableCell<>() {
-            private final Button removeBtn = new Button("Remove");
-            { removeBtn.getStyleClass().add("danger-button"); removeBtn.setOnAction(e -> onRemoveModule(getTableView().getItems().get(getIndex()))); }
-            @Override protected void updateItem(String item, boolean empty) { super.updateItem(item, empty); setGraphic(empty ? null : removeBtn); setText(null); }
-        });
-
         moduleSelector.setConverter(new StringConverter<>() {
             @Override public String toString(Module m) { return m == null ? "" : m.getName() + " (" + m.getDuration() + " " + m.getPeriodUnit() + ")"; }
             @Override public Module fromString(String s) { return null; }
@@ -72,11 +59,51 @@ public class AdminProgramDetailController implements Initializable {
 
     private void loadModules() {
         List<ProgramModule> assigned = programService.getModulesForProgram(program.getId());
-        moduleTable.setItems(FXCollections.observableArrayList(assigned));
+        
+        modulesContainer.getChildren().clear();
+        if (assigned.isEmpty()) {
+            Label placeholder = new Label("No modules assigned");
+            placeholder.getStyleClass().add("empty-state");
+            modulesContainer.getChildren().add(placeholder);
+        } else {
+            for (ProgramModule pm : assigned) {
+                modulesContainer.getChildren().add(createModuleCard(pm));
+            }
+        }
 
         Set<Integer> assignedIds = assigned.stream().map(pm -> pm.getModule().getId()).collect(Collectors.toSet());
         List<Module> available = moduleService.listAll().stream().filter(m -> !assignedIds.contains(m.getId())).collect(Collectors.toList());
         moduleSelector.setItems(FXCollections.observableArrayList(available));
+    }
+
+    private VBox createModuleCard(ProgramModule pm) {
+        Module m = pm.getModule();
+        VBox card = new VBox(8);
+        card.getStyleClass().add("lms-card");
+        card.setMinWidth(280);
+        card.setPrefWidth(280);
+        card.setPadding(new Insets(12));
+
+        Label nameLabel = new Label(m.getName());
+        nameLabel.getStyleClass().add("card-title");
+        nameLabel.setWrapText(true);
+
+        Label idLabel = new Label("ID: " + m.getId());
+        idLabel.getStyleClass().add("card-text-sm");
+
+        Label durationLabel = new Label(m.getDuration() + " " + m.getPeriodUnit());
+        durationLabel.getStyleClass().add("card-text");
+
+        Region spacer = new Region();
+        VBox.setVgrow(spacer, Priority.ALWAYS);
+
+        Button removeBtn = new Button("Remove");
+        removeBtn.getStyleClass().add("danger-button");
+        removeBtn.setMaxWidth(Double.MAX_VALUE);
+        removeBtn.setOnAction(e -> onRemoveModule(pm));
+
+        card.getChildren().addAll(nameLabel, idLabel, durationLabel, spacer, removeBtn);
+        return card;
     }
 
     @FXML private void onAddModule() {

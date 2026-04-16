@@ -16,13 +16,14 @@ import entities.Assessment;
 import entities.TeacherClasse;
 import entities.User;
 import entities.UserAnswer;
-import Utils.MyDatabase;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+
+import Utils.MyDatabase;
 
 public abstract class ServiceSupport {
     protected final Connection connection;

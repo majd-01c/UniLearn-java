@@ -40,15 +40,9 @@
             <Button text="+ Add" onAction="#onAddModule" styleClass="primary-button"/>
         </HBox>
 
-        <TableView fx:id="moduleTable" prefHeight="260" styleClass="lms-table">
-            <columns>
-                <TableColumn fx:id="colModId" text="ID" prefWidth="50"/>
-                <TableColumn fx:id="colModName" text="Module Name" prefWidth="250"/>
-                <TableColumn fx:id="colModDuration" text="Duration" prefWidth="150"/>
-                <TableColumn fx:id="colModActions" text="" prefWidth="100"/>
-            </columns>
-            <placeholder><Label text="No modules assigned" styleClass="empty-state"/></placeholder>
-        </TableView>
+        <FlowPane fx:id="modulesContainer" hgap="12" vgap="12">
+            <!-- Dynamic cards will be loaded here -->
+        </FlowPane>
     </VBox>
 </VBox>
 </ScrollPane>

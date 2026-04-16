@@ -1,26 +1,31 @@
 package controller;
 
 import entities.User;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.Pagination;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableRow;
-import javafx.scene.control.TableView;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseButton;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import service.ThemeManager;
 import service.UserService;
 import util.AppNavigator;
 
@@ -36,24 +41,24 @@ public class UserListController implements Initializable {
 
     private static final int PAGE_SIZE = 10;
     private static final DateTimeFormatter CREATED_AT_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        private static final String[] DIALOG_STYLESHEETS = {
+            "/view/styles/desktop-tokens.css",
+            "/view/styles/desktop-shell.css",
+            "/view/styles/desktop-components.css",
+            "/view/styles/desktop-admin.css",
+            "/view/styles/desktop-frontoffice.css",
+            "/view/styles/desktop-animations.css",
+            "/view/styles/unilearn-desktop.css"
+        };
 
     @FXML
-    private TableView<User> userTable;
+    private FlowPane userCardsContainer;
 
     @FXML
-    private TableColumn<User, Number> idColumn;
+    private ScrollPane usersScrollPane;
 
     @FXML
-    private TableColumn<User, String> emailColumn;
-
-    @FXML
-    private TableColumn<User, String> roleColumn;
-
-    @FXML
-    private TableColumn<User, String> statusColumn;
-
-    @FXML
-    private TableColumn<User, String> createdDateColumn;
+    private Label emptyStateLabel;
 
     @FXML
     private TextField searchField;
@@ -69,13 +74,13 @@ public class UserListController implements Initializable {
 
     private final UserService userService = new UserService();
     private final ObservableList<User> filteredUsers = FXCollections.observableArrayList();
+    private User selectedUser;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        configureTableColumns();
         configureFilters();
         configurePagination();
-        configureRowDoubleClick();
+        configureCardsLayout();
         refreshUsers();
     }
 
@@ -90,13 +95,12 @@ public class UserListController implements Initializable {
 
     @FXML
     public void onEditUser() {
-        User selectedUser = userTable.getSelectionModel().getSelectedItem();
-        if (selectedUser == null) {
-            showWarning("Select a user", "Please select a user to edit.");
+        User currentSelection = requireSelectedUser("edit");
+        if (currentSelection == null) {
             return;
         }
 
-        openUserForm(selectedUser);
+        openUserForm(currentSelection);
     }
 
     public void onEdit() {
@@ -105,22 +109,22 @@ public class UserListController implements Initializable {
 
     @FXML
     public void onDeleteUser() {
-        User selectedUser = userTable.getSelectionModel().getSelectedItem();
-        if (selectedUser == null) {
-            showWarning("Select a user", "Please select a user to delete.");
+        User currentSelection = requireSelectedUser("delete");
+        if (currentSelection == null) {
             return;
         }
 
         boolean confirmed = showConfirmation(
                 "Delete user",
                 "Delete selected user",
-                "Are you sure you want to delete " + selectedUser.getEmail() + "?"
+                "Are you sure you want to delete " + safeOrPlaceholder(currentSelection.getEmail()) + "?"
         );
         if (!confirmed) {
             return;
         }
 
-        userService.deleteUser(selectedUser.getId().longValue());
+        userService.deleteUser(currentSelection.getId().longValue());
+        selectedUser = null;
         refreshUsers();
     }
 
@@ -130,23 +134,22 @@ public class UserListController implements Initializable {
 
     @FXML
     public void onToggleStatus() {
-        User selectedUser = userTable.getSelectionModel().getSelectedItem();
-        if (selectedUser == null) {
-            showWarning("Select a user", "Please select a user to toggle status.");
+        User currentSelection = requireSelectedUser("toggle status");
+        if (currentSelection == null) {
             return;
         }
 
-        String action = selectedUser.getIsActive() == (byte) 1 ? "deactivate" : "activate";
+        String action = currentSelection.getIsActive() == (byte) 1 ? "deactivate" : "activate";
         boolean confirmed = showConfirmation(
                 "Toggle status",
                 "Change user status",
-                "Are you sure you want to " + action + " " + selectedUser.getEmail() + "?"
+                "Are you sure you want to " + action + " " + safeOrPlaceholder(currentSelection.getEmail()) + "?"
         );
         if (!confirmed) {
             return;
         }
 
-        userService.toggleUserStatus(selectedUser.getId().longValue());
+        userService.toggleUserStatus(currentSelection.getId().longValue());
         refreshUsers();
     }
 
@@ -186,23 +189,28 @@ public class UserListController implements Initializable {
             dialogStage.setTitle(userToEdit == null ? "Create User" : "Edit User");
             dialogStage.initModality(Modality.APPLICATION_MODAL);
 
-            if (userTable.getScene() != null && userTable.getScene().getWindow() != null) {
-                dialogStage.initOwner(userTable.getScene().getWindow());
+            if (searchField.getScene() != null && searchField.getScene().getWindow() != null) {
+                dialogStage.initOwner(searchField.getScene().getWindow());
             }
 
-            dialogStage.setScene(new Scene(root));
+            Scene dialogScene = new Scene(root);
+            applyDialogStyles(dialogScene);
+            dialogStage.setScene(dialogScene);
             dialogStage.showAndWait();
         } catch (IOException exception) {
             showWarning("Open form failed", "Could not open user form view: " + exception.getMessage());
         }
     }
 
-    private void configureTableColumns() {
-        idColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getId()));
-        emailColumn.setCellValueFactory(cellData -> new SimpleStringProperty(safeText(cellData.getValue().getEmail())));
-        roleColumn.setCellValueFactory(cellData -> new SimpleStringProperty(formatRole(cellData.getValue().getRole())));
-        statusColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getIsActive() == (byte) 1 ? "Active" : "Inactive"));
-        createdDateColumn.setCellValueFactory(cellData -> new SimpleStringProperty(formatCreatedAt(cellData.getValue().getCreatedAt())));
+    private void applyDialogStyles(Scene scene) {
+        for (String stylesheetPath : DIALOG_STYLESHEETS) {
+            URL stylesheetUrl = getClass().getResource(stylesheetPath);
+            if (stylesheetUrl != null) {
+                scene.getStylesheets().add(stylesheetUrl.toExternalForm());
+            }
+        }
+
+        ThemeManager.getInstance().applySavedTheme(scene);
     }
 
     private void configureFilters() {
@@ -229,23 +237,20 @@ public class UserListController implements Initializable {
     }
 
     private void configurePagination() {
-        pagination.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) -> updateTablePage(newIndex.intValue()));
+        pagination.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) -> updateCardsPage(newIndex.intValue()));
         pagination.setPageFactory(pageIndex -> {
-            updateTablePage(pageIndex);
+            updateCardsPage(pageIndex);
             return new Region();
         });
     }
 
-    private void configureRowDoubleClick() {
-        userTable.setRowFactory(tableView -> {
-            TableRow<User> row = new TableRow<>();
-            row.setOnMouseClicked(event -> {
-                if (event.getClickCount() == 2 && !row.isEmpty()) {
-                    onViewUserDetails(row.getItem());
-                }
-            });
-            return row;
-        });
+    private void configureCardsLayout() {
+        usersScrollPane.viewportBoundsProperty().addListener((obs, oldBounds, newBounds) ->
+                userCardsContainer.setPrefWrapLength(Math.max(320, newBounds.getWidth() - 6)));
+
+        if (usersScrollPane.getViewportBounds() != null) {
+            userCardsContainer.setPrefWrapLength(Math.max(320, usersScrollPane.getViewportBounds().getWidth() - 6));
+        }
     }
 
     private void refreshUsers() {
@@ -254,8 +259,10 @@ public class UserListController implements Initializable {
 
     public void loadPage(int pageIndex) {
         int safePageIndex = Math.max(pageIndex, 0);
+        int maxPageIndex = Math.max(0, pagination.getPageCount() - 1);
+        safePageIndex = Math.min(safePageIndex, maxPageIndex);
         pagination.setCurrentPageIndex(safePageIndex);
-        updateTablePage(safePageIndex);
+        updateCardsPage(safePageIndex);
     }
 
     public void applyFilters(String search, String role, String status) {
@@ -283,24 +290,176 @@ public class UserListController implements Initializable {
 
         List<User> users = userService.searchUsers(searchTerm, roleFilter, activeFilter);
         filteredUsers.setAll(users);
+        syncSelectionWithFilteredData();
 
         int pageCount = Math.max(1, (int) Math.ceil((double) filteredUsers.size() / PAGE_SIZE));
         pagination.setPageCount(pageCount);
         pagination.setCurrentPageIndex(0);
-        updateTablePage(0);
+        updateCardsPage(0);
     }
 
-    private void updateTablePage(int pageIndex) {
+    private void updateCardsPage(int pageIndex) {
         int safePageIndex = Math.max(pageIndex, 0);
-        int fromIndex = safePageIndex * PAGE_SIZE;
 
-        if (fromIndex >= filteredUsers.size()) {
-            userTable.setItems(FXCollections.observableArrayList());
+        if (filteredUsers.isEmpty()) {
+            userCardsContainer.getChildren().clear();
+            setEmptyStateVisible(true);
             return;
         }
 
+        int fromIndex = safePageIndex * PAGE_SIZE;
+        if (fromIndex >= filteredUsers.size()) {
+            int lastPageIndex = Math.max(0, pagination.getPageCount() - 1);
+            if (lastPageIndex != safePageIndex) {
+                pagination.setCurrentPageIndex(lastPageIndex);
+                return;
+            }
+            fromIndex = 0;
+        }
+
         int toIndex = Math.min(fromIndex + PAGE_SIZE, filteredUsers.size());
-        userTable.setItems(FXCollections.observableArrayList(filteredUsers.subList(fromIndex, toIndex)));
+        renderUserCards(filteredUsers.subList(fromIndex, toIndex));
+        setEmptyStateVisible(false);
+    }
+
+    private void renderUserCards(List<User> users) {
+        userCardsContainer.getChildren().clear();
+        users.forEach(user -> userCardsContainer.getChildren().add(buildUserCard(user)));
+    }
+
+    private VBox buildUserCard(User user) {
+        VBox card = new VBox(10);
+        card.getStyleClass().add("user-card");
+        if (isSelected(user)) {
+            card.getStyleClass().add("user-card-selected");
+        }
+        card.setPadding(new Insets(14));
+        card.setPrefWidth(290);
+        card.setMinWidth(250);
+        card.setMaxWidth(320);
+
+        HBox headingRow = new HBox(8);
+        headingRow.setAlignment(Pos.CENTER_LEFT);
+
+        Label nameLabel = new Label(displayName(user));
+        nameLabel.getStyleClass().add("user-card-name");
+        nameLabel.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(nameLabel, Priority.ALWAYS);
+
+        Label statusBadge = new Label(user.getIsActive() == (byte) 1 ? "Active" : "Inactive");
+        statusBadge.getStyleClass().addAll("user-card-badge",
+                user.getIsActive() == (byte) 1 ? "user-card-badge-active" : "user-card-badge-inactive");
+        headingRow.getChildren().addAll(nameLabel, statusBadge);
+
+        Label emailLabel = new Label(safeOrPlaceholder(user.getEmail()));
+        emailLabel.getStyleClass().add("user-card-email");
+        emailLabel.setWrapText(true);
+
+        HBox chipsRow = new HBox(6);
+
+        Label roleBadge = new Label(formatRole(user.getRole()));
+        roleBadge.getStyleClass().addAll("user-card-badge", "user-card-badge-role");
+
+        chipsRow.getChildren().add(roleBadge);
+
+        VBox metaRows = new VBox(5);
+        metaRows.getStyleClass().add("user-card-meta-box");
+        metaRows.getChildren().addAll(
+                buildMetaRow("Phone", safeOrPlaceholder(user.getPhone())),
+                buildMetaRow("Location", safeOrPlaceholder(user.getLocation())),
+                buildMetaRow("Created", safeOrPlaceholder(formatCreatedAt(user.getCreatedAt())))
+        );
+
+        Label hintLabel = new Label("Click to select, double-click for details.");
+        hintLabel.getStyleClass().add("user-card-hint");
+
+        card.getChildren().addAll(headingRow, emailLabel, chipsRow, metaRows, hintLabel);
+
+        card.setOnMouseClicked(event -> {
+            if (event.getButton() != MouseButton.PRIMARY) {
+                return;
+            }
+
+            selectedUser = user;
+            updateCardsPage(pagination.getCurrentPageIndex());
+
+            if (event.getClickCount() == 2) {
+                onViewUserDetails(user);
+            }
+        });
+
+        return card;
+    }
+
+    private HBox buildMetaRow(String labelText, String valueText) {
+        Label label = new Label(labelText + ":");
+        label.getStyleClass().add("user-card-meta-label");
+
+        Label value = new Label(valueText);
+        value.getStyleClass().add("user-card-meta-value");
+        value.setWrapText(true);
+        value.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(value, Priority.ALWAYS);
+
+        HBox row = new HBox(6, label, value);
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
+    }
+
+    private void setEmptyStateVisible(boolean visible) {
+        emptyStateLabel.setVisible(visible);
+        emptyStateLabel.setManaged(visible);
+    }
+
+    private User requireSelectedUser(String actionLabel) {
+        if (selectedUser == null) {
+            showWarning("Select a user", "Please select a user to " + actionLabel + ".");
+            return null;
+        }
+        return selectedUser;
+    }
+
+    private void syncSelectionWithFilteredData() {
+        if (selectedUser == null || selectedUser.getId() == null) {
+            selectedUser = null;
+            return;
+        }
+
+        Integer selectedId = selectedUser.getId();
+        selectedUser = filteredUsers.stream()
+                .filter(user -> user.getId() != null && user.getId().equals(selectedId))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private boolean isSelected(User user) {
+        if (selectedUser == null || selectedUser.getId() == null || user == null || user.getId() == null) {
+            return false;
+        }
+
+        return selectedUser.getId().equals(user.getId());
+    }
+
+    private String displayName(User user) {
+        String name = normalizeText(user == null ? null : user.getName());
+        if (name != null) {
+            return name;
+        }
+
+        String email = normalizeText(user == null ? null : user.getEmail());
+        if (email != null) {
+            int atIndex = email.indexOf('@');
+            if (atIndex > 0) {
+                return email.substring(0, atIndex);
+            }
+            return email;
+        }
+
+        if (user != null && user.getId() != null) {
+            return "User #" + user.getId();
+        }
+
+        return "Unknown User";
     }
 
     private void onViewUserDetails(User user) {
@@ -362,8 +521,18 @@ public class UserListController implements Initializable {
         return timestamp.toLocalDateTime().format(CREATED_AT_FORMATTER);
     }
 
-    private String safeText(String value) {
-        return value == null ? "" : value;
+    private String safeOrPlaceholder(String value) {
+        String normalized = normalizeText(value);
+        return normalized == null ? "Not provided" : normalized;
+    }
+
+    private String normalizeText(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     private String blankToNull(String value) {

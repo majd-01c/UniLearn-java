@@ -2,18 +2,24 @@ package controller.job_offer;
 
 import entities.User;
 import entities.job_offer.JobOffer;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
+import javafx.util.Callback;
+import javafx.util.StringConverter;
+import service.UserService;
 import services.job_offer.ServiceJobOffer;
 import util.AppNavigator;
+import util.RoleGuard;
 
 import java.net.URL;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class JobOfferFormController implements Initializable {
@@ -55,7 +61,13 @@ public class JobOfferFormController implements Initializable {
     private DatePicker publishedDatePicker;
 
     @FXML
+    private Label publishedDateError;
+
+    @FXML
     private DatePicker expiresDatePicker;
+
+    @FXML
+    private Label expiresDateError;
 
     @FXML
     private Button saveButton;
@@ -72,20 +84,29 @@ public class JobOfferFormController implements Initializable {
     @FXML
     private Label modeBadgeLabel;
 
+    @FXML
+    private VBox partnerSelectionSection;
+
+    @FXML
+    private ComboBox<User> partnerCombo;
+
     private JobOffer jobOffer;
     private User currentUser;
     private ServiceJobOffer serviceJobOffer;
+    private UserService userService;
     private boolean isNewOffer;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         serviceJobOffer = new ServiceJobOffer();
+        userService = new UserService();
         isNewOffer = true;
 
         setupTypeCombo();
         setupEducationCombo();
         setupExperienceSpinner();
         setupDatePickers();
+        setupPartnerCombo();
     }
 
     public void setJobOffer(JobOffer offer) {
@@ -99,6 +120,7 @@ public class JobOfferFormController implements Initializable {
 
     public void setCurrentUser(User user) {
         this.currentUser = user;
+        configurePartnerVisibility();
     }
 
     private void updateFormModeLabels() {
@@ -158,6 +180,40 @@ public class JobOfferFormController implements Initializable {
     }
 
     private void setupDatePickers() {
+        // ── Disable past days in the calendar popup ─────────────────────────
+        Callback<DatePicker, DateCell> pastDayFactory = dp -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item != null && item.isBefore(LocalDate.now())) {
+                    setDisable(true);
+                    setStyle("-fx-background-color: #f0f0f0; -fx-text-fill: #aaaaaa;");
+                }
+            }
+        };
+
+        if (publishedDatePicker != null) {
+            publishedDatePicker.setDayCellFactory(pastDayFactory);
+            // Real-time listener
+            publishedDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
+                validatePublishedDate(newVal);
+                // Re-validate expiry in case publish date changed
+                if (expiresDatePicker != null) {
+                    validateExpiresDate(expiresDatePicker.getValue(), newVal);
+                }
+            });
+        }
+
+        if (expiresDatePicker != null) {
+            expiresDatePicker.setDayCellFactory(pastDayFactory);
+            // Real-time listener
+            expiresDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
+                LocalDate pub = publishedDatePicker != null ? publishedDatePicker.getValue() : null;
+                validateExpiresDate(newVal, pub);
+            });
+        }
+
+        // Populate values when editing an existing offer
         if (jobOffer != null) {
             if (jobOffer.getPublishedAt() != null && publishedDatePicker != null) {
                 publishedDatePicker.setValue(jobOffer.getPublishedAt().toLocalDateTime().toLocalDate());
@@ -166,6 +222,47 @@ public class JobOfferFormController implements Initializable {
                 expiresDatePicker.setValue(jobOffer.getExpiresAt().toLocalDateTime().toLocalDate());
             }
         }
+    }
+
+    /** Shows/hides the inline error label for the publication date. Returns true if valid. */
+    private boolean validatePublishedDate(LocalDate date) {
+        if (publishedDatePicker == null || publishedDateError == null) return true;
+        if (date != null && date.isBefore(LocalDate.now())) {
+            publishedDateError.setText("⚠ La date de publication ne peut pas être dans le passé.");
+            publishedDateError.setVisible(true);
+            publishedDateError.setManaged(true);
+            publishedDatePicker.getStyleClass().add("date-picker-error");
+            return false;
+        }
+        publishedDateError.setVisible(false);
+        publishedDateError.setManaged(false);
+        publishedDatePicker.getStyleClass().remove("date-picker-error");
+        return true;
+    }
+
+    /** Shows/hides the inline error label for the expiration date. Returns true if valid. */
+    private boolean validateExpiresDate(LocalDate expiryDate, LocalDate publishDate) {
+        if (expiresDatePicker == null || expiresDateError == null) return true;
+        if (expiryDate != null) {
+            if (expiryDate.isBefore(LocalDate.now())) {
+                expiresDateError.setText("⚠ La date d'expiration ne peut pas être dans le passé.");
+                expiresDateError.setVisible(true);
+                expiresDateError.setManaged(true);
+                expiresDatePicker.getStyleClass().add("date-picker-error");
+                return false;
+            }
+            if (publishDate != null && expiryDate.isBefore(publishDate)) {
+                expiresDateError.setText("⚠ La date d'expiration doit être après la date de publication.");
+                expiresDateError.setVisible(true);
+                expiresDateError.setManaged(true);
+                expiresDatePicker.getStyleClass().add("date-picker-error");
+                return false;
+            }
+        }
+        expiresDateError.setVisible(false);
+        expiresDateError.setManaged(false);
+        expiresDatePicker.getStyleClass().remove("date-picker-error");
+        return true;
     }
 
     private void populateForm(JobOffer offer) {
@@ -201,17 +298,30 @@ public class JobOfferFormController implements Initializable {
 
         try {
             if (isNewOffer) {
-                if (currentUser == null || currentUser.getId() <= 0) {
+                // Determine the owner of the offer
+                User offerOwner;
+                if (isAdminUser() && partnerCombo != null && partnerCombo.getValue() != null) {
+                    // Admin is creating on behalf of a partner
+                    offerOwner = partnerCombo.getValue();
+                } else if (currentUser != null && currentUser.getId() > 0) {
+                    // Partner creating their own offer
+                    offerOwner = currentUser;
+                } else {
                     showError("Validation Error", "Current partner account is missing. Please login again.");
                     return;
                 }
                 jobOffer = new JobOffer();
-                jobOffer.setUser(currentUser);
+                jobOffer.setUser(offerOwner);
                 jobOffer.setStatus("PENDING");
                 jobOffer.setCreatedAt(new Timestamp(Instant.now().toEpochMilli()));
             } else if (jobOffer == null || jobOffer.getId() <= 0) {
                 showError("Validation Error", "Cannot update this offer because its ID is invalid.");
                 return;
+            }
+
+            // If admin is editing an existing offer, allow reassigning to another partner
+            if (!isNewOffer && isAdminUser() && partnerCombo != null && partnerCombo.getValue() != null) {
+                jobOffer.setUser(partnerCombo.getValue());
             }
 
             jobOffer.setTitle(titleField.getText());
@@ -251,6 +361,12 @@ public class JobOfferFormController implements Initializable {
     }
 
     private boolean validate() {
+        // Partner selection is required when admin creates/edits an offer
+        if (isAdminUser() && partnerCombo != null && partnerCombo.getValue() == null) {
+            showError("Validation Error", "Please select a partner to assign this offer to.");
+            return false;
+        }
+
         if (titleField.getText().trim().isEmpty()) {
             showError("Validation Error", "Title is required");
             return false;
@@ -263,12 +379,26 @@ public class JobOfferFormController implements Initializable {
             showError("Validation Error", "Type is required");
             return false;
         }
-        if (publishedDatePicker != null && expiresDatePicker != null
-                && publishedDatePicker.getValue() != null && expiresDatePicker.getValue() != null
-                && expiresDatePicker.getValue().isBefore(publishedDatePicker.getValue())) {
-            showError("Validation Error", "Expiration date cannot be before publication date");
+
+        // Date validations (also trigger real-time labels so the user sees them)
+        LocalDate pub    = publishedDatePicker != null ? publishedDatePicker.getValue() : null;
+        LocalDate expiry = expiresDatePicker   != null ? expiresDatePicker.getValue()   : null;
+
+        boolean pubOk    = validatePublishedDate(pub);
+        boolean expiryOk = validateExpiresDate(expiry, pub);
+
+        if (!pubOk) {
+            showError("Validation Error", "La date de publication ne peut pas être dans le passé.");
             return false;
         }
+        if (!expiryOk) {
+            // The inline label already describes the exact problem
+            showError("Validation Error", expiresDateError != null && expiresDateError.getText() != null
+                    ? expiresDateError.getText().replaceFirst("^⚠ ", "")
+                    : "Date d'expiration invalide.");
+            return false;
+        }
+
         return true;
     }
 
@@ -291,5 +421,64 @@ public class JobOfferFormController implements Initializable {
         alert.setTitle(title);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    // ── Partner selection helpers ──────────────────────────────────────
+
+    private boolean isAdminUser() {
+        return currentUser != null && RoleGuard.isAdmin(currentUser);
+    }
+
+    /**
+     * Configures the partner ComboBox with a StringConverter so that
+     * each partner is displayed by name + email.
+     */
+    private void setupPartnerCombo() {
+        if (partnerCombo == null) return;
+
+        partnerCombo.setConverter(new StringConverter<User>() {
+            @Override
+            public String toString(User user) {
+                if (user == null) return "";
+                String name = user.getName() != null && !user.getName().isBlank()
+                        ? user.getName() : "(no name)";
+                return name + "  —  " + user.getEmail();
+            }
+
+            @Override
+            public User fromString(String string) {
+                return null; // not needed for non-editable combo
+            }
+        });
+    }
+
+    /**
+     * Shows the partner selector only when the current user is an admin.
+     * Loads partner list from DB and, when editing, pre-selects the offer owner.
+     */
+    private void configurePartnerVisibility() {
+        if (partnerSelectionSection == null || partnerCombo == null) return;
+
+        boolean showPartnerSelector = isAdminUser();
+        partnerSelectionSection.setVisible(showPartnerSelector);
+        partnerSelectionSection.setManaged(showPartnerSelector);
+
+        if (showPartnerSelector) {
+            try {
+                List<User> partners = userService.getPartnerUsers();
+                partnerCombo.setItems(FXCollections.observableArrayList(partners));
+
+                // When editing, pre-select the current offer owner
+                if (jobOffer != null && jobOffer.getUser() != null) {
+                    int ownerId = jobOffer.getUser().getId();
+                    partners.stream()
+                            .filter(p -> p.getId().equals(ownerId))
+                            .findFirst()
+                            .ifPresent(partnerCombo::setValue);
+                }
+            } catch (Exception e) {
+                showError("Error", "Failed to load partner list: " + e.getMessage());
+            }
+        }
     }
 }

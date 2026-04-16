@@ -33,6 +33,7 @@
                         <Label text="Open course content and continue your learning journey." wrapText="true" styleClass="card-text"/>
                         <Region prefHeight="4.0"/>
                         <Button text="Open Courses" onAction="#onOpenCourses" styleClass="primary-button"/>
+                        <Button text="Open Evaluation" onAction="#onOpenEvaluation" styleClass="ghost-button"/>
                     </children>
                 </VBox>
 

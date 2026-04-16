@@ -3,8 +3,6 @@ package service.lms;
 import entities.Module;
 import entities.*;
 import repository.lms.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -12,7 +10,6 @@ import java.util.Optional;
 
 public class ProgramService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ProgramService.class);
     private final ProgramRepository programRepo = new ProgramRepository();
     private final ProgramModuleRepository pmRepo = new ProgramModuleRepository();
     private final ModuleRepository moduleRepo = new ModuleRepository();

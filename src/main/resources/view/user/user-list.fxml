@@ -5,11 +5,12 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Pagination?>
-<?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
 <BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
@@ -35,15 +36,25 @@
     </top>
 
     <center>
-        <TableView fx:id="userTable">
-            <columns>
-                <TableColumn fx:id="idColumn" text="ID" prefWidth="90.0"/>
-                <TableColumn fx:id="emailColumn" text="Email" prefWidth="300.0"/>
-                <TableColumn fx:id="roleColumn" text="Role" prefWidth="150.0"/>
-                <TableColumn fx:id="statusColumn" text="Status" prefWidth="130.0"/>
-                <TableColumn fx:id="createdDateColumn" text="Created" prefWidth="220.0"/>
-            </columns>
-        </TableView>
+        <StackPane styleClass="user-list-center-surface">
+            <children>
+                <ScrollPane fx:id="usersScrollPane" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" styleClass="user-cards-scroll">
+                    <content>
+                        <FlowPane fx:id="userCardsContainer" hgap="14.0" vgap="14.0" prefWrapLength="920.0" styleClass="user-cards-grid">
+                            <padding>
+                                <Insets top="14.0" right="14.0" bottom="14.0" left="14.0"/>
+                            </padding>
+                        </FlowPane>
+                    </content>
+                </ScrollPane>
+
+                <Label fx:id="emptyStateLabel"
+                       text="No users found for the selected filters."
+                       styleClass="user-list-empty-state"
+                       visible="false"
+                       managed="false"/>
+            </children>
+        </StackPane>
     </center>
 
     <bottom>

@@ -10,8 +10,6 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import service.EmailService;
@@ -50,12 +48,6 @@ public class UserFormController implements Initializable {
     private TextArea descriptionArea;
 
     @FXML
-    private HBox tempPasswordRow;
-
-    @FXML
-    private TextField tempPasswordField;
-
-    @FXML
     private CheckBox sendWelcomeEmailCheckBox;
 
     @FXML
@@ -72,8 +64,8 @@ public class UserFormController implements Initializable {
     private boolean editMode;
     private User editingUser;
     private Profile editingProfile;
-    private String generatedTempPassword;
     private Runnable onSaveSuccess;
+    private String createResultNote;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -96,8 +88,8 @@ public class UserFormController implements Initializable {
         roleComboBox.getSelectionModel().clearSelection();
         statusComboBox.getSelectionModel().select("Active");
         sendWelcomeEmailCheckBox.setSelected(true);
+        sendWelcomeEmailCheckBox.setDisable(false);
 
-        generateTempPassword();
         updateModeUi();
     }
 
@@ -107,9 +99,8 @@ public class UserFormController implements Initializable {
         }
 
         editMode = true;
-        generatedTempPassword = null;
-        tempPasswordField.clear();
         sendWelcomeEmailCheckBox.setSelected(false);
+        sendWelcomeEmailCheckBox.setDisable(false);
 
         editingUser = resolveFreshUser(user);
         editingProfile = loadProfile(editingUser);
@@ -127,33 +118,6 @@ public class UserFormController implements Initializable {
     }
 
     @FXML
-    private void onGenerateTempPassword() {
-        if (editMode) {
-            return;
-        }
-        generateTempPassword();
-    }
-
-    @FXML
-    private void onCopyTempPassword() {
-        if (editMode) {
-            showWarning("Not available", "Temporary password copy is only available in create mode.");
-            return;
-        }
-
-        String password = normalize(tempPasswordField.getText());
-        if (password == null) {
-            showWarning("Nothing to copy", "Generate a temporary password first.");
-            return;
-        }
-
-        ClipboardContent content = new ClipboardContent();
-        content.putString(password);
-        Clipboard.getSystemClipboard().setContent(content);
-        showInfo("Copied", "Temporary password copied to clipboard.");
-    }
-
-    @FXML
     private void onSave() {
         List<String> validationErrors = validateForm();
         if (!validationErrors.isEmpty()) {
@@ -162,6 +126,8 @@ public class UserFormController implements Initializable {
         }
 
         try {
+            createResultNote = null;
+
             if (editMode) {
                 saveExistingUser();
             } else {
@@ -172,7 +138,16 @@ public class UserFormController implements Initializable {
                 onSaveSuccess.run();
             }
 
-            showInfo("Success", editMode ? "User updated successfully." : "User created successfully.");
+            if (editMode) {
+                showInfo("Success", "User updated successfully.");
+            } else {
+                String message = "User created successfully.";
+                if (createResultNote != null) {
+                    message += "\n\n" + createResultNote;
+                }
+                showInfo("Success", message);
+            }
+
             closeWindow();
         } catch (Exception exception) {
             String message = normalize(exception.getMessage());
@@ -204,12 +179,21 @@ public class UserFormController implements Initializable {
         newUser.setAbout(blankToNull(description));
         newUser.setFaceEnabled((byte) 0);
 
-        User createdUser = userService.createUser(newUser, generatedTempPassword);
+        String temporaryPassword = passwordManagementService.generateTemporaryPassword();
+        User createdUser = userService.createUser(newUser, temporaryPassword);
         profileService.createProfile(createdUser, firstName, lastName, phone, description);
 
-        if (sendWelcomeEmailCheckBox.isSelected()) {
-            emailService.sendWelcomeEmail(createdUser, generatedTempPassword);
+        if (sendWelcomeEmailCheckBox != null && sendWelcomeEmailCheckBox.isSelected()) {
+            boolean emailSent = emailService.sendWelcomeEmail(createdUser, temporaryPassword).join();
+            if (emailSent) {
+                createResultNote = "Welcome email sent to " + email + ".";
+            } else {
+                createResultNote = "Welcome email could not be sent. Share this temporary password securely: " + temporaryPassword;
+            }
+            return;
         }
+
+        createResultNote = "Welcome email skipped. Share this temporary password securely: " + temporaryPassword;
     }
 
     private void saveExistingUser() {
@@ -287,10 +271,6 @@ public class UserFormController implements Initializable {
             errors.add("Phone number is invalid. Use 7-20 characters with digits and +()- only.");
         }
 
-        if (!editMode && normalize(tempPasswordField.getText()) == null) {
-            errors.add("Temporary password is required in create mode.");
-        }
-
         if (editMode && (statusComboBox.getValue() == null || statusComboBox.getValue().isBlank())) {
             errors.add("Status is required in edit mode.");
         }
@@ -316,11 +296,9 @@ public class UserFormController implements Initializable {
 
         emailField.setDisable(editMode);
 
-        tempPasswordRow.setManaged(createMode);
-        tempPasswordRow.setVisible(createMode);
-
         sendWelcomeEmailCheckBox.setManaged(createMode);
         sendWelcomeEmailCheckBox.setVisible(createMode);
+        sendWelcomeEmailCheckBox.setDisable(false);
 
         statusRow.setManaged(editMode);
         statusRow.setVisible(editMode);
@@ -333,13 +311,7 @@ public class UserFormController implements Initializable {
         lastNameField.clear();
         phoneField.clear();
         descriptionArea.clear();
-        tempPasswordField.clear();
         statusComboBox.getSelectionModel().clearSelection();
-    }
-
-    private void generateTempPassword() {
-        generatedTempPassword = passwordManagementService.generateTemporaryPassword();
-        tempPasswordField.setText(generatedTempPassword);
     }
 
     private User resolveFreshUser(User user) {
