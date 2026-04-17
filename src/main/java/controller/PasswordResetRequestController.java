@@ -11,6 +11,7 @@ import service.AuthenticationService;
 import service.EmailService;
 import service.UserService;
 import util.AppNavigator;
+import util.MailSessionProvider;
 
 import java.net.URLEncoder;
 import java.net.URL;
@@ -54,19 +55,9 @@ public class PasswordResetRequestController implements Initializable {
 
                 String token = resetToken.getToken();
                 String encodedToken = URLEncoder.encode(token, StandardCharsets.UTF_8);
-                String resetLink = "https://unilearn.local/reset-password?token=" + encodedToken;
+                String resetLink = buildResetLink(encodedToken);
 
-                String body = "Hello,\n\n"
-                        + "A password reset was requested for your account.\n"
-                        + "Use this reset link:\n" + resetLink + "\n\n"
-                        + "Or paste this token in the reset screen:\n" + token + "\n\n"
-                        + "If you did not request this, you can ignore this email.\n";
-
-                emailService.sendNotificationEmail(
-                        user.getEmail(),
-                        "Password Reset Link - UniLearn",
-                        body
-                );
+                emailService.sendPasswordResetLinkEmail(user, token, resetLink).join();
             }
         } catch (Exception ignored) {
             // Keep a generic response to avoid disclosing whether an email exists.
@@ -105,5 +96,18 @@ public class PasswordResetRequestController implements Initializable {
 
         String trimmed = value.trim();
         return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private String buildResetLink(String encodedToken) {
+        String template = normalize(MailSessionProvider.getPasswordResetWebUrlTemplate());
+        if (template == null) {
+            return "http://127.0.0.1:8000/reset-password/" + encodedToken;
+        }
+
+        if (template.contains("{token}")) {
+            return template.replace("{token}", encodedToken);
+        }
+
+        return template + (template.contains("?") ? "&" : "?") + "token=" + encodedToken;
     }
 }

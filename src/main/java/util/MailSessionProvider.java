@@ -25,6 +25,12 @@ public final class MailSessionProvider {
     private static final String MAIL_PASSWORD_KEY = "mail.password";
     private static final String MAIL_USERNAME_BASE64_KEY = "mail.username.base64";
     private static final String MAIL_PASSWORD_BASE64_KEY = "mail.password.base64";
+    private static final String PASSWORD_RESET_WEB_URL_TEMPLATE_KEY = "mail.reset.web.url.template";
+
+    private static final String ENV_RESET_WEB_URL_TEMPLATE_PRIMARY = "UNILEARN_RESET_WEB_URL_TEMPLATE";
+    private static final String ENV_RESET_WEB_URL_TEMPLATE_FALLBACK = "MAIL_RESET_WEB_URL_TEMPLATE";
+
+    private static final String DEFAULT_RESET_WEB_URL_TEMPLATE = "http://127.0.0.1:8000/reset-password/{token}";
 
     private static final String ENV_MAIL_USERNAME_PRIMARY = "UNILEARN_MAIL_USERNAME";
     private static final String ENV_MAIL_PASSWORD_PRIMARY = "UNILEARN_MAIL_PASSWORD";
@@ -100,6 +106,27 @@ public final class MailSessionProvider {
 
     public static String getConfiguredFromAddress() {
         return normalize(loadMailProperties().getProperty("mail.from"));
+    }
+
+    public static String getPasswordResetWebUrlTemplate() {
+        Properties source = loadMailProperties();
+
+        String fromProperties = normalize(source.getProperty(PASSWORD_RESET_WEB_URL_TEMPLATE_KEY));
+        if (fromProperties != null) {
+            return fromProperties;
+        }
+
+        String envPrimary = normalize(System.getenv(ENV_RESET_WEB_URL_TEMPLATE_PRIMARY));
+        if (envPrimary != null) {
+            return envPrimary;
+        }
+
+        String envFallback = normalize(System.getenv(ENV_RESET_WEB_URL_TEMPLATE_FALLBACK));
+        if (envFallback != null) {
+            return envFallback;
+        }
+
+        return DEFAULT_RESET_WEB_URL_TEMPLATE;
     }
 
     public static void saveLocalCredentials(String username, String password, String fromAddress) {

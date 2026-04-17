@@ -148,7 +148,10 @@ public class UserProfileController implements Initializable {
         }
 
         roleLabel.setText(formatRole(currentUser.getRole()));
-        statusLabel.setText(currentUser.getIsActive() == (byte) 1 ? "Active" : "Inactive");
+        boolean active = currentUser.getIsActive() == (byte) 1;
+        statusLabel.setText(active ? "Active" : "Inactive");
+        statusLabel.getStyleClass().removeAll("user-profile-status-active", "user-profile-status-inactive");
+        statusLabel.getStyleClass().add(active ? "user-profile-status-active" : "user-profile-status-inactive");
 
         nameField.setText(safeText(currentUser.getName()));
         emailField.setText(safeText(currentUser.getEmail()));
@@ -191,7 +194,8 @@ public class UserProfileController implements Initializable {
     }
 
     private void setMessage(String message, boolean error) {
-        messageLabel.setStyle(error ? "-fx-text-fill: #c0392b;" : "-fx-text-fill: #1f8b4c;");
+        messageLabel.getStyleClass().removeAll("form-feedback-error", "form-feedback-success");
+        messageLabel.getStyleClass().add(error ? "form-feedback-error" : "form-feedback-success");
         messageLabel.setText(message);
     }
 
