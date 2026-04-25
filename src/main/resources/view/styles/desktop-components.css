@@ -705,3 +705,97 @@
 .job-offer-submit-button:hover {
     -fx-opacity: 0.95;
 }
+
+/* ══ Location Map WebView ══════════════════════════════════════════════ */
+
+.job-offer-map-container {
+    -fx-background-color: derive(-ul-surface-1, 4%);
+    -fx-border-color: -ul-outline;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-effect: dropshadow(gaussian, -ul-shadow, 10, 0.18, 0, 3);
+    /* clip children so the WebView corners are rounded */
+    -fx-padding: 0;
+}
+
+.job-offer-date-error {
+    -fx-text-fill: #ff7070;
+    -fx-font-size: 11px;
+}
+
+/* ══ ATS Pipeline Board ═══════════════════════════════════════════════════ */
+
+/* Stage tab strip */
+.ats-tab-btn {
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-padding: 6 14;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-cursor: hand;
+}
+
+.ats-tab-btn:hover {
+    -fx-background-color: derive(-ul-surface-3, 8%);
+}
+
+/* Score bars — green / amber / red */
+.ats-score-high {
+    -fx-text-fill: #00b894;
+    -fx-font-weight: 800;
+}
+
+.ats-score-mid {
+    -fx-text-fill: #f39c12;
+    -fx-font-weight: 800;
+}
+
+.ats-score-low {
+    -fx-text-fill: #ff4f5e;
+    -fx-font-weight: 800;
+}
+
+/* Big score circle in detail view */
+.ats-score-circle {
+    -fx-background-color: derive(-ul-info, 55%);
+    -fx-background-radius: 999;
+    -fx-min-width: 90;
+    -fx-min-height: 90;
+    -fx-max-width: 90;
+    -fx-max-height: 90;
+    -fx-alignment: center;
+}
+
+/* Audit log rows */
+.ats-audit-row {
+    -fx-background-color: derive(-ul-surface-1, 4%);
+    -fx-background-radius: 6;
+    -fx-padding: 4 6;
+}
+
+.ats-audit-action {
+    -fx-text-fill: -ul-front-primary;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+}
+
+.ats-audit-detail {
+    -fx-text-fill: -ul-text-body;
+    -fx-font-size: 11px;
+}
+
+.ats-audit-date {
+    -fx-text-fill: -ul-text-muted;
+    -fx-font-size: 10px;
+}
+
+/* Disqualified warning */
+.ats-disqualify-badge {
+    -fx-text-fill: #ff4f5e;
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-background-color: rgba(255, 79, 94, 0.12);
+    -fx-background-radius: 6;
+    -fx-padding: 3 8;
+}

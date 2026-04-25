@@ -8,8 +8,9 @@
             <Label fx:id="pageTitleLabel" text="Applications to Review" styleClass="job-offer-page-title"/>
             <Label fx:id="pageSubtitleLabel" text="Review candidates who applied to your offers." styleClass="job-offer-page-subtitle" wrapText="true"/>
         </VBox>
+        <Button fx:id="atsBoardButton" text="⚡ ATS Board" styleClass="primary-button" onAction="#onOpenAtsPipelineBoard"/>
         <Button fx:id="refreshButton" text="Refresh" styleClass="ghost-button" onAction="#onRefresh"/>
-        <Button fx:id="backButton" text="Back to Job Offers" styleClass="primary-button" onAction="#onBack"/>
+        <Button fx:id="backButton" text="Back to Job Offers" styleClass="ghost-button" onAction="#onBack"/>
     </HBox>
 
     <ScrollPane fx:id="applicationsScrollPane" fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="job-offer-grid-scroll">

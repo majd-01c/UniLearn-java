@@ -2,13 +2,18 @@ package controller.job_offer;
 
 import entities.User;
 import entities.job_offer.JobOffer;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
+import netscape.javascript.JSObject;
 import service.UserService;
 import services.job_offer.ServiceJobOffer;
 import util.AppNavigator;
@@ -90,6 +95,12 @@ public class JobOfferFormController implements Initializable {
     @FXML
     private ComboBox<User> partnerCombo;
 
+    @FXML
+    private WebView locationMapView;
+
+    /** Keeps a strong reference to avoid garbage-collection of the JS bridge */
+    private JavaBridge javaBridge;
+
     private JobOffer jobOffer;
     private User currentUser;
     private ServiceJobOffer serviceJobOffer;
@@ -107,6 +118,7 @@ public class JobOfferFormController implements Initializable {
         setupExperienceSpinner();
         setupDatePickers();
         setupPartnerCombo();
+        setupMap();
     }
 
     public void setJobOffer(JobOffer offer) {
@@ -287,6 +299,25 @@ public class JobOfferFormController implements Initializable {
             expiresDatePicker.setValue(offer.getExpiresAt() != null
                     ? offer.getExpiresAt().toLocalDateTime().toLocalDate()
                     : null);
+        }
+
+        // Pre-fill map if a location is stored
+        if (offer.getLocation() != null && !offer.getLocation().isBlank() && locationMapView != null) {
+            WebEngine engine = locationMapView.getEngine();
+            // If the page is already loaded, geocode immediately; if still loading, wait.
+            Runnable geocode = () -> {
+                String safe = offer.getLocation().replace("'", "\\'").replace("\\", "\\\\");
+                engine.executeScript("geocodeFromJava('" + safe + "')");
+            };
+            if (engine.getLoadWorker().getState() == Worker.State.SUCCEEDED) {
+                geocode.run();
+            } else {
+                engine.getLoadWorker().stateProperty().addListener((obs, oldSt, newSt) -> {
+                    if (newSt == Worker.State.SUCCEEDED) {
+                        Platform.runLater(geocode);
+                    }
+                });
+            }
         }
     }
 
@@ -479,6 +510,74 @@ public class JobOfferFormController implements Initializable {
             } catch (Exception e) {
                 showError("Error", "Failed to load partner list: " + e.getMessage());
             }
+        }
+    }
+
+    // ── Map setup ─────────────────────────────────────────────────────────
+
+    /**
+     * Loads the Leaflet map HTML into the WebView and registers a Java bridge
+     * so that clicking on the map auto-fills the locationField text field.
+     */
+    private void setupMap() {
+        if (locationMapView == null) return;
+
+        WebEngine engine = locationMapView.getEngine();
+
+        // Allow JS to call back into Java
+        engine.setJavaScriptEnabled(true);
+
+        // Load the map HTML from resources
+        URL mapUrl = getClass().getResource("/view/job_offer/job-offer-map.html");
+        if (mapUrl == null) {
+            System.err.println("[Map] Could not find job-offer-map.html in classpath");
+            return;
+        }
+
+        // Inject the JS bridge after the page finishes loading
+        engine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
+            if (newState == Worker.State.SUCCEEDED) {
+                javaBridge = new JavaBridge();
+                JSObject window = (JSObject) engine.executeScript("window");
+                window.setMember("javaConnector", javaBridge);
+
+                // Sync: when the user types in locationField and presses Enter, search on map
+                if (locationField != null) {
+                    locationField.setOnAction(e -> {
+                        String text = locationField.getText().trim();
+                        if (!text.isEmpty()) {
+                            String safe = text.replace("'", "\\'").replace("\\", "\\\\");
+                            engine.executeScript("geocodeFromJava('" + safe + "')");
+                        }
+                    });
+                }
+            }
+        });
+
+        engine.load(mapUrl.toExternalForm());
+    }
+
+    /**
+     * Bridge object exposed to JavaScript as <code>window.javaConnector</code>.
+     * Methods on this class can be invoked from JS running inside the WebView.
+     * IMPORTANT: Must be kept as a strong reference on the Java side.
+     */
+    public class JavaBridge {
+        /**
+         * Called by the map when the user clicks or drags the pin.
+         *
+         * @param lat     latitude
+         * @param lng     longitude
+         * @param address human-readable address from Nominatim
+         */
+        public void onLocationSelected(double lat, double lng, String address) {
+            Platform.runLater(() -> {
+                if (locationField != null) {
+                    locationField.setText(address != null && !address.isBlank()
+                            ? address
+                            : lat + ", " + lng);
+                }
+            });
         }
     }
 }

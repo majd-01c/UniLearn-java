@@ -63,6 +63,9 @@ public class PartnerApplicationsController implements Initializable {
     private Button refreshButton;
 
     @FXML
+    private Button atsBoardButton;
+
+    @FXML
     private ScrollPane applicationsScrollPane;
 
     @FXML
@@ -404,6 +407,11 @@ public class PartnerApplicationsController implements Initializable {
     @FXML
     private void onRefresh() {
         loadApplications();
+    }
+
+    @FXML
+    private void onOpenAtsPipelineBoard() {
+        AppNavigator.showAtsPipelineBoard();
     }
 
     private void applyStatusStyle(Label statusLabel, String status) {

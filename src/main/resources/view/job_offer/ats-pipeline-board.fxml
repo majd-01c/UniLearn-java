@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controller.job_offer.AtsPipelineBoardController"
+      fx:id="rootContainer"
+      styleClass="job-offer-root"
+      spacing="14">
+
+    <!-- ── Toolbar ─────────────────────────────────────────────────────────── -->
+    <HBox spacing="10" alignment="CENTER_LEFT" styleClass="job-offer-toolbar">
+        <Button fx:id="backButton" text="← Back" styleClass="ghost-button"
+                onAction="#onBack"/>
+
+        <Label text="ATS Pipeline Board"
+               styleClass="job-offer-page-title"/>
+
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <Button fx:id="refreshButton" text="⟳ Refresh" styleClass="ghost-button"
+                onAction="#onRefresh"/>
+    </HBox>
+
+    <!-- ── Offer Selector + Filters ─────────────────────────────────────────── -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Job Offer:" styleClass="field-label"/>
+        <ComboBox fx:id="offerComboBox" styleClass="job-offer-filter-combo"
+                  promptText="Select a job offer…" prefWidth="300"/>
+
+        <Label text="Stage:" styleClass="field-label"/>
+        <ComboBox fx:id="stageFilterCombo" styleClass="job-offer-filter-combo"
+                  promptText="All stages" prefWidth="160"/>
+
+        <TextField fx:id="searchField" promptText="Search candidate…"
+                   styleClass="job-offer-search-field" prefWidth="200"/>
+
+        <Label fx:id="statsLabel" styleClass="job-offer-page-subtitle"/>
+    </HBox>
+
+    <!-- ── Stage Tab Strip ───────────────────────────────────────────────────── -->
+    <HBox fx:id="stageTabBar" spacing="6" alignment="CENTER_LEFT">
+        <Button fx:id="tabAll"         text="All"         styleClass="ghost-button,ats-tab-btn" onAction="#onTabAll"/>
+        <Button fx:id="tabSubmitted"   text="Submitted"   styleClass="ghost-button,ats-tab-btn" onAction="#onTabSubmitted"/>
+        <Button fx:id="tabScreening"   text="Screening"   styleClass="ghost-button,ats-tab-btn" onAction="#onTabScreening"/>
+        <Button fx:id="tabShortlisted" text="Shortlisted" styleClass="ghost-button,ats-tab-btn" onAction="#onTabShortlisted"/>
+        <Button fx:id="tabInterview"   text="Interview"   styleClass="ghost-button,ats-tab-btn" onAction="#onTabInterview"/>
+        <Button fx:id="tabOfferSent"   text="Offer Sent"  styleClass="ghost-button,ats-tab-btn" onAction="#onTabOfferSent"/>
+        <Button fx:id="tabHired"       text="Hired"       styleClass="ghost-button,ats-tab-btn" onAction="#onTabHired"/>
+        <Button fx:id="tabRejected"    text="Rejected"    styleClass="ghost-button,ats-tab-btn" onAction="#onTabRejected"/>
+    </HBox>
+
+    <!-- ── Applications Table ────────────────────────────────────────────────── -->
+    <VBox VBox.vgrow="ALWAYS" spacing="0">
+        <TableView fx:id="applicationsTable" VBox.vgrow="ALWAYS"
+                   styleClass="job-offer-list-view" placeholder="${emptyLabel}">
+            <columns>
+                <TableColumn fx:id="colScore"      text="Score"       prefWidth="80"  minWidth="60"/>
+                <TableColumn fx:id="colCandidate"  text="Candidate"   prefWidth="200" minWidth="140"/>
+                <TableColumn fx:id="colEmail"      text="Email"       prefWidth="200" minWidth="120"/>
+                <TableColumn fx:id="colStage"      text="Stage"       prefWidth="130" minWidth="100"/>
+                <TableColumn fx:id="colApplied"    text="Applied"     prefWidth="110" minWidth="80"/>
+                <TableColumn fx:id="colActions"    text="Actions"     prefWidth="260" minWidth="200"/>
+            </columns>
+            <placeholder>
+                <Label fx:id="emptyLabel" text="No applications found. Select a job offer above."
+                       styleClass="job-offer-empty-label"/>
+            </placeholder>
+        </TableView>
+    </VBox>
+
+    <!-- ── Bottom status bar ─────────────────────────────────────────────────── -->
+    <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 4 0 0 0;">
+        <Label fx:id="syncStatusLabel" text="ⓘ Sync: not configured"
+               styleClass="job-offer-page-subtitle"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="scoreAllButton" text="⚡ Score All Unscored"
+                styleClass="ghost-button" onAction="#onScoreAll"/>
+        <Button fx:id="exportCsvButton" text="⬇ Export CSV"
+                styleClass="ghost-button" onAction="#onExportCsv"/>
+    </HBox>
+</VBox>

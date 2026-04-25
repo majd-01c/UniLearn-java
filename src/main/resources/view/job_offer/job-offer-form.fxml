@@ -2,6 +2,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.web.WebView?>
 <ScrollPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.job_offer.JobOfferFormController" fitToWidth="true" styleClass="job-offer-form-scroll lms-scroll">
     <VBox alignment="CENTER" spacing="18" styleClass="job-offer-form-shell">
         <VBox fx:id="rootContainer" maxWidth="980.0" spacing="18" styleClass="job-offer-form-panel">
@@ -29,16 +30,28 @@
                     <TextField fx:id="titleField" promptText="e.g., Senior Software Engineer" styleClass="lms-input job-offer-input"/>
                 </VBox>
 
-                <HBox spacing="14">
-                    <VBox spacing="6" HBox.hgrow="ALWAYS">
-                        <Label text="Job Type *" styleClass="form-label"/>
-                        <ComboBox fx:id="typeCombo" styleClass="lms-input job-offer-input"/>
-                    </VBox>
-                    <VBox spacing="6" HBox.hgrow="ALWAYS">
-                        <Label text="Location" styleClass="form-label"/>
-                        <TextField fx:id="locationField" promptText="e.g., Remote, Tunis, etc." styleClass="lms-input job-offer-input"/>
-                    </VBox>
-                </HBox>
+                <VBox spacing="6">
+                    <Label text="Job Type *" styleClass="form-label"/>
+                    <ComboBox fx:id="typeCombo" styleClass="lms-input job-offer-input"/>
+                </VBox>
+            </VBox>
+
+            <!-- ══ Location + Map ══════════════════════════════════════════════ -->
+            <VBox spacing="14" styleClass="job-offer-section">
+                <Label text="Location" styleClass="job-offer-section-title"/>
+                <Label text="Click on the map or drag the pin to tag the exact location of the job." styleClass="job-offer-form-note" wrapText="true"/>
+
+                <!-- Map WebView -->
+                <VBox fx:id="mapContainer" styleClass="job-offer-map-container">
+                    <WebView fx:id="locationMapView" prefHeight="320.0" minHeight="280.0"/>
+                </VBox>
+
+                <!-- Synced text field (auto-filled by map, user can also type to search) -->
+                <VBox spacing="6">
+                    <Label text="Selected Location" styleClass="form-label"/>
+                    <TextField fx:id="locationField" promptText="e.g., Remote, Tunis, etc. — or click the map above" styleClass="lms-input job-offer-input"/>
+                    <Label text="Type an address and press Enter, or click directly on the map." styleClass="job-offer-form-note" wrapText="true"/>
+                </VBox>
             </VBox>
 
             <VBox spacing="14" styleClass="job-offer-section">

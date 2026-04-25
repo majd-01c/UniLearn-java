@@ -41,3 +41,6 @@ build/
 ### Local database config ###
 #src/main/java/Utils/DatabaseConnection.java
 #src/main/java/Utils/MyDatabase.java
+
+### ATS Module — contains Gemini API key, never commit ###
+src/main/resources/config/ats-config.properties
