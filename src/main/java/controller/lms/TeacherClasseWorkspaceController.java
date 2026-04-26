@@ -8,6 +8,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.scene.web.HTMLEditor;
 import service.lms.*;
 import validation.LmsValidator;
 import util.AppNavigator;
@@ -393,12 +394,22 @@ public class TeacherClasseWorkspaceController implements Initializable {
                 "COURS", "QUIZ", "TD", "TP", "EXAM", "VIDEO", "RESOURCE"));
         typeBox.setValue(defaultType);
 
-        // --- File Upload ---
+        ToggleGroup sourceGroup = new ToggleGroup();
+        RadioButton editorMode = new RadioButton("Write in app");
+        editorMode.setToggleGroup(sourceGroup);
+        editorMode.setSelected(true);
+        RadioButton uploadMode = new RadioButton("Upload file");
+        uploadMode.setToggleGroup(sourceGroup);
+
+        HTMLEditor contentEditor = new HTMLEditor();
+        contentEditor.setPrefHeight(240);
+
         Label fileLabel = new Label("No file selected.");
         Button fileBtn = new Button("Choose File");
         fileBtn.getStyleClass().add("ghost-button");
         final java.io.File[] selectedFile = new java.io.File[1];
         fileBtn.setOnAction(e -> {
+            uploadMode.setSelected(true);
             javafx.stage.FileChooser fc = new javafx.stage.FileChooser();
             fc.setTitle("Select Content File");
             java.io.File f = fc.showOpenDialog(dialog.getDialogPane().getScene().getWindow());
@@ -410,20 +421,50 @@ public class TeacherClasseWorkspaceController implements Initializable {
         HBox fileBox = new HBox(8, fileBtn, fileLabel);
         fileBox.setAlignment(Pos.CENTER_LEFT);
 
+        VBox editorSection = new VBox(8, new Label("Content body:"), contentEditor);
+        VBox fileSection = new VBox(8, new Label("Attachment (Optional):"), fileBox);
+        fileSection.setVisible(false);
+        fileSection.setManaged(false);
+
+        sourceGroup.selectedToggleProperty().addListener((obs, oldToggle, newToggle) -> {
+            boolean writeMode = newToggle == editorMode;
+            editorSection.setVisible(writeMode);
+            editorSection.setManaged(writeMode);
+            fileSection.setVisible(!writeMode);
+            fileSection.setManaged(!writeMode);
+            if (writeMode) {
+                selectedFile[0] = null;
+                fileLabel.setText("No file selected.");
+            }
+        });
+
         VBox content = new VBox(8,
                 new Label("Title:"), titleField,
                 new Label("Type:"), typeBox,
-                new Label("Attachment (Optional):"), fileBox
+                new Label("Content source:"), new HBox(12, editorMode, uploadMode),
+                editorSection,
+                fileSection
         );
         content.setPadding(new Insets(12));
+        content.setPrefWidth(720);
         dialog.getDialogPane().setContent(content);
 
         dialog.showAndWait().ifPresent(btn -> {
             if (btn != ButtonType.OK) return;
             String t = titleField.getText();
             String type = typeBox.getValue();
+            boolean writeMode = editorMode.isSelected();
+            String contentHtml = writeMode ? contentEditor.getHtmlText() : null;
             if (t == null || t.isBlank()) {
                 new Alert(Alert.AlertType.WARNING, "Content title cannot be empty.").showAndWait();
+                return;
+            }
+            if (writeMode && (contentHtml == null || contentHtml.replaceAll("(?s)<[^>]*>", "").replace("&nbsp;", " ").trim().isEmpty())) {
+                new Alert(Alert.AlertType.WARNING, "Please write some content or switch to file upload.").showAndWait();
+                return;
+            }
+            if (!writeMode && selectedFile[0] == null) {
+                new Alert(Alert.AlertType.WARNING, "Please choose a file or switch to Write in app.").showAndWait();
                 return;
             }
             try {
@@ -446,7 +487,7 @@ public class TeacherClasseWorkspaceController implements Initializable {
                 }
                 
                 // 1. Create the contenu record
-                var contenu = contenuSvc.createContenu(t.trim(), type, true, storedName, fileType, fileSize);
+                var contenu = contenuSvc.createContenu(t.trim(), type, true, storedName, fileType, fileSize, contentHtml);
                 // 2. Link it to this ClasseCourse
                 cdSvc.addContenuToClasseCourse(cc.getClasseCourseId(), contenu.getId());
                 loadCourses();
