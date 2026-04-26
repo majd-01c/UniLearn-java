@@ -70,12 +70,12 @@
                                     <DatePicker fx:id="assessmentDatePicker" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
 
                                     <Label text="Course Name" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-                                    <TextField fx:id="assessmentCourseNameField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                                    <ComboBox fx:id="assessmentCourseBox" GridPane.columnIndex="1" GridPane.rowIndex="2" prefWidth="210.0"/>
                                     <Label text="Class Name" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
-                                    <TextField fx:id="assessmentClasseNameField" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
+                                    <ComboBox fx:id="assessmentClassBox" GridPane.columnIndex="3" GridPane.rowIndex="2" prefWidth="210.0"/>
 
                                     <Label text="Content Title" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-                                    <TextField fx:id="assessmentContenuTitleField" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                                    <ComboBox fx:id="assessmentContenuBox" GridPane.columnIndex="1" GridPane.rowIndex="3" prefWidth="210.0"/>
                                 </children>
                             </GridPane>
 
@@ -118,7 +118,7 @@
                             <HBox spacing="8.0" alignment="CENTER_LEFT">
                                 <children>
                                     <Label text="Student Name"/>
-                                    <TextField fx:id="gradeStudentNameField" prefWidth="170.0"/>
+                                    <ComboBox fx:id="gradeStudentBox" prefWidth="170.0"/>
                                     <Label text="Score"/>
                                     <TextField fx:id="gradeScoreInputField" prefWidth="90.0"/>
                                     <Label text="Comment"/>
@@ -158,6 +158,22 @@
                                     <VBox fx:id="scheduleCardsBox" spacing="8.0"/>
                                 </content>
                             </ScrollPane>
+                        </children>
+                    </VBox>
+                </content>
+            </Tab>
+
+            <Tab text="AI Insights">
+                <content>
+                    <VBox spacing="10.0" styleClass="eval-panel">
+                        <padding>
+                            <Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/>
+                        </padding>
+                        <children>
+                            <Label text="Student to Teacher Recommendations" styleClass="eval-card-title"/>
+                            <Label text="Generate AI suggestions to prioritize support for your students." styleClass="eval-page-subtitle"/>
+                            <Button text="Generate AI Insights" onAction="#onGenerateAiTeacherInsights" styleClass="eval-primary-btn"/>
+                            <TextArea fx:id="aiTeacherInsightsArea" VBox.vgrow="ALWAYS" promptText="AI insights will appear here"/>
                         </children>
                     </VBox>
                 </content>

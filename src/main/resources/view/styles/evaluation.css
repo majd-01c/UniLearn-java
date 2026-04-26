@@ -67,7 +67,7 @@
 
 .eval-student-hero {
     background-color: #ffffff;
-    -fx-background-color: linear-gradient(from 0% 0% to 100% 0%, #ffffff, #f4f8ff);    border-color: #d8e5fc;
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 0%, #ffffff, #f4f8ff);
     -fx-border-color: #d8e5fc;
     border-width: 1px;
     -fx-border-width: 1;
@@ -115,7 +115,8 @@
 
 .eval-primary-btn {
     background-color: #1f6ed6;
--fx-background-color: linear-gradient(from 0% 0% to 0% 100%, #2a78de, #1e65c7);    -fx-text-fill: white;
+    -fx-background-color: linear-gradient(from 0% 0% to 0% 100%, #2a78de, #1e65c7);
+    -fx-text-fill: white;
     font-weight: 700;
     -fx-font-weight: 700;
     -fx-background-radius: 10;
@@ -252,6 +253,131 @@
     border-radius: 0 0 12px 12px;
     -fx-border-radius: 0 0 12 12;
     -fx-background-radius: 0 0 12 12;
+}
+
+.eval-recommendations-panel {
+    background-color: #08121f;
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #08121f 0%, #0e1728 55%, #131d31 100%);
+    border-color: #22314a;
+    -fx-border-color: #22314a;
+    -fx-background-radius: 18;
+    -fx-border-radius: 18;
+    -fx-effect: dropshadow(gaussian, rgba(3, 11, 24, 0.45), 30, 0.25, 0, 10);
+}
+
+.eval-recommendations-hero {
+    background-color: rgba(255, 255, 255, 0.03);
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 0%, rgba(42, 120, 222, 0.22), rgba(24, 166, 215, 0.12));
+    border-color: rgba(111, 198, 255, 0.18);
+    -fx-border-color: rgba(111, 198, 255, 0.18);
+    border-radius: 16px;
+    -fx-border-radius: 16;
+    -fx-background-radius: 16;
+    padding: 14px;
+    -fx-padding: 14;
+}
+
+.eval-reco-textarea {
+    background-color: rgba(8, 18, 31, 0.88);
+    -fx-background-color: rgba(8, 18, 31, 0.88);
+    border-color: rgba(103, 157, 255, 0.28);
+    -fx-border-color: rgba(103, 157, 255, 0.28);
+    border-radius: 14px;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-text-fill: #eaf2ff;
+    -fx-prompt-text-fill: #90a8ca;
+    -fx-font-family: "Segoe UI", "system-ui";
+    -fx-font-size: 13px;
+}
+
+.eval-reco-textarea .content {
+    -fx-background-color: transparent;
+}
+
+.eval-resource-card {
+    background-color: rgba(13, 23, 38, 0.95);
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, rgba(16, 29, 48, 0.98), rgba(11, 20, 34, 0.98));
+    border-color: rgba(96, 128, 184, 0.26);
+    -fx-border-color: rgba(96, 128, 184, 0.26);
+    border-width: 1px;
+    -fx-border-width: 1;
+    border-radius: 16px;
+    -fx-border-radius: 16;
+    -fx-background-radius: 16;
+    padding: 14px;
+    -fx-padding: 14;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.28), 14, 0.2, 0, 5);
+}
+
+.eval-resource-title {
+    -fx-text-fill: #f3f7ff;
+    font-size: 15px;
+    -fx-font-size: 15px;
+    font-weight: 800;
+    -fx-font-weight: 800;
+}
+
+.eval-resource-badge {
+    background-color: #19c37d;
+    -fx-background-color: #19c37d;
+    -fx-text-fill: #06121f;
+    -fx-background-radius: 999;
+    padding: 3px 10px;
+    -fx-padding: 3 10;
+    font-size: 11px;
+    -fx-font-size: 11px;
+    font-weight: 800;
+    -fx-font-weight: 800;
+}
+
+.eval-resource-text {
+    -fx-text-fill: #d0d9ea;
+    font-size: 12px;
+    -fx-font-size: 12px;
+}
+
+.eval-resource-links {
+    -fx-padding: 2 0 0 0;
+}
+
+.eval-link-btn {
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-padding: 7 14;
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-font-family: "Segoe UI";
+}
+
+.eval-link-youtube {
+    -fx-background-color: linear-gradient(to bottom, #ff5f6d, #f44336);
+    -fx-text-fill: white;
+}
+
+.eval-link-udemy {
+    -fx-background-color: linear-gradient(to bottom, #ffb74d, #fb8c00);
+    -fx-text-fill: white;
+}
+
+.eval-link-coursera {
+    -fx-background-color: linear-gradient(to bottom, #55c2ff, #2f80ed);
+    -fx-text-fill: white;
+}
+
+.eval-link-btn:hover {
+    -fx-opacity: 0.92;
+    -fx-effect: dropshadow(gaussian, rgba(39, 114, 255, 0.22), 12, 0.2, 0, 2);
+}
+
+.eval-recommendations-panel .eval-section-label,
+.eval-recommendations-panel .eval-page-subtitle {
+    -fx-text-fill: #d7e3f8;
+}
+
+.eval-recommendations-panel .eval-card-title,
+.eval-recommendations-panel .eval-section-label {
+    -fx-text-fill: #f4f8ff;
 }
 
 .eval-section-menu {
@@ -465,6 +591,71 @@
 .eval-tab-active {
     -fx-background-color: #667eea;
     -fx-text-fill: white;
+}
+
+.eval-nav-bar {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 0%, #09172a, #10213a, #0f1e34);
+    -fx-border-color: #244064;
+    -fx-border-width: 1;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-padding: 10 12;
+    -fx-spacing: 8;
+    -fx-effect: dropshadow(gaussian, rgba(3, 13, 29, 0.45), 18, 0.18, 0, 4);
+}
+
+.eval-nav-label {
+    -fx-text-fill: #d5e6ff;
+    -fx-font-size: 12;
+    -fx-font-weight: 700;
+}
+
+.eval-nav-btn {
+    -fx-background-color: rgba(143, 182, 246, 0.14);
+    -fx-border-color: rgba(120, 167, 240, 0.32);
+    -fx-border-width: 1;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-text-fill: #d7e9ff;
+    -fx-font-size: 12;
+    -fx-font-weight: 700;
+    -fx-padding: 7 14;
+}
+
+.eval-nav-btn:hover {
+    -fx-background-color: rgba(120, 175, 255, 0.24);
+    -fx-border-color: rgba(122, 189, 255, 0.52);
+}
+
+.eval-nav-btn-active {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #28c7ea, #2f80ed);
+    -fx-border-color: rgba(119, 230, 255, 0.65);
+    -fx-text-fill: #ffffff !important;
+    -fx-effect: dropshadow(gaussian, rgba(44, 164, 255, 0.32), 14, 0.2, 0, 2);
+}
+
+/* Specific fix for the nav buttons inside the module */
+.eval-nav-bar .button {
+    -fx-background-color: rgba(143, 182, 246, 0.14);
+    -fx-border-color: rgba(120, 167, 240, 0.32);
+    -fx-border-width: 1;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-text-fill: #d7e9ff;
+    -fx-font-size: 12;
+    -fx-font-weight: 700;
+    -fx-padding: 10 16;
+}
+
+.eval-nav-bar .button:hover {
+    -fx-background-color: rgba(120, 175, 255, 0.24);
+    -fx-border-color: rgba(122, 189, 255, 0.52);
+}
+
+.eval-nav-bar .button.eval-nav-btn-active {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #28c7ea, #2f80ed);
+    -fx-border-color: rgba(119, 230, 255, 0.65);
+    -fx-text-fill: #ffffff;
 }
 
 /* === FORM CARD === */

@@ -46,11 +46,11 @@ public class EvaluationTeacherController {
     @FXML
     private TextArea assessmentDescriptionArea;
     @FXML
-    private TextField assessmentCourseNameField;
+    private ComboBox<String> assessmentCourseBox;
     @FXML
-    private TextField assessmentClasseNameField;
+    private ComboBox<String> assessmentClassBox;
     @FXML
-    private TextField assessmentContenuTitleField;
+    private ComboBox<String> assessmentContenuBox;
 
     @FXML
     private ComboBox<String> assessmentsSortBox;
@@ -65,7 +65,7 @@ public class EvaluationTeacherController {
     private VBox gradesCardsBox;
 
     @FXML
-    private TextField gradeStudentNameField;
+    private ComboBox<String> gradeStudentBox;
     @FXML
     private TextField gradeScoreInputField;
     @FXML
@@ -75,6 +75,9 @@ public class EvaluationTeacherController {
     private ComboBox<String> scheduleSortBox;
     @FXML
     private VBox scheduleCardsBox;
+
+    @FXML
+    private TextArea aiTeacherInsightsArea;
 
     @FXML
     private Label feedbackLabel;
@@ -102,8 +105,12 @@ public class EvaluationTeacherController {
         scheduleSortBox.getSelectionModel().select("NEW");
 
         selectedAssessmentLabel.setText("Selected assessment: none");
+        if (aiTeacherInsightsArea != null) {
+            aiTeacherInsightsArea.setText("Click Generate AI Insights to get student-focused teaching recommendations.");
+        }
 
         installInputValidation();
+        refreshTeacherSelectors();
         refreshTeacherSpace();
     }
 
@@ -130,15 +137,32 @@ public class EvaluationTeacherController {
     }
 
     @FXML
+    private void onGenerateAiTeacherInsights() {
+        try {
+            String insights = service.generateAiTeacherInsights(teacherId);
+            if (aiTeacherInsightsArea != null) {
+                aiTeacherInsightsArea.setText(insights);
+            }
+            showFeedback("AI insights generated.");
+        } catch (Exception e) {
+            showFeedback("AI insights failed: " + e.getMessage());
+        }
+    }
+
+    @FXML
     private void onCreateAssessment() {
         try {
-            Integer courseId = service.findCourseIdByName(requireNotBlank(assessmentCourseNameField.getText(), "Course name"));
+            String selectedCourseName = assessmentCourseBox == null ? null : assessmentCourseBox.getValue();
+            Integer courseId = service.findCourseIdByName(requireNotBlank(selectedCourseName, "Course"));
             if (courseId == null) {
                 throw new IllegalArgumentException("Course name not found.");
             }
 
-            Integer classeId = optionalNameToId(assessmentClasseNameField.getText(), "Class name", service::findClasseIdByName);
-            Integer contenuId = optionalNameToId(assessmentContenuTitleField.getText(), "Content title", service::findContenuIdByTitle);
+            String selectedClassName = assessmentClassBox == null ? null : assessmentClassBox.getValue();
+            Integer classeId = optionalNameToId(selectedClassName, "Class name", service::findClasseIdByName);
+
+            String selectedContenuTitle = assessmentContenuBox == null ? null : assessmentContenuBox.getValue();
+            Integer contenuId = optionalNameToId(selectedContenuTitle, "Content title", service::findContenuIdByTitle);
 
             String title = requireNotBlank(assessmentTitleField.getText(), "Assessment title");
             String description = requireNotBlank(assessmentDescriptionArea.getText(), "Assessment description");
@@ -170,6 +194,12 @@ public class EvaluationTeacherController {
             );
             assessmentTitleField.clear();
             assessmentDescriptionArea.clear();
+            if (assessmentClassBox != null) {
+                assessmentClassBox.getSelectionModel().clearSelection();
+            }
+            if (assessmentContenuBox != null) {
+                assessmentContenuBox.getSelectionModel().clearSelection();
+            }
             refreshAssessments();
             showFeedback("Assessment created.");
         } catch (Exception e) {
@@ -219,7 +249,8 @@ public class EvaluationTeacherController {
             if (selectedAssessmentId == null) {
                 throw new IllegalArgumentException("Please select an assessment card first.");
             }
-            Integer studentId = service.findUserIdByName(requireNotBlank(gradeStudentNameField.getText(), "Student name"));
+            String selectedStudentName = gradeStudentBox == null ? null : gradeStudentBox.getValue();
+            Integer studentId = service.findUserIdByName(requireNotBlank(selectedStudentName, "Student"));
             if (studentId == null) {
                 throw new IllegalArgumentException("Student name not found.");
             }
@@ -235,8 +266,42 @@ public class EvaluationTeacherController {
     }
 
     private void refreshTeacherSpace() {
+        refreshTeacherSelectors();
+        refreshTeacherStudents();
         refreshAssessments();
         refreshTeacherSchedule();
+    }
+
+    private void refreshTeacherSelectors() {
+        if (assessmentCourseBox != null) {
+            setComboValues(assessmentCourseBox, service.getTeacherCourseNames(teacherId), true);
+        }
+        if (assessmentClassBox != null) {
+            setComboValues(assessmentClassBox, service.getTeacherClassNames(teacherId), false);
+        }
+        if (assessmentContenuBox != null) {
+            setComboValues(assessmentContenuBox, service.getContenuTitles(), false);
+        }
+    }
+
+    private void refreshTeacherStudents() {
+        if (gradeStudentBox == null) {
+            return;
+        }
+        String classFilter = classNameField == null ? null : classNameField.getText();
+        setComboValues(gradeStudentBox, service.getStudentNamesForTeacher(teacherId, classFilter), false);
+    }
+
+    private void setComboValues(ComboBox<String> comboBox, List<String> values, boolean selectFirstWhenEmptySelection) {
+        String previous = comboBox.getValue();
+        comboBox.getItems().setAll(values);
+        if (previous != null && comboBox.getItems().contains(previous)) {
+            comboBox.getSelectionModel().select(previous);
+            return;
+        }
+        if (selectFirstWhenEmptySelection && !comboBox.getItems().isEmpty()) {
+            comboBox.getSelectionModel().selectFirst();
+        }
     }
 
     private void refreshAssessments() {
@@ -254,6 +319,7 @@ public class EvaluationTeacherController {
     }
 
     private void refreshTeacherSchedule() {
+        refreshTeacherStudents();
         List<Schedule> schedules = new ArrayList<>(service.getScheduleByTeacher(teacherId));
         String classFilter = classNameField.getText() == null ? "" : classNameField.getText().trim().toLowerCase(Locale.ROOT);
         if (!classFilter.isBlank()) {
@@ -393,11 +459,25 @@ public class EvaluationTeacherController {
         assessmentMaxScoreField.setText(df.format(assessment.getMaxScore()));
         assessmentDescriptionArea.setText(safe(assessment.getDescription()));
         assessmentDatePicker.setValue(assessment.getDate() == null ? null : assessment.getDate().toLocalDateTime().toLocalDate());
-        assessmentCourseNameField.setText(assessment.getCourse() == null ? "" : safe(service.resolveCourseTitle(assessment.getCourse().getId())));
-        assessmentClasseNameField.setText(assessment.getClasse() == null ? "" : safe(service.resolveClasseName(assessment.getClasse().getId())));
-        assessmentContenuTitleField.setText(assessment.getContenu() == null ? "" : safe(service.resolveContenuTitle(assessment.getContenu().getId())));
+        selectComboValue(assessmentCourseBox, assessment.getCourse() == null ? null : service.resolveCourseTitle(assessment.getCourse().getId()));
+        selectComboValue(assessmentClassBox, assessment.getClasse() == null ? null : service.resolveClasseName(assessment.getClasse().getId()));
+        selectComboValue(assessmentContenuBox, assessment.getContenu() == null ? null : service.resolveContenuTitle(assessment.getContenu().getId()));
         selectedAssessmentId = assessment.getId();
         selectedAssessmentLabel.setText("Selected assessment: " + safe(assessment.getTitle()));
+    }
+
+    private void selectComboValue(ComboBox<String> comboBox, String value) {
+        if (comboBox == null) {
+            return;
+        }
+        if (value == null || value.isBlank()) {
+            comboBox.getSelectionModel().clearSelection();
+            return;
+        }
+        if (!comboBox.getItems().contains(value)) {
+            comboBox.getItems().add(value);
+        }
+        comboBox.getSelectionModel().select(value);
     }
 
     private void sortAssessments(List<Assessment> rows, String mode) {
@@ -446,10 +526,6 @@ public class EvaluationTeacherController {
     private void installInputValidation() {
         setLengthField(classNameField, 120);
         setLengthField(assessmentTitleField, 150);
-        setLengthField(assessmentCourseNameField, 150);
-        setLengthField(assessmentClasseNameField, 150);
-        setLengthField(assessmentContenuTitleField, 150);
-        setLengthField(gradeStudentNameField, 150);
         setLengthField(gradeCommentInputField, 220);
         setDecimalField(assessmentMaxScoreField);
         setDecimalField(gradeScoreInputField);
