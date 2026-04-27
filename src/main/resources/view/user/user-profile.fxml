@@ -2,51 +2,126 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
 <BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="controller.UserProfileController">
+            fx:controller="controller.UserProfileController"
+            styleClass="user-profile-root">
     <center>
-        <VBox spacing="12.0" alignment="CENTER">
+        <VBox spacing="14.0" alignment="CENTER" styleClass="user-profile-shell">
             <padding>
-                <Insets top="20.0" right="22.0" bottom="20.0" left="22.0"/>
+                <Insets top="18.0" right="22.0" bottom="18.0" left="22.0"/>
             </padding>
             <children>
-                <Label text="My Profile" style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
-                <GridPane hgap="10.0" vgap="10.0" maxWidth="500.0">
+                <VBox spacing="4.0" alignment="CENTER_LEFT" styleClass="user-profile-header">
                     <children>
-                        <Label text="Role" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                        <Label fx:id="roleLabel" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-
-                        <Label text="Status" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                        <Label fx:id="statusLabel" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-
-                        <Label text="Name" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-                        <TextField fx:id="nameField" onAction="#handleSaveProfile" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-
-                        <Label text="Email" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-                        <TextField fx:id="emailField" onAction="#handleSaveProfile" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-
-                        <Label text="Phone" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
-                        <TextField fx:id="phoneField" onAction="#handleSaveProfile" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
-
-                        <Label text="Location" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
-                        <TextField fx:id="locationField" onAction="#handleSaveProfile" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                        <Label text="My Profile" styleClass="home-title"/>
+                        <Label text="Manage your account identity and contact details." styleClass="home-summary"/>
                     </children>
-                </GridPane>
-                <HBox spacing="10.0">
+                </VBox>
+
+                <VBox spacing="12.0" styleClass="user-profile-card">
                     <children>
-                        <Button fx:id="saveProfileButton" text="Save Profile" onAction="#handleSaveProfile" prefWidth="130.0"/>
-                        <Button fx:id="backToDashboardButton" text="Back to Home" onAction="#handleBackToDashboard" prefWidth="140.0"/>
-                        <Button fx:id="logoutButton" text="Logout" onAction="#handleLogout" prefWidth="110.0"/>
+                        <GridPane hgap="12.0" vgap="11.0" maxWidth="560.0">
+                            <children>
+                                <Label text="Role" styleClass="user-profile-field-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                                <Label fx:id="roleLabel" styleClass="user-profile-chip user-profile-role-chip" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                                <Label text="Status" styleClass="user-profile-field-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                                <Label fx:id="statusLabel" styleClass="user-profile-chip" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                                <Label text="Name" styleClass="user-profile-field-label" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                                <TextField fx:id="nameField" onAction="#handleSaveProfile" styleClass="user-profile-input" prefWidth="360.0" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+                                <Label text="Email" styleClass="user-profile-field-label" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                                <TextField fx:id="emailField" onAction="#handleSaveProfile" styleClass="user-profile-input" prefWidth="360.0" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+                                <Label text="Phone" styleClass="user-profile-field-label" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                                <TextField fx:id="phoneField" onAction="#handleSaveProfile" styleClass="user-profile-input" prefWidth="360.0" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+
+                                <Label text="Location" styleClass="user-profile-field-label" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+                                <TextField fx:id="locationField" onAction="#handleSaveProfile" styleClass="user-profile-input" prefWidth="360.0" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                            </children>
+                        </GridPane>
+
+                        <VBox spacing="10.0" styleClass="user-faceid-panel" maxWidth="560.0">
+                            <children>
+                                <HBox spacing="10.0" alignment="CENTER_LEFT">
+                                    <children>
+                                        <Label text="Face ID Settings" styleClass="user-faceid-title"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <CheckBox fx:id="faceIdEnabledCheckBox"
+                                                  text="Enable Face ID"
+                                                  onAction="#handleFaceIdToggle"
+                                                  styleClass="user-faceid-toggle"
+                                                  mnemonicParsing="false"
+                                                  accessibleText="Enable Face ID"/>
+                                    </children>
+                                </HBox>
+
+                                <GridPane hgap="12.0" vgap="8.0">
+                                    <children>
+                                        <Label text="Status" styleClass="user-profile-field-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                                        <Label fx:id="faceEnrollmentStatusLabel" styleClass="user-faceid-status" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                                        <Label text="Enrolled At" styleClass="user-profile-field-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                                        <Label fx:id="faceEnrolledAtLabel" styleClass="user-faceid-meta" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                                    </children>
+                                </GridPane>
+
+                                <HBox spacing="10.0" alignment="CENTER_LEFT" styleClass="user-faceid-actions">
+                                    <children>
+                                        <Button fx:id="faceEnrollUploadButton"
+                                                text="Enroll/Re-enroll (Upload)"
+                                                onAction="#handleEnrollFaceWithUpload"
+                                                styleClass="ghost-button"
+                                                prefWidth="180.0"
+                                                minHeight="40.0"/>
+                                        <Button fx:id="faceEnrollCameraButton"
+                                                text="Enroll/Re-enroll (Camera)"
+                                                onAction="#handleEnrollFaceWithCamera"
+                                                styleClass="ghost-button"
+                                                prefWidth="180.0"
+                                                minHeight="40.0"/>
+                                        <Button fx:id="faceRemoveEnrollmentButton"
+                                                text="Remove Enrollment"
+                                                onAction="#handleRemoveFaceEnrollment"
+                                                styleClass="danger-button"
+                                                prefWidth="160.0"
+                                                minHeight="40.0"/>
+                                        <ProgressIndicator fx:id="faceProcessingIndicator"
+                                                           progress="-1.0"
+                                                           visible="false"
+                                                           managed="false"
+                                                           prefWidth="22.0"
+                                                           prefHeight="22.0"/>
+                                    </children>
+                                </HBox>
+
+                                <Label fx:id="faceMessageLabel" styleClass="user-faceid-message" wrapText="true" maxWidth="560.0"/>
+                            </children>
+                        </VBox>
+
+                        <HBox spacing="10.0" alignment="CENTER_RIGHT" styleClass="user-profile-actions">
+                            <children>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Button fx:id="saveProfileButton" text="Save Profile" onAction="#handleSaveProfile" prefWidth="130.0" styleClass="primary-button"/>
+                                <Button fx:id="backToDashboardButton" text="Back to Home" onAction="#handleBackToDashboard" prefWidth="140.0" styleClass="ghost-button"/>
+                                <Button fx:id="logoutButton" text="Logout" onAction="#handleLogout" prefWidth="110.0" styleClass="danger-button"/>
+                            </children>
+                        </HBox>
                     </children>
-                </HBox>
-                <Label fx:id="messageLabel" style="-fx-text-fill: #c0392b;"/>
+                </VBox>
+
+                <Label fx:id="messageLabel" styleClass="user-profile-message" wrapText="true" maxWidth="620.0"/>
             </children>
         </VBox>
     </center>

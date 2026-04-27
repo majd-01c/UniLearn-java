@@ -18,6 +18,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import jakarta.persistence.Transient;
 import jakarta.persistence.UniqueConstraint;
 import java.sql.Timestamp;
 import java.util.HashSet;
@@ -31,6 +32,8 @@ import java.util.Set;
     , uniqueConstraints = @UniqueConstraint(columnNames="email") 
 )
 public class User  implements java.io.Serializable {
+
+    private static final String FACE_EMBEDDING_JSON_KEY = "\"embedding\"";
 
 
      private Integer id;
@@ -374,6 +377,77 @@ public class User  implements java.io.Serializable {
     
     public void setFaceEnrolledAt(Timestamp faceEnrolledAt) {
         this.faceEnrolledAt = faceEnrolledAt;
+    }
+
+    @Transient
+    public boolean isFaceIdEnabled() {
+        return this.faceEnabled == (byte) 1;
+    }
+
+    public void setFaceIdEnabled(boolean enabled) {
+        this.faceEnabled = enabled ? (byte) 1 : (byte) 0;
+    }
+
+    @Transient
+    public String getFaceEmbedding() {
+        if (this.faceDescriptors == null) {
+            return null;
+        }
+
+        String raw = this.faceDescriptors.trim();
+        if (raw.isEmpty()) {
+            return null;
+        }
+
+        if (!raw.startsWith("{")) {
+            return raw;
+        }
+
+        int keyIndex = raw.indexOf(FACE_EMBEDDING_JSON_KEY);
+        if (keyIndex < 0) {
+            return raw;
+        }
+
+        int colonIndex = raw.indexOf(':', keyIndex + FACE_EMBEDDING_JSON_KEY.length());
+        if (colonIndex < 0) {
+            return raw;
+        }
+
+        int valueStart = raw.indexOf('"', colonIndex + 1);
+        if (valueStart < 0) {
+            return raw;
+        }
+
+        int valueEnd = valueStart + 1;
+        while (valueEnd < raw.length()) {
+            if (raw.charAt(valueEnd) == '"' && raw.charAt(valueEnd - 1) != '\\') {
+                break;
+            }
+            valueEnd++;
+        }
+
+        if (valueEnd >= raw.length()) {
+            return raw;
+        }
+
+        String escaped = raw.substring(valueStart + 1, valueEnd);
+        return escaped.replace("\\\"", "\"").replace("\\\\", "\\");
+    }
+
+    public void setFaceEmbedding(String embedding) {
+        if (embedding == null || embedding.isBlank()) {
+            this.faceDescriptors = null;
+            return;
+        }
+
+        String value = embedding.trim();
+        if (value.startsWith("{") || value.startsWith("[")) {
+            this.faceDescriptors = value;
+            return;
+        }
+
+        String escaped = value.replace("\\", "\\\\").replace("\"", "\\\"");
+        this.faceDescriptors = "{\"embedding\":\"" + escaped + "\"}";
     }
 
 @OneToMany(fetch=FetchType.LAZY, mappedBy="user")

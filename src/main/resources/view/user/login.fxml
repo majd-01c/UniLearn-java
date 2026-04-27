@@ -15,45 +15,80 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="controller.LoginController"
+            fx:id="loginRoot"
             styleClass="login-root">
     <center>
-        <StackPane styleClass="login-stage">
+        <StackPane fx:id="loginStage" styleClass="login-stage">
             <children>
                 <Region styleClass="login-orb-top" StackPane.alignment="TOP_LEFT"/>
                 <Region styleClass="login-orb-right" StackPane.alignment="CENTER_RIGHT"/>
                 <Region styleClass="login-orb-bottom" StackPane.alignment="BOTTOM_LEFT"/>
 
-                <HBox maxWidth="940.0" prefHeight="510.0" styleClass="login-shell">
+                    <HBox fx:id="loginShell"
+                        maxWidth="960.0"
+                        prefWidth="960.0"
+                        prefHeight="560.0"
+                        spacing="0.0"
+                        styleClass="login-shell">
                     <children>
-                        <VBox spacing="16.0" styleClass="login-form-panel" HBox.hgrow="ALWAYS">
+                        <VBox fx:id="loginFormPanel" spacing="24.0" prefWidth="600.0" styleClass="login-form-panel" HBox.hgrow="ALWAYS">
                             <padding>
-                                <Insets top="36.0" right="38.0" bottom="34.0" left="38.0"/>
+                                <Insets top="40.0" right="40.0" bottom="36.0" left="40.0"/>
                             </padding>
                             <children>
-                                <Label text="Welcome back" styleClass="login-title"/>
-                                <Label text="Sign in to continue to your UniLearn workspace session." styleClass="login-subtitle" wrapText="true" maxWidth="430.0"/>
-
-                                <VBox spacing="12.0" maxWidth="430.0">
+                                <VBox spacing="8.0" styleClass="login-heading-group">
                                     <children>
-                                        <VBox spacing="6.0">
+                                        <Label text="Welcome back" styleClass="login-title"/>
+                                        <Label text="Sign in to continue to your UniLearn workspace session."
+                                               styleClass="login-subtitle"
+                                               wrapText="true"
+                                               maxWidth="460.0"/>
+                                    </children>
+                                </VBox>
+
+                                <VBox spacing="16.0" maxWidth="460.0" styleClass="login-field-stack">
+                                    <children>
+                                        <VBox spacing="8.0" styleClass="login-field-group">
                                             <children>
-                                                <Label text="EMAIL" styleClass="field-label"/>
-                                                <TextField fx:id="emailField" promptText="name@unilearn.tn" onAction="#handleLogin" styleClass="login-input"/>
+                                                <Label text="Email Address" styleClass="field-label" labelFor="$emailField"/>
+                                                <TextField fx:id="emailField"
+                                                           promptText="name@unilearn.tn"
+                                                           onAction="#handleLogin"
+                                                           styleClass="login-input"
+                                                           accessibleText="Email address"/>
+                                                <Label text="Use your UniLearn account email." styleClass="login-helper-text"/>
                                             </children>
                                         </VBox>
 
-                                        <VBox spacing="6.0">
+                                        <VBox spacing="8.0" styleClass="login-field-group">
                                             <children>
-                                                <Label text="PASSWORD" styleClass="field-label"/>
-                                                <HBox spacing="8.0">
+                                                <Label text="Password" styleClass="field-label" labelFor="$passwordField"/>
+                                                <HBox spacing="8.0" alignment="CENTER_LEFT">
                                                     <children>
                                                         <StackPane HBox.hgrow="ALWAYS">
                                                             <children>
-                                                                <PasswordField fx:id="passwordField" promptText="Password" onAction="#handleLogin" styleClass="login-input"/>
-                                                                <TextField fx:id="passwordVisibleField" promptText="Password" onAction="#handleLogin" styleClass="login-input" visible="false" managed="false"/>
+                                                                <PasswordField fx:id="passwordField"
+                                                                               promptText="Password"
+                                                                               onAction="#handleLogin"
+                                                                               styleClass="login-input"
+                                                                               accessibleText="Password"/>
+                                                                <TextField fx:id="passwordVisibleField"
+                                                                           promptText="Password"
+                                                                           onAction="#handleLogin"
+                                                                           styleClass="login-input"
+                                                                           visible="false"
+                                                                           managed="false"
+                                                                           accessibleText="Visible password"/>
                                                             </children>
                                                         </StackPane>
-                                                        <Button fx:id="passwordToggleButton" text="Show" onAction="#handleTogglePasswordVisibility" styleClass="login-toggle-button"/>
+                                                        <Button fx:id="passwordToggleButton"
+                                                                text="Show"
+                                                                onAction="#handleTogglePasswordVisibility"
+                                                                styleClass="login-toggle-button"
+                                                                minWidth="92.0"
+                                                                minHeight="44.0"
+                                                                mnemonicParsing="false"
+                                                                accessibleText="Toggle password visibility"/>
                                                     </children>
                                                 </HBox>
                                             </children>
@@ -61,35 +96,115 @@
                                     </children>
                                 </VBox>
 
-                                <CheckBox fx:id="rememberMeCheckBox" text="Remember my email" styleClass="login-remember-checkbox"/>
-                                <Button fx:id="loginButton" text="Sign In" onAction="#handleLogin" maxWidth="430.0" styleClass="login-submit-button"/>
-                                <Hyperlink text="Forgot password?" onAction="#handleForgotPassword" styleClass="login-link"/>
-                                <Label fx:id="messageLabel" styleClass="login-message" wrapText="true" maxWidth="430.0"/>
+                                <HBox alignment="CENTER_LEFT" spacing="16.0" maxWidth="460.0" styleClass="login-options-row">
+                                    <children>
+                                        <CheckBox fx:id="rememberMeCheckBox"
+                                                  text="Remember my email"
+                                                  styleClass="login-remember-checkbox"
+                                                  mnemonicParsing="false"
+                                                  accessibleText="Remember my email"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <Hyperlink fx:id="forgotPasswordLink"
+                                                   text="Forgot password?"
+                                                   onAction="#handleForgotPassword"
+                                                   styleClass="login-link"
+                                                   accessibleText="Forgot password"/>
+                                    </children>
+                                </HBox>
+
+                                <Button fx:id="loginButton"
+                                        text="Sign In"
+                                        onAction="#handleLogin"
+                                        maxWidth="460.0"
+                                        minHeight="46.0"
+                                        styleClass="login-submit-button"
+                                        accessibleText="Sign in"/>
+
+                                <VBox spacing="8.0" maxWidth="460.0" styleClass="login-face-actions-box">
+                                    <children>
+                                    <Label text="Face ID Options" styleClass="login-face-actions-title"/>
+                                    <Button fx:id="faceCameraLoginButton"
+                                        text="Login with Face ID (Camera)"
+                                        onAction="#handleLoginWithFaceCamera"
+                                        maxWidth="460.0"
+                                        minHeight="44.0"
+                                        styleClass="login-face-button"
+                                        accessibleText="Login with Face ID using camera"/>
+                                    <Button fx:id="faceUploadLoginButton"
+                                        text="Login with Face ID (Upload Image)"
+                                        onAction="#handleLoginWithFaceUpload"
+                                        maxWidth="460.0"
+                                        minHeight="44.0"
+                                        styleClass="login-face-button"
+                                        accessibleText="Login with Face ID using uploaded image"/>
+                                    <Button fx:id="continuePasswordButton"
+                                        text="Continue with Password"
+                                        onAction="#handleContinueWithPassword"
+                                        maxWidth="460.0"
+                                        minHeight="44.0"
+                                        styleClass="login-face-fallback-button"
+                                        accessibleText="Continue with password login"/>
+                                    </children>
+                                </VBox>
+
+                                <Label fx:id="messageLabel" styleClass="login-message" wrapText="true" maxWidth="460.0"/>
                             </children>
                         </VBox>
 
-                        <Region styleClass="login-divider"/>
+                        <Region fx:id="loginDivider" styleClass="login-divider"/>
 
-                        <VBox spacing="14.0" prefWidth="290.0" styleClass="login-side-panel">
+                        <VBox fx:id="loginSidePanel" spacing="16.0" prefWidth="338.0" styleClass="login-side-panel">
                             <padding>
-                                <Insets top="34.0" right="28.0" bottom="34.0" left="28.0"/>
+                                <Insets top="34.0" right="30.0" bottom="34.0" left="30.0"/>
                             </padding>
                             <children>
-                                <StackPane prefWidth="190.0" prefHeight="190.0" styleClass="login-qr-shell">
+                                <HBox spacing="12.0" alignment="CENTER_LEFT" styleClass="login-security-header">
                                     <children>
-                                        <Region styleClass="login-qr-inner"/>
-                                        <Label text="Secure&#10;Access" styleClass="login-qr-title"/>
+                                        <StackPane prefWidth="44.0" prefHeight="44.0" styleClass="login-security-icon-shell">
+                                            <children>
+                                                <Label text="S" styleClass="login-security-icon"/>
+                                            </children>
+                                        </StackPane>
+                                        <VBox spacing="2.0">
+                                            <children>
+                                                <Label text="Secure Access" styleClass="login-side-title"/>
+                                                <Label text="Protected academic workspace" styleClass="login-side-kicker"/>
+                                            </children>
+                                        </VBox>
                                     </children>
-                                </StackPane>
+                                </HBox>
 
-                                <Label text="Workspace Security" styleClass="login-side-title"/>
-                                <Label text="Authentication is protected and role-aware. Your session is isolated and restored on successful sign in." styleClass="login-side-text" wrapText="true"/>
+                                <Label text="Authentication is protected with role-aware controls and encrypted sessions. Your workspace state is isolated and restored after sign in."
+                                       styleClass="login-side-text"
+                                       wrapText="true"/>
 
-                                <VBox spacing="8.0" styleClass="login-tip-list">
+                                <HBox spacing="8.0" styleClass="login-chip-row">
                                     <children>
-                                        <Label text="Private sessions for each role" styleClass="login-tip-item"/>
-                                        <Label text="Fast access to classes and modules" styleClass="login-tip-item"/>
-                                        <Label text="Built-in account recovery workflow" styleClass="login-tip-item"/>
+                                        <Label text="Role Aware" styleClass="login-chip"/>
+                                        <Label text="Session Safe" styleClass="login-chip"/>
+                                    </children>
+                                </HBox>
+
+                                <VBox spacing="10.0" styleClass="login-tip-list">
+                                    <children>
+                                        <HBox spacing="10.0" alignment="CENTER_LEFT" styleClass="login-tip-row">
+                                            <children>
+                                                <Region styleClass="login-tip-dot"/>
+                                                <Label text="Private access boundaries for each role" styleClass="login-tip-item"/>
+                                            </children>
+                                        </HBox>
+                                        <HBox spacing="10.0" alignment="CENTER_LEFT" styleClass="login-tip-row">
+                                            <children>
+                                                <Region styleClass="login-tip-dot"/>
+                                                <Label text="Fast navigation to classes, modules, and tools" styleClass="login-tip-item"/>
+                                            </children>
+                                        </HBox>
+                                        <HBox spacing="10.0" alignment="CENTER_LEFT" styleClass="login-tip-row">
+                                            <children>
+                                                <Region styleClass="login-tip-dot"/>
+                                                <Label text="Built-in password recovery and session reset" styleClass="login-tip-item"/>
+                                            </children>
+                                        </HBox>
                                     </children>
                                 </VBox>
                             </children>

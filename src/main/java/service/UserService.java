@@ -31,14 +31,7 @@ public class UserService {
                 .collect(java.util.stream.Collectors.toList());
     }
 
-    /**
-     * Returns all active users whose role is PARTNER (or ROLE_PARTNER).
-     * Used by the admin job-offer form to let the admin assign an offer to a partner.
-     */
-    /**
-     * Returns all users whose role is BUSINESS_PARTNER (or legacy 'partner' / 'role_partner').
-     * Used by the admin job-offer form to let the admin assign an offer to a partner.
-     */
+
     public List<User> getPartnerUsers() {
         Session session = HibernateSessionFactory.getSession();
         try {
@@ -130,6 +123,13 @@ public class UserService {
             user.setIsVerified((byte) 0);
             user.setNeedsVerification((byte) 1);
             user.setIsActive((byte) 1);
+            if (user.getFaceEnabled() != (byte) 1) {
+                user.setFaceEnabled((byte) 0);
+            }
+            if (user.getFaceEnabled() != (byte) 1) {
+                user.setFaceDescriptors(null);
+                user.setFaceEnrolledAt(null);
+            }
             user.setTempPasswordGeneratedAt(now);
             user.setCreatedAt(now);
             user.setUpdatedAt(now);
