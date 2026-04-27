@@ -4,13 +4,23 @@ import entities.User;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
+import javafx.stage.FileChooser;
 import security.UserSession;
+import service.faceid.CameraCaptureResult;
+import service.faceid.CameraService;
+import service.faceid.FaceEnrollmentResult;
+import service.faceid.FaceRecognitionService;
 import service.UserService;
 import util.AppNavigator;
 
+import java.io.File;
 import java.net.URL;
+import java.sql.Timestamp;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.regex.Pattern;
@@ -18,6 +28,7 @@ import java.util.regex.Pattern;
 public class UserProfileController implements Initializable {
 
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+    private static final DateTimeFormatter FACE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     @FXML
     private Label roleLabel;
@@ -47,15 +58,44 @@ public class UserProfileController implements Initializable {
     private Button logoutButton;
 
     @FXML
+    private CheckBox faceIdEnabledCheckBox;
+
+    @FXML
+    private Label faceEnrollmentStatusLabel;
+
+    @FXML
+    private Label faceEnrolledAtLabel;
+
+    @FXML
+    private Button faceEnrollUploadButton;
+
+    @FXML
+    private Button faceEnrollCameraButton;
+
+    @FXML
+    private Button faceRemoveEnrollmentButton;
+
+    @FXML
+    private ProgressIndicator faceProcessingIndicator;
+
+    @FXML
+    private Label faceMessageLabel;
+
+    @FXML
     private Label messageLabel;
 
     private final UserService userService = new UserService();
+    private final FaceRecognitionService faceRecognitionService = new FaceRecognitionService();
+    private final CameraService cameraService = new CameraService();
 
     private User currentUser;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         messageLabel.setText("");
+        if (faceMessageLabel != null) {
+            faceMessageLabel.setText("");
+        }
         loadCurrentUserFromSession();
     }
 
@@ -67,6 +107,7 @@ public class UserProfileController implements Initializable {
 
         currentUser = userService.getUserById(user.getId().longValue()).orElse(user);
         bindUser();
+        bindFaceSettings();
     }
 
     @FXML
@@ -123,6 +164,90 @@ public class UserProfileController implements Initializable {
         AppNavigator.logout();
     }
 
+    @FXML
+    private void handleFaceIdToggle() {
+        if (!ensureCurrentUserForFace()) {
+            return;
+        }
+
+        try {
+            boolean enable = faceIdEnabledCheckBox != null && faceIdEnabledCheckBox.isSelected();
+            currentUser = faceRecognitionService.setFaceIdEnabled(currentUser, enable);
+            UserSession.setCurrentUser(currentUser);
+
+            if (enable && !faceRecognitionService.isFaceEnrolled(currentUser)) {
+                setFaceMessage("Face ID enabled. Please enroll your face to use it during login.", false);
+            } else {
+                setFaceMessage(enable ? "Face ID enabled for your account." : "Face ID disabled for your account.", false);
+            }
+
+            bindFaceSettings();
+        } catch (Exception exception) {
+            setFaceMessage(safeErrorMessage(exception), true);
+            bindFaceSettings();
+        }
+    }
+
+    @FXML
+    private void handleEnrollFaceWithUpload() {
+        if (!ensureCurrentUserForFace()) {
+            return;
+        }
+
+        File imageFile = chooseFaceImageFile("Select face image for enrollment");
+        if (imageFile == null) {
+            return;
+        }
+
+        setFaceProcessing(true);
+        try {
+            enrollFaceFromFile(imageFile);
+        } finally {
+            setFaceProcessing(false);
+        }
+    }
+
+    @FXML
+    private void handleEnrollFaceWithCamera() {
+        if (!ensureCurrentUserForFace()) {
+            return;
+        }
+
+        setFaceProcessing(true);
+        CameraCaptureResult captureResult = cameraService.captureToTempImage();
+
+        try {
+            if (!captureResult.success() || captureResult.imagePath() == null) {
+                setFaceMessage(captureResult.reason(), true);
+                return;
+            }
+
+            enrollFaceFromFile(captureResult.imagePath().toFile());
+        } finally {
+            cameraService.cleanupCapturedFile(captureResult.imagePath());
+            setFaceProcessing(false);
+        }
+    }
+
+    @FXML
+    private void handleRemoveFaceEnrollment() {
+        if (!ensureCurrentUserForFace()) {
+            return;
+        }
+
+        setFaceProcessing(true);
+        try {
+            currentUser = faceRecognitionService.clearEnrollment(currentUser);
+            UserSession.setCurrentUser(currentUser);
+            setFaceMessage("Face enrollment removed. Password login remains available.", false);
+            bindFaceSettings();
+        } catch (Exception exception) {
+            setFaceMessage(safeErrorMessage(exception), true);
+        } finally {
+            setFaceProcessing(false);
+        }
+    }
+
     private void loadCurrentUserFromSession() {
         Optional<Integer> userId = UserSession.getCurrentUserId();
         if (userId.isEmpty()) {
@@ -140,6 +265,7 @@ public class UserProfileController implements Initializable {
 
         disableForm(false);
         bindUser();
+        bindFaceSettings();
     }
 
     private void bindUser() {
@@ -159,12 +285,115 @@ public class UserProfileController implements Initializable {
         locationField.setText(safeText(currentUser.getLocation()));
     }
 
+    private void bindFaceSettings() {
+        if (faceIdEnabledCheckBox == null || currentUser == null) {
+            return;
+        }
+
+        boolean enrolled = faceRecognitionService.isFaceEnrolled(currentUser);
+        boolean enabled = currentUser.isFaceIdEnabled();
+
+        faceIdEnabledCheckBox.setSelected(enabled);
+
+        if (faceEnrollmentStatusLabel != null) {
+            faceEnrollmentStatusLabel.getStyleClass().removeAll("user-faceid-status-enrolled", "user-faceid-status-missing");
+            faceEnrollmentStatusLabel.setText(enrolled ? "Enrolled" : "Not enrolled");
+            faceEnrollmentStatusLabel.getStyleClass().add(enrolled ? "user-faceid-status-enrolled" : "user-faceid-status-missing");
+        }
+
+        if (faceEnrolledAtLabel != null) {
+            faceEnrolledAtLabel.setText(formatTimestamp(currentUser.getFaceEnrolledAt()));
+        }
+
+        if (faceRemoveEnrollmentButton != null) {
+            faceRemoveEnrollmentButton.setDisable(!enrolled);
+        }
+
+        if (faceEnrollCameraButton != null) {
+            faceEnrollCameraButton.setText(cameraService.isCameraAvailable()
+                    ? "Enroll/Re-enroll (Camera)"
+                    : "Camera Unavailable (Use Upload)");
+        }
+    }
+
     private void disableForm(boolean disable) {
         nameField.setDisable(disable);
         emailField.setDisable(disable);
         phoneField.setDisable(disable);
         locationField.setDisable(disable);
         saveProfileButton.setDisable(disable);
+
+        if (faceIdEnabledCheckBox != null) {
+            faceIdEnabledCheckBox.setDisable(disable);
+        }
+        if (faceEnrollUploadButton != null) {
+            faceEnrollUploadButton.setDisable(disable);
+        }
+        if (faceEnrollCameraButton != null) {
+            faceEnrollCameraButton.setDisable(disable);
+        }
+        if (faceRemoveEnrollmentButton != null) {
+            faceRemoveEnrollmentButton.setDisable(disable || !faceRecognitionService.isFaceEnrolled(currentUser));
+        }
+    }
+
+    private boolean ensureCurrentUserForFace() {
+        if (currentUser != null && currentUser.getId() != null) {
+            return true;
+        }
+
+        setFaceMessage("No active session user. Please login again.", true);
+        return false;
+    }
+
+    private void enrollFaceFromFile(File imageFile) {
+        FaceEnrollmentResult result = faceRecognitionService.enrollFace(currentUser, imageFile);
+        if (!result.success() || result.user() == null) {
+            setFaceMessage(result.reason(), true);
+            return;
+        }
+
+        currentUser = result.user();
+        if (!currentUser.isFaceIdEnabled()) {
+            currentUser = faceRecognitionService.setFaceIdEnabled(currentUser, true);
+        }
+
+        UserSession.setCurrentUser(currentUser);
+        setFaceMessage("Face enrollment successful. Face ID is now enabled.", false);
+        bindFaceSettings();
+    }
+
+    private void setFaceProcessing(boolean processing) {
+        if (faceProcessingIndicator != null) {
+            faceProcessingIndicator.setManaged(processing);
+            faceProcessingIndicator.setVisible(processing);
+        }
+
+        if (faceIdEnabledCheckBox != null) {
+            faceIdEnabledCheckBox.setDisable(processing);
+        }
+        if (faceEnrollUploadButton != null) {
+            faceEnrollUploadButton.setDisable(processing);
+        }
+        if (faceEnrollCameraButton != null) {
+            faceEnrollCameraButton.setDisable(processing);
+        }
+        if (faceRemoveEnrollmentButton != null) {
+            faceRemoveEnrollmentButton.setDisable(processing || !faceRecognitionService.isFaceEnrolled(currentUser));
+        }
+    }
+
+    private File chooseFaceImageFile(String title) {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle(title);
+        chooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Image Files (*.png, *.jpg, *.jpeg, *.bmp)", "*.png", "*.jpg", "*.jpeg", "*.bmp"),
+                new FileChooser.ExtensionFilter("All Files", "*.*")
+        );
+
+        return chooser.showOpenDialog(saveProfileButton != null && saveProfileButton.getScene() != null
+                ? saveProfileButton.getScene().getWindow()
+                : null);
     }
 
     private String formatRole(String role) {
@@ -193,10 +422,27 @@ public class UserProfileController implements Initializable {
         return value == null ? "" : value;
     }
 
+    private String formatTimestamp(Timestamp timestamp) {
+        if (timestamp == null) {
+            return "-";
+        }
+        return FACE_TIME_FORMATTER.format(timestamp.toLocalDateTime());
+    }
+
     private void setMessage(String message, boolean error) {
         messageLabel.getStyleClass().removeAll("form-feedback-error", "form-feedback-success");
         messageLabel.getStyleClass().add(error ? "form-feedback-error" : "form-feedback-success");
         messageLabel.setText(message);
+    }
+
+    private void setFaceMessage(String message, boolean error) {
+        if (faceMessageLabel == null) {
+            return;
+        }
+
+        faceMessageLabel.getStyleClass().removeAll("form-feedback-error", "form-feedback-success");
+        faceMessageLabel.getStyleClass().add(error ? "form-feedback-error" : "form-feedback-success");
+        faceMessageLabel.setText(safeText(message));
     }
 
     private String safeErrorMessage(Exception exception) {

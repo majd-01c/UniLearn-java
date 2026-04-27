@@ -21,6 +21,20 @@
     -ul-warning: #c97a12;
     -ul-danger: #c0392b;
     -ul-info: #2563eb;
+
+    -ul-motion-fast-ms: 170;
+    -ul-motion-normal-ms: 220;
+
+    -ul-login-space-1: 8;
+    -ul-login-space-2: 16;
+    -ul-login-space-3: 24;
+    -ul-login-space-4: 32;
+    -ul-login-space-5: 40;
+
+    -ul-login-radius-sm: 10;
+    -ul-login-radius-md: 14;
+    -ul-login-radius-lg: 20;
+    -ul-login-radius-pill: 999;
 }
 
 .theme-light {
@@ -38,6 +52,64 @@
 
     -ul-outline: #cfdbeb;
     -ul-shadow: rgba(10, 34, 56, 0.12);
+
+    -ul-login-bg-gradient: linear-gradient(to bottom right, #233a79 0%, #2e4a90 45%, #2e6aa8 100%);
+    -ul-login-bg-layer-top: rgba(182, 202, 255, 0.28);
+    -ul-login-bg-layer-right: rgba(118, 170, 255, 0.24);
+    -ul-login-bg-layer-bottom: rgba(67, 219, 255, 0.18);
+
+    -ul-login-shell-bg: rgba(15, 24, 50, 0.82);
+    -ul-login-shell-border: rgba(163, 191, 255, 0.34);
+    -ul-login-shell-shadow: rgba(5, 10, 24, 0.56);
+
+    -ul-login-panel-form: rgba(10, 18, 38, 0.52);
+    -ul-login-panel-side: rgba(7, 14, 32, 0.46);
+    -ul-login-divider: rgba(163, 191, 255, 0.26);
+
+    -ul-login-title: #f6f9ff;
+    -ul-login-subtitle: #c3d3ef;
+    -ul-login-label: #9eb5dc;
+    -ul-login-helper: #8ea5cb;
+
+    -ul-login-input-bg: rgba(4, 10, 24, 0.88);
+    -ul-login-input-border: rgba(145, 172, 234, 0.34);
+    -ul-login-input-hover: rgba(167, 195, 255, 0.5);
+    -ul-login-input-focus: #9fc4ff;
+    -ul-login-input-placeholder: #7f97bd;
+    -ul-login-input-disabled: rgba(31, 47, 77, 0.72);
+    -ul-login-input-error: #ff8f9b;
+    -ul-login-focus-ring: rgba(131, 179, 255, 0.34);
+
+    -ul-login-checkbox-bg: rgba(6, 11, 26, 0.9);
+    -ul-login-checkbox-border: rgba(145, 172, 234, 0.5);
+    -ul-login-checkbox-active-start: #4d78ff;
+    -ul-login-checkbox-active-end: #2dc1f7;
+
+    -ul-login-cta-start: #4d77ff;
+    -ul-login-cta-end: #2eaeea;
+    -ul-login-cta-hover-start: #5b84ff;
+    -ul-login-cta-hover-end: #39b9f3;
+    -ul-login-cta-active-start: #426ce8;
+    -ul-login-cta-active-end: #2899d1;
+    -ul-login-cta-disabled: #5b6f98;
+
+    -ul-login-link: #70d5ff;
+    -ul-login-link-hover: #9be2ff;
+
+    -ul-login-chip-bg: rgba(56, 103, 184, 0.36);
+    -ul-login-chip-border: rgba(146, 183, 255, 0.36);
+    -ul-login-chip-text: #e4f0ff;
+
+    -ul-login-side-title: #f2f7ff;
+    -ul-login-side-kicker: #9cb5da;
+    -ul-login-side-text: #b4c8e8;
+    -ul-login-tip-dot: #76bbff;
+
+    -ul-login-security-icon-bg: linear-gradient(to bottom right, rgba(79, 109, 206, 0.7), rgba(51, 148, 206, 0.66));
+    -ul-login-security-icon-text: #e8f3ff;
+
+    -ul-login-message-success: #8ee2bc;
+    -ul-login-message-error: #ff9ca7;
 }
 
 .theme-dark {
@@ -55,4 +127,62 @@
 
     -ul-outline: #304663;
     -ul-shadow: rgba(0, 0, 0, 0.35);
+
+    -ul-login-bg-gradient: linear-gradient(to bottom right, #101d42 0%, #162c59 43%, #16477b 100%);
+    -ul-login-bg-layer-top: rgba(115, 146, 224, 0.22);
+    -ul-login-bg-layer-right: rgba(74, 132, 219, 0.2);
+    -ul-login-bg-layer-bottom: rgba(40, 185, 221, 0.14);
+
+    -ul-login-shell-bg: rgba(9, 16, 34, 0.9);
+    -ul-login-shell-border: rgba(93, 126, 187, 0.4);
+    -ul-login-shell-shadow: rgba(0, 0, 0, 0.62);
+
+    -ul-login-panel-form: rgba(8, 14, 30, 0.58);
+    -ul-login-panel-side: rgba(6, 11, 24, 0.54);
+    -ul-login-divider: rgba(100, 133, 192, 0.34);
+
+    -ul-login-title: #ebf2ff;
+    -ul-login-subtitle: #b3c6e6;
+    -ul-login-label: #8ea5cc;
+    -ul-login-helper: #7f96bc;
+
+    -ul-login-input-bg: rgba(3, 8, 19, 0.92);
+    -ul-login-input-border: rgba(106, 134, 184, 0.42);
+    -ul-login-input-hover: rgba(132, 165, 224, 0.56);
+    -ul-login-input-focus: #8fb8ff;
+    -ul-login-input-placeholder: #6f86ad;
+    -ul-login-input-disabled: rgba(23, 35, 58, 0.8);
+    -ul-login-input-error: #ff8998;
+    -ul-login-focus-ring: rgba(116, 163, 245, 0.38);
+
+    -ul-login-checkbox-bg: rgba(3, 8, 20, 0.9);
+    -ul-login-checkbox-border: rgba(109, 140, 193, 0.56);
+    -ul-login-checkbox-active-start: #4a74fb;
+    -ul-login-checkbox-active-end: #2ea8dd;
+
+    -ul-login-cta-start: #4a73f8;
+    -ul-login-cta-end: #2e9ed8;
+    -ul-login-cta-hover-start: #5680ff;
+    -ul-login-cta-hover-end: #36ace6;
+    -ul-login-cta-active-start: #3f66dc;
+    -ul-login-cta-active-end: #278fbe;
+    -ul-login-cta-disabled: #4a5877;
+
+    -ul-login-link: #67c7f4;
+    -ul-login-link-hover: #94dbff;
+
+    -ul-login-chip-bg: rgba(40, 77, 138, 0.42);
+    -ul-login-chip-border: rgba(95, 139, 211, 0.44);
+    -ul-login-chip-text: #d8e9ff;
+
+    -ul-login-side-title: #eaf2ff;
+    -ul-login-side-kicker: #8fa8cf;
+    -ul-login-side-text: #a8bfdf;
+    -ul-login-tip-dot: #69aff5;
+
+    -ul-login-security-icon-bg: linear-gradient(to bottom right, rgba(59, 85, 160, 0.76), rgba(33, 121, 167, 0.74));
+    -ul-login-security-icon-text: #e3efff;
+
+    -ul-login-message-success: #7ad8aa;
+    -ul-login-message-error: #ff8f9b;
 }
