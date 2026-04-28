@@ -107,6 +107,8 @@ public class AppShellController implements Initializable {
     private Label studentSectionLabel;
     @FXML
     private Button navMyLearningButton;
+    @FXML
+    private Button navQuizzesButton;
 
     @FXML
     private Label breadcrumbsLabel;
@@ -237,6 +239,7 @@ public class AppShellController implements Initializable {
         // Student section
         setNodeVisible(studentSectionLabel, student);
         setNodeVisible(navMyLearningButton, student);
+        setNodeVisible(navQuizzesButton, student);
 
         // Evaluation module for authenticated academic roles.
         setNodeVisible(navEvaluationButton, currentUser != null && currentUser.getId() != null);
@@ -586,6 +589,16 @@ public class AppShellController implements Initializable {
         });
     }
 
+    public void showStudentQuizzesView(User student) {
+        if (!ensureAuthenticated())
+            return;
+        setHeader("Quizzes", "Take and review your quizzes");
+        loadCenter("/view/lms/student/student-quiz.fxml", controller -> {
+            if (controller instanceof StudentQuizController sc)
+                sc.setStudent(student);
+        });
+    }
+
     public void logout() {
         showLoginView();
     }
@@ -838,6 +851,11 @@ public class AppShellController implements Initializable {
     }
 
     @FXML
+    private void onNavQuizzes() {
+        showStudentQuizzesView(currentUser);
+    }
+
+    @FXML
     private void onNavEvaluation() {
         if (selectedModule != null && selectedModule.startsWith("EVALUATION") && evaluationSubNavExpanded) {
             evaluationSubNavExpanded = false;
@@ -913,12 +931,8 @@ public class AppShellController implements Initializable {
 
     public void loadCenter(String fxmlPath, Consumer<Object> controllerInitializer) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
-            Parent content = loader.load();
-            if (controllerInitializer != null)
-                controllerInitializer.accept(loader.getController());
-            contentHost.getChildren().setAll(content);
             ViewRouter.LoadedView loadedView = viewRouter.navigate(fxmlPath, controllerInitializer);
+            contentHost.getChildren().setAll(loadedView.root());
             playViewEnterAnimation(loadedView.root());
         } catch (IOException exception) {
             showError("View loading failed", "Could not load view: " + fxmlPath + "\n" + exception.getMessage());

@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.web.WebView?>
 
-<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.lms.StudentContenuViewController" styleClass="lms-root" spacing="16">
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controller.lms.StudentContenuViewController" styleClass="lms-root" spacing="16">
     <padding><Insets top="8" right="8" bottom="8" left="8"/></padding>
 
     <HBox styleClass="breadcrumb-bar">

@@ -9,17 +9,27 @@ import entities.Grade;
 import entities.Reclamation;
 import entities.Schedule;
 import entities.User;
+import entities.Quiz;
+import entities.Question;
+import entities.Choice;
 import evaluation.AssessmentType;
 import services.ServiceAssessment;
+import services.ServiceChoice;
 import services.ServiceContenu;
 import services.ServiceCourse;
 import services.ServiceDocumentRequest;
 import services.ServiceGrade;
+import services.ServiceQuestion;
 import services.ServiceReclamation;
 import services.ServiceSchedule;
+import services.ServiceQuiz;
 import services.ServiceUser;
 import service.lms.ClasseService;
+import service.lms.ContenuService;
+import service.lms.FileUploadService;
+import security.UserSession;
 
+import java.io.File;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -43,6 +53,12 @@ public class EvaluationService {
     private final ServiceContenu contenuService = new ServiceContenu();
     private final ServiceUser userService = new ServiceUser();
     private final ClasseService classeService = new ClasseService();
+    private final ServiceQuiz quizService = new ServiceQuiz();
+    private final ServiceQuestion questionService = new ServiceQuestion();
+    private final ServiceChoice choiceService = new ServiceChoice();
+    private final ContenuService contenuWriteService = new ContenuService();
+    private final FileUploadService fileUploadService = new FileUploadService();
+    private final AiQuizGenerationService aiQuizGenerationService = new AiQuizGenerationService();
 
     public List<Grade> getGradesByStudent(int studentId) {
         return gradeService.getALL().stream()
@@ -384,6 +400,124 @@ public class EvaluationService {
         assessmentService.delete(target);
     }
 
+    public CreatedQuizResult createAiQuizFromFile(int teacherId,
+                                                  String courseName,
+                                                  String classeName,
+                                                  File sourceFile,
+                                                  int requestedQuestionCount,
+                                                  Integer passingScore,
+                                                  Integer timeLimitMinutes,
+                                                  LocalDate assessmentDate) {
+        String currentRole = UserSession.getCurrentUserRole();
+        if (!"TEACHER".equalsIgnoreCase(currentRole)) {
+            throw new SecurityException("AI quiz generation is available to teachers only.");
+        }
+
+        Integer courseId = findCourseIdByName(courseName);
+        if (courseId == null) {
+            throw new IllegalArgumentException("Course name not found.");
+        }
+        Integer classeId = (classeName == null || classeName.isBlank()) ? null : findClasseIdByName(classeName);
+        if (classeName != null && !classeName.isBlank() && classeId == null) {
+            throw new IllegalArgumentException("Class name not found.");
+        }
+
+        AiQuizGenerationService.QuizDraft draft = aiQuizGenerationService.generateQuizFromFile(sourceFile, requestedQuestionCount);
+        String storedFileName;
+        try {
+            storedFileName = fileUploadService.saveFile(sourceFile, sourceFile.getName());
+        } catch (Exception e) {
+            throw new IllegalStateException("File upload failed: " + e.getMessage(), e);
+        }
+
+        String title = draft.getTitle();
+        String description = draft.getDescription();
+        int questionCount = draft.getQuestions().size();
+        int maxScore = Math.max(1, questionCount);
+
+        Contenu contenu = contenuWriteService.createContenu(
+                title,
+                "QUIZ",
+                true,
+                storedFileName,
+                guessMimeType(sourceFile),
+                (int) sourceFile.length(),
+                null
+        );
+
+        Integer quizId = createQuizAndQuestions(contenu.getId(), title, description, draft, passingScore, timeLimitMinutes);
+        createAssessment(
+                teacherId,
+                courseId,
+                classeId,
+                contenu.getId(),
+                AssessmentType.OTHER,
+                title,
+                description,
+                assessmentDate == null ? LocalDate.now() : assessmentDate,
+                maxScore
+        );
+
+        return new CreatedQuizResult(contenu.getId(), quizId, questionCount, title);
+    }
+
+    private Integer createQuizAndQuestions(Integer contenuId,
+                                           String title,
+                                           String description,
+                                           AiQuizGenerationService.QuizDraft draft,
+                                           Integer passingScore,
+                                           Integer timeLimitMinutes) {
+        Quiz quiz = new Quiz();
+        quiz.setContenu(contenuRef(contenuId));
+        quiz.setTitle(title);
+        quiz.setDescription(description);
+        quiz.setPassingScore(passingScore == null ? 60 : passingScore);
+        quiz.setTimeLimit(timeLimitMinutes == null ? 20 : timeLimitMinutes);
+        quiz.setShuffleQuestions((byte) 1);
+        quiz.setShuffleChoices((byte) 1);
+        quiz.setShowCorrectAnswers((byte) 1);
+        quizService.add(quiz);
+
+        Integer quizId = quizService.getALL().stream()
+            .filter(q -> q.getContenu() != null && q.getContenu().getId() != null && q.getContenu().getId().equals(contenuId))
+                .map(Quiz::getId)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Quiz was not persisted."));
+
+        int position = 1;
+        for (AiQuizGenerationService.QuestionDraft questionDraft : draft.getQuestions()) {
+            final int currentPosition = position;
+            Question question = new Question();
+            question.setQuiz(quizRef(quizId));
+            question.setType("MCQ");
+            question.setQuestionText(questionDraft.getQuestionText());
+            question.setPoints(1);
+            question.setPosition(currentPosition);
+            question.setExplanation(questionDraft.getExplanation());
+            questionService.add(question);
+
+            Integer questionId = questionService.getALL().stream()
+                .filter(q -> q.getQuiz() != null && q.getQuiz().getId() == quizId)
+                .filter(q -> q.getPosition() == currentPosition)
+                    .map(Question::getId)
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("Question was not persisted."));
+
+            int choicePosition = 1;
+            for (AiQuizGenerationService.ChoiceDraft choiceDraft : questionDraft.getChoices()) {
+                Choice choice = new Choice();
+                choice.setQuestion(questionRef(questionId));
+                choice.setChoiceText(choiceDraft.getText());
+                choice.setIsCorrect(choiceDraft.isCorrect() ? (byte) 1 : (byte) 0);
+                choice.setPosition(choicePosition++);
+                choiceService.add(choice);
+            }
+            position++;
+        }
+
+        return quizId;
+    }
+
     public List<Grade> getGradesByAssessment(int assessmentId) {
         return gradeService.getALL().stream()
                 .filter(g -> g.getAssessment() != null && g.getAssessment().getId() != null)
@@ -488,6 +622,30 @@ public class EvaluationService {
         Assessment assessment = new Assessment();
         assessment.setId(id);
         return assessment;
+    }
+
+    private Quiz quizRef(int id) {
+        Quiz quiz = new Quiz();
+        quiz.setId(id);
+        return quiz;
+    }
+
+    private Question questionRef(int id) {
+        Question question = new Question();
+        question.setId(id);
+        return question;
+    }
+
+    private String guessMimeType(File file) {
+        try {
+            String mime = java.nio.file.Files.probeContentType(file.toPath());
+            if (mime != null && !mime.isBlank()) {
+                return mime;
+            }
+        } catch (Exception ignored) {
+            // Fallback kept simple for portability.
+        }
+        return "application/octet-stream";
     }
 
     private int nextGradeId() {
@@ -602,6 +760,36 @@ public class EvaluationService {
                 return 2;
             }
             return 3;
+        }
+    }
+
+    public static class CreatedQuizResult {
+        private final Integer contenuId;
+        private final Integer quizId;
+        private final int questionCount;
+        private final String title;
+
+        public CreatedQuizResult(Integer contenuId, Integer quizId, int questionCount, String title) {
+            this.contenuId = contenuId;
+            this.quizId = quizId;
+            this.questionCount = questionCount;
+            this.title = title;
+        }
+
+        public Integer getContenuId() {
+            return contenuId;
+        }
+
+        public Integer getQuizId() {
+            return quizId;
+        }
+
+        public int getQuestionCount() {
+            return questionCount;
+        }
+
+        public String getTitle() {
+            return title;
         }
     }
 }

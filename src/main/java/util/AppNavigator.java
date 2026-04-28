@@ -51,12 +51,45 @@ public final class AppNavigator {
     // Teacher
     public static void showTeacherClasses() { if (appShellController != null) appShellController.showTeacherClasses(); }
     public static void showTeacherWorkspace(dto.lms.TeacherAssignmentRowDto tc) { if (appShellController != null) appShellController.showTeacherWorkspace(tc); }
+    public static void showTeacherQuizBuilder(dto.lms.CourseRowDto course, dto.lms.TeacherAssignmentRowDto tc) {
+        if (appShellController != null) {
+            appShellController.setHeader("Quiz Builder", "Create a new manual quiz");
+            appShellController.loadCenter("/view/lms/teacher/teacher-quiz-builder.fxml", controller -> {
+                if (controller instanceof controller.lms.TeacherQuizBuilderController tqb) {
+                    tqb.setContext(course, tc);
+                }
+            });
+        }
+    }
+
+    public static void showTeacherQuizResults(int quizId, dto.lms.TeacherAssignmentRowDto tc) {
+        if (appShellController != null) {
+            appShellController.setHeader("Quiz Results", "View student quiz performance");
+            appShellController.loadCenter("/view/lms/teacher/teacher-quiz-results.fxml", controller -> {
+                if (controller instanceof controller.lms.TeacherQuizResultsController tqr) {
+                    tqr.setContext(quizId, tc);
+                }
+            });
+        }
+    }
+
+    public static void showTeacherQuizReview(int userAnswerId, int quizId, dto.lms.TeacherAssignmentRowDto tc) {
+        if (appShellController != null) {
+            appShellController.setHeader("Quiz Review", "Detailed student answer analysis");
+            appShellController.loadCenter("/view/lms/teacher/teacher-quiz-review.fxml", controller -> {
+                if (controller instanceof controller.lms.TeacherQuizReviewController tqr) {
+                    tqr.setContext(userAnswerId, quizId, tc);
+                }
+            });
+        }
+    }
 
     // Student
     public static void showStudentLearning() { if (appShellController != null) appShellController.showStudentLearning(); }
     public static void showStudentClasseView(dto.lms.StudentClasseRowDto classe) { if (appShellController != null) appShellController.showStudentClasseView(classe); }
     public static void showStudentCourseView(dto.lms.CourseRowDto cc) { if (appShellController != null) appShellController.showStudentCourseView(cc); }
     public static void showStudentContenuView(dto.lms.ContenuRowDto contenu, List<dto.lms.ContenuRowDto> allVisible, int idx) { if (appShellController != null) appShellController.showStudentContenuView(contenu, allVisible, idx); }
+    public static void showStudentQuizzes(User student) { if (appShellController != null) appShellController.showStudentQuizzesView(student); }
 
     // Direct access to load custom content
     public static void loadCenter(String fxml, java.util.function.Consumer<Object> init) { if (appShellController != null) appShellController.loadCenter(fxml, init); }
