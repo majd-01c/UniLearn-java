@@ -637,6 +637,216 @@
     -fx-alignment: CENTER;
 }
 
+/* ----- IArooms ----- */
+.iarooms-tabpane {
+    -fx-background-color: transparent;
+    -fx-tab-min-height: 36;
+}
+
+.iarooms-tabpane .tab-header-area {
+    -fx-padding: 0 0 8 0;
+}
+
+.iarooms-tabpane .tab-header-area .tab-header-background {
+    -fx-background-color: transparent;
+}
+
+.iarooms-tabpane .headers-region {
+    -fx-background-color: -ul-ghost-bg;
+    -fx-background-radius: 12;
+    -fx-padding: 4;
+}
+
+.iarooms-tabpane .tab {
+    -fx-background-color: transparent;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-padding: 7 14;
+    -fx-cursor: hand;
+}
+
+.iarooms-tabpane .tab:hover {
+    -fx-background-color: -ul-ghost-hover;
+}
+
+.iarooms-tabpane .tab:selected {
+    -fx-background-color: -ul-card-bg;
+    -fx-effect: dropshadow(gaussian, -ul-card-shadow, 8, 0.18, 0, 2);
+}
+
+.iarooms-tabpane .tab .tab-label {
+    -fx-text-fill: -ul-text-sub;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+}
+
+.iarooms-tabpane .tab:selected .tab-label {
+    -fx-text-fill: -ul-primary;
+}
+
+.iarooms-tabpane .tab-content-area {
+    -fx-background-color: transparent;
+}
+
+.iarooms-section-title {
+    -fx-text-fill: -ul-text-heading;
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+}
+
+.iarooms-picker {
+    -fx-background-color: -ul-input-bg;
+    -fx-border-color: -ul-input-border;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-min-height: 38;
+    -fx-pref-height: 38;
+    -fx-effect: dropshadow(gaussian, rgba(10, 34, 56, 0.06), 7, 0.15, 0, 2);
+}
+
+.iarooms-picker:hover {
+    -fx-border-color: derive(-ul-primary, 35%);
+}
+
+.iarooms-picker:focused,
+.iarooms-picker:showing {
+    -fx-border-color: -ul-primary;
+    -fx-effect: dropshadow(gaussian, rgba(29, 111, 165, 0.18), 8, 0.1, 0, 0);
+}
+
+.iarooms-picker .text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: -ul-text-heading;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-padding: 8 10;
+}
+
+.iarooms-picker .arrow-button {
+    -fx-background-color: -ul-ghost-bg;
+    -fx-background-radius: 0 9 9 0;
+    -fx-border-color: transparent;
+    -fx-padding: 0 10;
+}
+
+.iarooms-picker .arrow {
+    -fx-background-color: -ul-primary;
+}
+
+.iarooms-time-picker .list-cell {
+    -fx-text-fill: -ul-text-heading;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-padding: 8 10;
+}
+
+.iarooms-time-picker .combo-box-popup .list-view,
+.combo-box-popup .list-view {
+    -fx-background-color: -ul-card-bg;
+    -fx-border-color: -ul-card-border;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.iarooms-card {
+    -fx-background-color: -ul-card-bg;
+    -fx-border-color: -ul-card-border;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-effect: dropshadow(gaussian, -ul-card-shadow, 8, 0.18, 0, 2);
+}
+
+.iarooms-card:hover {
+    -fx-border-color: derive(-ul-primary, 35%);
+    -fx-effect: dropshadow(gaussian, -ul-card-shadow, 12, 0.25, 0, 4);
+}
+
+.iarooms-room-card {
+    -fx-pref-width: 216;
+    -fx-min-height: 104;
+}
+
+.iarooms-room-card-selected {
+    -fx-border-color: -ul-primary;
+    -fx-border-width: 2;
+    -fx-background-color: derive(-ul-ghost-bg, 28%);
+}
+
+.iarooms-booking-card {
+    -fx-pref-width: 286;
+    -fx-min-height: 116;
+}
+
+.iarooms-availability-card {
+    -fx-pref-width: 246;
+    -fx-min-height: 92;
+}
+
+.iarooms-empty-room-card {
+    -fx-border-color: derive(-ul-success, 45%);
+}
+
+.iarooms-occupied-room-card {
+    -fx-border-color: derive(-ul-warning, 45%);
+}
+
+.iarooms-conflict-card {
+    -fx-pref-width: 520;
+    -fx-min-height: 148;
+    -fx-border-color: derive(-ul-danger, 45%);
+}
+
+.iarooms-card-header {
+    -fx-alignment: CENTER_LEFT;
+}
+
+.iarooms-card-title {
+    -fx-text-fill: -ul-text-heading;
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+}
+
+.iarooms-card-kicker {
+    -fx-text-fill: -ul-primary;
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+}
+
+.iarooms-chip {
+    -fx-background-radius: 999;
+    -fx-padding: 4 9;
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+}
+
+.iarooms-chip-muted {
+    -fx-background-color: -ul-ghost-bg;
+    -fx-text-fill: -ul-ghost-fg;
+}
+
+.iarooms-chip-info {
+    -fx-background-color: -ul-info-bg;
+    -fx-text-fill: -ul-info;
+}
+
+.iarooms-chip-success {
+    -fx-background-color: -ul-success-bg;
+    -fx-text-fill: -ul-success;
+}
+
+.iarooms-chip-warning {
+    -fx-background-color: -ul-warning-bg;
+    -fx-text-fill: -ul-warning;
+}
+
+.iarooms-chip-danger {
+    -fx-background-color: -ul-error-bg;
+    -fx-text-fill: -ul-error;
+}
+
 /* ----- Prev/Next Navigation ----- */
 .nav-button {
     -fx-background-color: -ul-ghost-bg;
