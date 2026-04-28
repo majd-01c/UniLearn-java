@@ -22,6 +22,7 @@ public final class AppNavigator {
 
     // Auth
     public static void showLogin() { if (appShellController != null) appShellController.showLoginView(); }
+    public static void showSmsVerification(User user) { if (appShellController != null) appShellController.showSmsVerificationView(user); }
     public static void loginSuccess(User user) { if (appShellController != null) appShellController.handleLoginSuccess(user); }
     public static void showHome() { if (appShellController != null) appShellController.showHomeView(); }
     public static void logout() { if (appShellController != null) appShellController.logout(); }

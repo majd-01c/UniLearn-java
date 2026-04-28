@@ -167,11 +167,19 @@ public class LoginController implements Initializable {
 
         setLoading(true);
         try {
-            User authenticated = authenticate(email, password);
+            AuthenticationService.AuthenticationResult authResult = authenticateWithSmsCheck(email, password);
+            User authenticated = authResult.user;
             UserSession.setCurrentUser(authenticated);
             persistRememberedEmail(email);
-            setMessage("Welcome " + safeText(authenticated.getEmail()), false);
-            routeByRole(authenticated);
+            
+            // Check if SMS verification is required
+            if (authResult.requiresSmsVerification) {
+                setMessage("SMS verification required. Check your phone.", false);
+                AppNavigator.showSmsVerification(authenticated);
+            } else {
+                setMessage("Welcome " + safeText(authenticated.getEmail()), false);
+                routeByRole(authenticated);
+            }
         } catch (Exception exception) {
             setMessage(safeErrorMessage(exception), true);
         } finally {
@@ -291,6 +299,10 @@ public class LoginController implements Initializable {
 
     private User authenticate(String email, String password) {
         return authenticationService.authenticate(email, password);
+    }
+
+    private AuthenticationService.AuthenticationResult authenticateWithSmsCheck(String email, String password) {
+        return authenticationService.authenticateWithSmsCheck(email, password);
     }
 
     private void routeByRole(User authenticatedUser) {

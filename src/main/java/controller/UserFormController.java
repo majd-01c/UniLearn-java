@@ -176,6 +176,8 @@ public class UserFormController implements Initializable {
         newUser.setRole(role);
         newUser.setName(firstName + " " + lastName);
         newUser.setPhone(blankToNull(phone));
+        // If admin provided a phone in the form, persist it as the SMS phone number
+        newUser.setSmsPhoneNumber(blankToNull(phone));
         newUser.setAbout(blankToNull(description));
         newUser.setFaceEnabled((byte) 0);
 

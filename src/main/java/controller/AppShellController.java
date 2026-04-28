@@ -214,6 +214,21 @@ public class AppShellController implements Initializable {
         showHomeView();
     }
 
+    public void showSmsVerificationView(User user) {
+        if (user == null) {
+            showLoginView();
+            return;
+        }
+
+        setCurrentUser(user);
+        setNavigationVisible(false);
+        setNavigationState("SMS_VERIFICATION", "Login", "Verify Phone");
+        setHeader("Verify Your Phone Number", "Complete SMS verification to continue");
+        loadCenter("/view/user/sms-verification.fxml", controller -> {
+            // Controller will be SmsVerificationController and will auto-initialize from FXML
+        });
+    }
+
     // ==================== Role-Based Nav ====================
     private void configureNavForRole() {
         boolean admin = RoleGuard.isAdmin(currentUser);
