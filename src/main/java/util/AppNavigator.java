@@ -63,6 +63,13 @@ public final class AppNavigator {
     public static void setHeader(String title, String sub) { if (appShellController != null) appShellController.setHeader(title, sub); }
     public static User getCurrentUser() { return appShellController != null ? appShellController.getCurrentUser() : null; }
 
+    // IArooms
+    public static void showIARooms() {
+        if (appShellController != null) {
+            appShellController.showIARoomsView();
+        }
+    }
+
     // ========================
     // FORUM NAVIGATION
     // ========================

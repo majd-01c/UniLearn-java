@@ -56,14 +56,14 @@
                         <Button fx:id="navEvaluationComplaintsButton" text="Complaints" onAction="#onNavEvaluationComplaints" maxWidth="1.7976931348623157E308" styleClass="side-button side-sub-button" visible="false" managed="false"/>
                         <Button fx:id="navEvaluationDocumentsButton" text="Documents" onAction="#onNavEvaluationDocuments" maxWidth="1.7976931348623157E308" styleClass="side-button side-sub-button" visible="false" managed="false"/>
 
+                        <!-- Rooms -->
+                        <Label text="ROOMS" styleClass="side-section-label"/>
+                        <Button fx:id="navIARoomsButton" text="IArooms" onAction="#onNavIARooms" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+
                 <!-- Community -->
                 <Label text="COMMUNITY" styleClass="side-section-label"/>
                 <Button fx:id="navForumButton" text="💬  Forum" onAction="#onNavForum" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
                 <Button fx:id="navJobOffersButton" text="💼  Job Offers" onAction="#onNavJobOffers" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
-                        <!-- Community -->
-                        <Label text="COMMUNITY" styleClass="side-section-label"/>
-                        <Button fx:id="navForumButton" text="💬  Forum" onAction="#onNavForum" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
-
                         <!-- Common -->
                         <Label text="ACCOUNT" styleClass="side-section-label"/>
                         <Button fx:id="navProfileButton" text="◎  My Profile" onAction="#onNavProfile" maxWidth="1.7976931348623157E308" styleClass="side-button"/>

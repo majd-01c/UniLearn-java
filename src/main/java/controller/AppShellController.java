@@ -80,6 +80,8 @@ public class AppShellController implements Initializable {
     @FXML
     private Button navJobOffersButton;
     @FXML
+    private Button navIARoomsButton;
+    @FXML
     private StackPane contentHost;
 
     // Admin LMS nav
@@ -174,6 +176,7 @@ public class AppShellController implements Initializable {
             case "EVALUATION_SCHEDULE" -> onNavEvaluationSchedule();
             case "EVALUATION_COMPLAINTS" -> onNavEvaluationComplaints();
             case "EVALUATION_DOCUMENTS" -> onNavEvaluationDocuments();
+            case "IAROOMS" -> showIARoomsView();
             case "LOGIN" -> showLoginView();
             default -> showHomeView();
         }
@@ -240,6 +243,7 @@ public class AppShellController implements Initializable {
 
         // Evaluation module for authenticated academic roles.
         setNodeVisible(navEvaluationButton, currentUser != null && currentUser.getId() != null);
+        setNodeVisible(navIARoomsButton, currentUser != null && currentUser.getId() != null);
         updateEvaluationSubNavVisibility();
     }
 
@@ -591,6 +595,19 @@ public class AppShellController implements Initializable {
     }
 
     // ========================
+    // IAROOMS NAVIGATION
+    // ========================
+
+    public void showIARoomsView() {
+        if (!ensureAuthenticated()) {
+            return;
+        }
+        setHeader("IArooms", "Shared Symfony and Java room availability workspace");
+        setNavigationState("IAROOMS", "Home", "IArooms");
+        loadCenter("/view/iarooms/iarooms-dashboard.fxml", null);
+    }
+
+    // ========================
     // FORUM NAVIGATION
     // ========================
 
@@ -598,6 +615,7 @@ public class AppShellController implements Initializable {
         if (!ensureAuthenticated())
             return;
         setHeader("Community Forum", "Ask questions, share knowledge, and connect with others");
+        setNavigationState("FORUM", "Home", "Forum");
         loadCenter("/view/forum/forum-home.fxml", null);
     }
 
@@ -676,6 +694,7 @@ public class AppShellController implements Initializable {
         } else {
             setHeader("Job Opportunities", "Browse and apply to job offers");
         }
+        setNavigationState("JOB_OFFERS", "Home", "Job Offers");
         loadCenter("/view/job_offer/job-offers-list.fxml", controller -> {
             if (controller instanceof JobOfferListController c) {
                 c.setCurrentUser(currentUser);
@@ -785,6 +804,11 @@ public class AppShellController implements Initializable {
     @FXML
     private void onNavJobOffers() {
         showJobOffersView();
+    }
+
+    @FXML
+    private void onNavIARooms() {
+        showIARoomsView();
     }
 
     @FXML
@@ -979,6 +1003,9 @@ public class AppShellController implements Initializable {
         clearActiveState(navUsersButton);
         clearActiveState(navProfileButton);
         clearActiveState(navChangePasswordButton);
+        clearActiveState(navForumButton);
+        clearActiveState(navJobOffersButton);
+        clearActiveState(navIARoomsButton);
         clearActiveState(navEvaluationButton);
         clearActiveState(navEvaluationGradesButton);
         clearActiveState(navEvaluationRecommendationsButton);
@@ -1007,6 +1034,9 @@ public class AppShellController implements Initializable {
             case "USERS" -> markActive(navUsersButton);
             case "PROFILE" -> markActive(navProfileButton);
             case "CHANGE_PASSWORD" -> markActive(navChangePasswordButton);
+            case "FORUM" -> markActive(navForumButton);
+            case "JOB_OFFERS" -> markActive(navJobOffersButton);
+            case "IAROOMS" -> markActive(navIARoomsButton);
             default -> {
                 // Keep no active item for login/password reset screens.
             }
