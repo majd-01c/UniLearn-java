@@ -171,6 +171,39 @@ public class UserListController implements Initializable {
         AppNavigator.showChangePassword();
     }
 
+    @FXML
+    public void onResetSmsVerification() {
+        User currentSelection = requireSelectedUser("reset SMS verification");
+        if (currentSelection == null) {
+            return;
+        }
+
+        boolean confirmed = showConfirmation(
+                "Reset SMS Verification",
+                "Reset user SMS verification",
+                "This will require " + safeOrPlaceholder(currentSelection.getEmail()) + 
+                        " to verify their phone number on next login.\n\nContinue?"
+        );
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            currentSelection.setSmsVerified((byte) 0);
+            currentSelection.setSmsVerifiedAt(null);
+            currentSelection.setSmsOtpHash(null);
+            currentSelection.setSmsOtpExpiresAt(null);
+            currentSelection.setSmsOtpAttempts(0);
+            currentSelection.setSmsOtpLastSentAt(null);
+            currentSelection.setSmsOtpLockedUntil(null);
+            userService.updateUser(currentSelection);
+            refreshUsers();
+            showWarning("SMS Reset", "SMS verification reset for " + safeOrPlaceholder(currentSelection.getEmail()));
+        } catch (Exception exception) {
+            showWarning("Reset failed", "Failed to reset SMS verification: " + exception.getMessage());
+        }
+    }
+
     private void openUserForm(User userToEdit) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/user/user-form.fxml"));
@@ -359,13 +392,19 @@ public class UserListController implements Initializable {
 
         Label roleBadge = new Label(formatRole(user.getRole()));
         roleBadge.getStyleClass().addAll("user-card-badge", "user-card-badge-role");
-
         chipsRow.getChildren().add(roleBadge);
+
+        // Add SMS verification badge
+        Label smsBadge = new Label(user.isSmsVerified() ? "SMS Verified" : "SMS Pending");
+        smsBadge.getStyleClass().addAll("user-card-badge",
+                user.isSmsVerified() ? "user-card-badge-sms-verified" : "user-card-badge-sms-pending");
+        chipsRow.getChildren().add(smsBadge);
 
         VBox metaRows = new VBox(5);
         metaRows.getStyleClass().add("user-card-meta-box");
         metaRows.getChildren().addAll(
                 buildMetaRow("Phone", safeOrPlaceholder(user.getPhone())),
+                buildMetaRow("SMS Phone", safeOrPlaceholder(user.getSmsPhoneNumber())),
                 buildMetaRow("Location", safeOrPlaceholder(user.getLocation())),
                 buildMetaRow("Created", safeOrPlaceholder(formatCreatedAt(user.getCreatedAt())))
         );

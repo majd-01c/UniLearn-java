@@ -13,6 +13,7 @@ public final class UserSession {
 
     private static volatile Integer currentUserId;
     private static volatile String currentUserRole;
+    private static volatile User currentUser;
 
     private UserSession() {
     }
@@ -21,9 +22,11 @@ public final class UserSession {
         if (user == null) {
             currentUserId = null;
             currentUserRole = null;
+            currentUser = null;
         } else {
             currentUserId = user.getId();
             currentUserRole = normalizeRole(user.getRole());
+            currentUser = user;
         }
     }
 
@@ -36,6 +39,10 @@ public final class UserSession {
         return currentUserRole != null ? currentUserRole : "";
     }
 
+    public static User getCurrentUser() {
+        return currentUser;
+    }
+
     public static boolean isLoggedIn() {
         return currentUserId != null;
     }
@@ -43,6 +50,11 @@ public final class UserSession {
     public static void clear() {
         currentUserId = null;
         currentUserRole = null;
+        currentUser = null;
+    }
+
+    public static void clearCurrentUser() {
+        clear();
     }
 
     private static String normalizeRole(String role) {

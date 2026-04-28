@@ -3,28 +3,7 @@ package util;
 import entities.User;
 import security.UserSession;
 
-/**
- * Centralized role-based access control guard.
- *
- * <h3>Permission Matrix</h3>
- * <pre>
- * ┌──────────────────────────────────┬───────┬─────────┬─────────┐
- * │ Action                           │ ADMIN │ TEACHER │ STUDENT │
- * ├──────────────────────────────────┼───────┼─────────┼─────────┤
- * │ Global CRUD Program/Module/      │  ✓    │   ✗     │   ✗     │
- * │   Course/Content/Class           │       │         │         │
- * │ Assign program to class          │  ✓    │   ✗     │   ✗     │
- * │ Enroll/unenroll students         │  ✓    │   ✗     │   ✗     │
- * │ Assign/unassign teachers         │  ✓    │   ✗     │   ✗     │
- * │ Create module for own assignment │  ✗    │   ✓     │   ✗     │
- * │ Add course to own class module   │  ✓    │   ✓*    │   ✗     │
- * │ Add content to own class course  │  ✓    │   ✓*    │   ✗     │
- * │ Toggle visibility on own items   │  ✓    │   ✓*    │   ✗     │
- * │ Read own learning path           │  ✓    │   ✓     │   ✓     │
- * └──────────────────────────────────┴───────┴─────────┴─────────┘
- *  * = ownership + active-assignment check required
- * </pre>
- */
+
 public final class RoleGuard {
 
     // ── Role constants (single source of truth) ──

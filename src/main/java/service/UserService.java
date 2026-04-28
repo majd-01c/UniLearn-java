@@ -31,14 +31,7 @@ public class UserService {
                 .collect(java.util.stream.Collectors.toList());
     }
 
-    /**
-     * Returns all active users whose role is PARTNER (or ROLE_PARTNER).
-     * Used by the admin job-offer form to let the admin assign an offer to a partner.
-     */
-    /**
-     * Returns all users whose role is BUSINESS_PARTNER (or legacy 'partner' / 'role_partner').
-     * Used by the admin job-offer form to let the admin assign an offer to a partner.
-     */
+
     public List<User> getPartnerUsers() {
         Session session = HibernateSessionFactory.getSession();
         try {
@@ -129,10 +122,26 @@ public class UserService {
             user.setMustChangePassword((byte) 1);
             user.setIsVerified((byte) 0);
             user.setNeedsVerification((byte) 1);
+            // SMS defaults for newly created users: not verified and first-login not completed
+            user.setSmsVerified((byte) 0);
+            user.setFirstLoginCompleted((byte) 0);
             user.setIsActive((byte) 1);
+            if (user.getFaceEnabled() != (byte) 1) {
+                user.setFaceEnabled((byte) 0);
+            }
+            if (user.getFaceEnabled() != (byte) 1) {
+                user.setFaceDescriptors(null);
+                user.setFaceEnrolledAt(null);
+            }
             user.setTempPasswordGeneratedAt(now);
             user.setCreatedAt(now);
             user.setUpdatedAt(now);
+
+            // If an SMS phone wasn't explicitly set but a general phone exists, copy it
+            if ((user.getSmsPhoneNumber() == null || user.getSmsPhoneNumber().isBlank())
+                    && user.getPhone() != null && !user.getPhone().isBlank()) {
+                user.setSmsPhoneNumber(user.getPhone());
+            }
 
             session.persist(user);
             transaction.commit();
@@ -178,6 +187,41 @@ public class UserService {
 
         try {
             transaction = session.beginTransaction();
+
+            // Delete dependent records first to handle all foreign key constraints
+            // Tables referencing user_id
+            session.createNativeQuery("DELETE FROM face_verification_log WHERE user_id = :userId")
+                    .setParameter("userId", id).executeUpdate();
+            session.createNativeQuery("DELETE FROM event_participation WHERE user_id = :userId")
+                    .setParameter("userId", id).executeUpdate();
+            session.createNativeQuery("DELETE FROM profile WHERE user_id = :userId")
+                    .setParameter("userId", id).executeUpdate();
+            session.createNativeQuery("DELETE FROM user_answer WHERE user_id = :userId")
+                    .setParameter("userId", id).executeUpdate();
+            session.createNativeQuery("DELETE FROM forum_comment_reaction WHERE user_id = :userId")
+                    .setParameter("userId", id).executeUpdate();
+            session.createNativeQuery("DELETE FROM reset_token WHERE user_id = :userId")
+                    .setParameter("userId", id).executeUpdate();
+
+            // Tables referencing student_id
+            session.createNativeQuery("DELETE FROM document_request WHERE student_id = :userId")
+                    .setParameter("userId", id).executeUpdate();
+            session.createNativeQuery("DELETE FROM job_application WHERE student_id = :userId")
+                    .setParameter("userId", id).executeUpdate();
+            session.createNativeQuery("DELETE FROM grade WHERE student_id = :userId")
+                    .setParameter("userId", id).executeUpdate();
+            session.createNativeQuery("DELETE FROM student_classe WHERE student_id = :userId")
+                    .setParameter("userId", id).executeUpdate();
+            session.createNativeQuery("DELETE FROM reclamation WHERE student_id = :userId")
+                    .setParameter("userId", id).executeUpdate();
+
+            // Tables referencing teacher_id
+            session.createNativeQuery("DELETE FROM assessment WHERE teacher_id = :userId")
+                    .setParameter("userId", id).executeUpdate();
+            session.createNativeQuery("DELETE FROM teacher_classe WHERE teacher_id = :userId")
+                    .setParameter("userId", id).executeUpdate();
+            session.createNativeQuery("DELETE FROM schedule WHERE teacher_id = :userId")
+                    .setParameter("userId", id).executeUpdate();
 
             User user = session.get(User.class, id);
             if (user == null) {
