@@ -1,5 +1,6 @@
 package util;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,12 +11,26 @@ import org.slf4j.LoggerFactory;
 public final class ConfigurationProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConfigurationProvider.class);
+    private static Dotenv dotenv;
+
+    static {
+        // Load .env file at startup
+        try {
+            dotenv = Dotenv.configure()
+                    .ignoreIfMissing()
+                    .load();
+            LOGGER.info("Loaded configuration from .env file");
+        } catch (Exception e) {
+            LOGGER.warn("Could not load .env file: {}", e.getMessage());
+            dotenv = null;
+        }
+    }
 
     private ConfigurationProvider() {
     }
 
     /**
-     * Get a configuration property from environment variables or system properties.
+     * Get a configuration property from .env, environment variables, or system properties.
      *
      * @param key Property key
      * @param defaultValue Default value if not found
@@ -26,7 +41,16 @@ public final class ConfigurationProvider {
             return defaultValue;
         }
 
-        // Try environment variable first
+        // Try .env file first
+        if (dotenv != null) {
+            String envFileValue = dotenv.get(key);
+            if (envFileValue != null && !envFileValue.isBlank()) {
+                LOGGER.debug("Loaded {} from .env file", key);
+                return envFileValue;
+            }
+        }
+
+        // Try environment variable
         String envValue = System.getenv(key);
         if (envValue != null && !envValue.isBlank()) {
             LOGGER.debug("Loaded {} from environment variable", key);

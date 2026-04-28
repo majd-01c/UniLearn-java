@@ -12,6 +12,11 @@ import javafx.stage.FileChooser;
 import security.UserSession;
 import service.faceid.CameraCaptureResult;
 import service.faceid.CameraService;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import service.faceid.FaceEnrollmentResult;
 import service.faceid.FaceRecognitionService;
 import service.UserService;
@@ -347,20 +352,102 @@ public class UserProfileController implements Initializable {
     }
 
     private void enrollFaceFromFile(File imageFile) {
-        FaceEnrollmentResult result = faceRecognitionService.enrollFace(currentUser, imageFile);
-        if (!result.success() || result.user() == null) {
-            setFaceMessage(result.reason(), true);
-            return;
-        }
+        setFaceProcessing(true);
 
-        currentUser = result.user();
-        if (!currentUser.isFaceIdEnabled()) {
-            currentUser = faceRecognitionService.setFaceIdEnabled(currentUser, true);
-        }
+        Task<FaceEnrollmentResult> task = new Task<>() {
+            @Override
+            protected FaceEnrollmentResult call() throws Exception {
+                return faceRecognitionService.enrollFace(currentUser, imageFile);
+            }
+        };
 
-        UserSession.setCurrentUser(currentUser);
-        setFaceMessage("Face enrollment successful. Face ID is now enabled.", false);
-        bindFaceSettings();
+        task.setOnSucceeded(evt -> {
+            FaceEnrollmentResult result = task.getValue();
+            if (!result.success() || result.user() == null) {
+                String reason = result.reason() == null ? "Enrollment failed" : result.reason();
+
+                // If the failure is due to quality gate and bypass is allowed, offer retry or continue anyway
+                boolean qualityFailure = reason.toLowerCase().contains("face quality");
+                boolean allowBypass = faceRecognitionService.isQualityGateBypassAllowed();
+
+                if (qualityFailure && allowBypass) {
+                    Platform.runLater(() -> {
+                        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                        alert.setTitle("Photo Quality Check Failed");
+                        alert.setHeaderText("Photo did not pass the quality checks");
+                        alert.setContentText(reason + "\n\nWould you like to try another photo or continue anyway?");
+
+                        ButtonType retryBtn = new ButtonType("Try Another Photo", ButtonBar.ButtonData.CANCEL_CLOSE);
+                        ButtonType continueBtn = new ButtonType("Continue Anyway", ButtonBar.ButtonData.OK_DONE);
+                        ButtonType cancelBtn = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+                        alert.getButtonTypes().setAll(retryBtn, continueBtn, cancelBtn);
+
+                        alert.showAndWait().ifPresent(choice -> {
+                            if (choice == continueBtn) {
+                                // Force enrollment skipping quality gate
+                                Task<FaceEnrollmentResult> forceTask = new Task<>() {
+                                    @Override
+                                    protected FaceEnrollmentResult call() throws Exception {
+                                        return faceRecognitionService.enrollFaceSkippingQuality(currentUser, imageFile);
+                                    }
+                                };
+
+                                forceTask.setOnSucceeded(e2 -> {
+                                    FaceEnrollmentResult r2 = forceTask.getValue();
+                                    if (!r2.success() || r2.user() == null) {
+                                        setFaceMessage(r2.reason(), true);
+                                    } else {
+                                        currentUser = r2.user();
+                                        if (!currentUser.isFaceIdEnabled()) {
+                                            currentUser = faceRecognitionService.setFaceIdEnabled(currentUser, true);
+                                        }
+                                        UserSession.setCurrentUser(currentUser);
+                                        setFaceMessage("Face enrollment successful. Face ID is now enabled.", false);
+                                        bindFaceSettings();
+                                    }
+                                    setFaceProcessing(false);
+                                });
+
+                                forceTask.setOnFailed(e2 -> {
+                                    setFaceMessage(safeErrorMessage(new Exception(forceTask.getException())), true);
+                                    setFaceProcessing(false);
+                                });
+
+                                new Thread(forceTask).start();
+                            } else if (choice == retryBtn) {
+                                // Let user try another photo; simply clear message
+                                setFaceMessage("Please select another photo and try again.", false);
+                                setFaceProcessing(false);
+                            } else {
+                                setFaceProcessing(false);
+                            }
+                        });
+                    });
+                } else {
+                    setFaceMessage(reason, true);
+                    setFaceProcessing(false);
+                }
+
+                return;
+            }
+
+            currentUser = result.user();
+            if (!currentUser.isFaceIdEnabled()) {
+                currentUser = faceRecognitionService.setFaceIdEnabled(currentUser, true);
+            }
+
+            UserSession.setCurrentUser(currentUser);
+            setFaceMessage("Face enrollment successful. Face ID is now enabled.", false);
+            bindFaceSettings();
+            setFaceProcessing(false);
+        });
+
+        task.setOnFailed(evt -> {
+            setFaceMessage(safeErrorMessage(new Exception(task.getException())), true);
+            setFaceProcessing(false);
+        });
+
+        new Thread(task).start();
     }
 
     private void setFaceProcessing(boolean processing) {

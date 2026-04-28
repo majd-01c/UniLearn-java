@@ -36,6 +36,7 @@ public class FaceRecognitionService {
     private final FaceProvider faceProvider;
     private final UserService userService;
     private final FaceVerificationLogRepository faceLogRepository;
+    private final FaceQualityGateClient qualityGateClient = new FaceQualityGateClient();
 
     private final Map<Integer, Deque<Instant>> failedAttemptsByUser = new ConcurrentHashMap<>();
     private final Map<Integer, Instant> blockedUntilByUser = new ConcurrentHashMap<>();
@@ -59,6 +60,27 @@ public class FaceRecognitionService {
 
         try {
             BufferedImage image = loadImage(imageFile);
+            // Run remote quality gate before any heavy processing
+            QualityResult quality = qualityGateClient.checkImageQuality(imageFile, user.getId() == null ? null : user.getId().intValue(), "upload");
+            if (quality != null && quality.hasError()) {
+                String msg = "Face quality check error: " + quality.getErrorMessage();
+                logAudit(user, LOG_ACTION_ENROLL_FAIL, null, msg);
+                // If bypass is allowed by configuration, log and continue; otherwise block enrollment
+                if (!qualityGateClient.isAllowBypass()) {
+                    return FaceEnrollmentResult.failed(msg);
+                } else {
+                    LOGGER.warn("Quality gate error bypassed for userId={}: {}", safeUserId(user), quality.getErrorMessage());
+                }
+            } else if (quality != null && !quality.isPassed()) {
+                // Build a readable failure message from tips
+                String tipsMsg = "";
+                if (quality.getTips() != null && !quality.getTips().isEmpty()) {
+                    tipsMsg = String.join("; ", quality.getTips());
+                }
+                String reason = "Face quality check failed" + (tipsMsg.isBlank() ? "" : ": " + tipsMsg);
+                logAudit(user, LOG_ACTION_ENROLL_FAIL, null, reason);
+                return FaceEnrollmentResult.failed(reason);
+            }
             FaceDetectionResult detection = faceProvider.detectSingleFace(image);
             if (!detection.singleFaceDetected()) {
                 logAudit(user, LOG_ACTION_ENROLL_FAIL, null, detection.reason());
@@ -172,6 +194,57 @@ public class FaceRecognitionService {
         return user != null
                 && user.getFaceEmbedding() != null
                 && !user.getFaceEmbedding().isBlank();
+    }
+
+    /**
+     * Expose whether the configured quality gate allows bypassing failures.
+     */
+    public boolean isQualityGateBypassAllowed() {
+        try {
+            return qualityGateClient.isAllowBypass();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Force enrollment skipping the external quality gate.
+     */
+    public FaceEnrollmentResult enrollFaceSkippingQuality(User user, File imageFile) {
+        if (user == null || user.getId() == null) {
+            return FaceEnrollmentResult.failed("A valid user is required for enrollment");
+        }
+
+        try {
+            BufferedImage image = loadImage(imageFile);
+
+            FaceDetectionResult detection = faceProvider.detectSingleFace(image);
+            if (!detection.singleFaceDetected()) {
+                logAudit(user, LOG_ACTION_ENROLL_FAIL, null, detection.reason());
+                return FaceEnrollmentResult.failed(detection.reason());
+            }
+
+            String embedding = faceProvider.extractEmbedding(image);
+            if (embedding == null || embedding.isBlank()) {
+                logAudit(user, LOG_ACTION_ENROLL_FAIL, null, "Face template extraction failed");
+                return FaceEnrollmentResult.failed("Unable to extract a face template from this image");
+            }
+
+            user.setFaceEmbedding(embedding);
+            user.setFaceEnrolledAt(Timestamp.from(Instant.now()));
+
+            User updatedUser = userService.updateUser(user);
+            logAudit(updatedUser, LOG_ACTION_ENROLL_OK, null, "Face enrollment successful");
+
+            return new FaceEnrollmentResult(true, "Face enrollment successful", updatedUser.getFaceEnrolledAt(), updatedUser);
+        } catch (IllegalArgumentException exception) {
+            logAudit(user, LOG_ACTION_ENROLL_FAIL, null, exception.getMessage());
+            return FaceEnrollmentResult.failed(exception.getMessage());
+        } catch (Exception exception) {
+            LOGGER.warn("Face enrollment failed for userId={}", safeUserId(user), exception);
+            logAudit(user, LOG_ACTION_ENROLL_FAIL, null, "Unexpected enrollment error");
+            return FaceEnrollmentResult.failed("Unable to complete face enrollment. Please try another image");
+        }
     }
 
     private BufferedImage loadImage(File imageFile) {
