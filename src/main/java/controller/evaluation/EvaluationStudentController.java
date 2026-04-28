@@ -6,6 +6,7 @@ import entities.Grade;
 import entities.Reclamation;
 import entities.Schedule;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -13,11 +14,15 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputControl;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import security.UserSession;
 import service.evaluation.EvaluationService;
+import service.evaluation.ai.GroqAiService;
 
 import java.awt.Desktop;
 import java.io.File;
@@ -25,7 +30,13 @@ import java.io.IOException;
 import java.net.URI;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Comparator; // Added import for Comparator
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.function.UnaryOperator;
 
 import javafx.scene.control.TextFormatter;
@@ -108,6 +119,7 @@ public class EvaluationStudentController {
     private Label feedbackLabel;
 
     private final EvaluationService service = new EvaluationService();
+    private final GroqAiService aiService = new GroqAiService();
     private final DecimalFormat df = new DecimalFormat("0.00");
     private String selectedPdfPath;
 
@@ -153,10 +165,6 @@ public class EvaluationStudentController {
             aiRecommendationArea.setEditable(false);
             aiRecommendationArea.setText("Click Generate AI Recommendations to create a personalized study plan.");
         }
-        if (aiTeacherMessageArea != null) {
-            aiTeacherMessageArea.setEditable(false);
-            aiTeacherMessageArea.setText("Click Generate Teacher Message to draft a clear support request.");
-        }
         if (pdfTranslationArea != null) {
             pdfTranslationArea.setEditable(false);
             pdfTranslationArea.setText("Select a delivered PDF request and click Translate PDF.");
@@ -164,6 +172,26 @@ public class EvaluationStudentController {
 
         showSection(gradesPane);
         refreshAll();
+
+        // AI Correction for Student Message to Teacher (including profanity filter)
+        complaintDescriptionArea.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            if (!newVal) {
+                String original = complaintDescriptionArea.getText();
+                if (original != null && original.length() > 5) {
+                    new Thread(() -> {
+                        String corrected = aiService.correctSpellingAndGrammar(original);
+                        if (corrected != null && !corrected.isEmpty() && !corrected.startsWith("###")) {
+                            javafx.application.Platform.runLater(() -> {
+                                if (complaintDescriptionArea.getText().equals(original)) {
+                                    complaintDescriptionArea.setText(corrected);
+                                    showFeedback("AI auto-corrected your message spelling and filtered content.", false);
+                                }
+                            });
+                        }
+                    }).start();
+                }
+            }
+        });
     }
 
     @FXML
@@ -238,26 +266,23 @@ public class EvaluationStudentController {
             int studentId = resolveStudentId();
             String courseName = complaintCourseBox == null ? null : complaintCourseBox.getValue();
             courseName = requireNotBlank(courseName, "Course");
-            String subject = requireNotBlank(complaintSubjectField.getText(), "Complaint subject");
-            String description = requireNotBlank(complaintDescriptionArea.getText(), "Complaint description");
+            String subject = requireNotBlank(complaintSubjectField.getText(), "Subject");
+            String description = requireNotBlank(complaintDescriptionArea.getText(), "Message content");
 
             if (subject.length() < 3) {
-                throw new IllegalArgumentException("Complaint subject must have at least 3 characters.");
+                throw new IllegalArgumentException("Subject must have at least 3 characters.");
             }
-            if (description.length() < 10) {
-                throw new IllegalArgumentException("Complaint description must have at least 10 characters.");
-            }
-            if (service.findCourseIdByName(courseName) == null) {
-                throw new IllegalArgumentException("Course name is invalid. Please enter an existing course title.");
+            if (description.length() < 5) {
+                throw new IllegalArgumentException("Message must have at least 5 characters.");
             }
 
             service.createReclamation(studentId, courseName, subject, description);
             complaintSubjectField.clear();
             complaintDescriptionArea.clear();
             refreshComplaints(studentId);
-            showFeedback("Complaint created.");
+            showFeedback("Message sent to teacher.", false);
         } catch (Exception e) {
-            showFeedback("Create complaint failed: " + e.getMessage());
+            showFeedback("Failed to send message: " + e.getMessage(), true);
         }
     }
 
@@ -277,9 +302,9 @@ public class EvaluationStudentController {
             service.createDocumentRequest(studentId, docType, additionalInfo);
             docInfoArea.clear();
             refreshDocRequests(studentId);
-            showFeedback("Document request created.");
+            showFeedback("Document request created.", false);
         } catch (Exception e) {
-            showFeedback("Create document request failed: " + e.getMessage());
+            showFeedback("Create document request failed: " + e.getMessage(), true);
         }
     }
 
@@ -292,23 +317,9 @@ public class EvaluationStudentController {
                 aiRecommendationArea.setText(recommendation);
             }
             renderRecommendationResources(service.buildLearningResources(studentId));
-            showFeedback("AI recommendations generated.");
+            showFeedback("AI recommendations generated.", false);
         } catch (Exception e) {
-            showFeedback("AI recommendation failed: " + e.getMessage());
-        }
-    }
-
-    @FXML
-    private void onGenerateTeacherMessage() {
-        try {
-            int studentId = resolveStudentId();
-            String message = service.generateAiTeacherMessageFromStudent(studentId);
-            if (aiTeacherMessageArea != null) {
-                aiTeacherMessageArea.setText(message);
-            }
-            showFeedback("Teacher message generated.");
-        } catch (Exception e) {
-            showFeedback("Teacher message generation failed: " + e.getMessage());
+            showFeedback("AI recommendation failed: " + e.getMessage(), true);
         }
     }
 
@@ -335,15 +346,59 @@ public class EvaluationStudentController {
 
             if (file != null) {
                 service.saveTextAsPdf(translatedText, file);
-                showFeedback("Translated PDF saved: " + file.getName());
+                showFeedback("Translated PDF saved: " + file.getName(), false);
                 if (Desktop.isDesktopSupported()) {
                     Desktop.getDesktop().open(file);
                 }
             } else {
-                showFeedback("Translation complete, but save was cancelled.");
+                showFeedback("Translation complete, but save was cancelled.", false);
             }
         } catch (Exception e) {
-            showFeedback("PDF translation/save failed: " + e.getMessage());
+            showFeedback("PDF translation/save failed: " + e.getMessage(), true);
+        }
+    }
+
+    @FXML
+    private void onDownloadTranscript() {
+        try {
+            int studentId = resolveStudentId();
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Save Academic Transcript");
+            fileChooser.setInitialFileName("Transcript_" + studentId + ".pdf");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
+            File file = fileChooser.showSaveDialog(feedbackLabel.getScene().getWindow());
+
+            if (file != null) {
+                service.downloadStudentTranscript(studentId, file);
+                showFeedback("Transcript downloaded: " + file.getName(), false);
+                if (Desktop.isDesktopSupported()) {
+                    Desktop.getDesktop().open(file);
+                }
+            }
+        } catch (Exception e) {
+            showFeedback("Download transcript failed: " + e.getMessage(), true);
+        }
+    }
+
+    @FXML
+    private void onDownloadStudentSchedule() {
+        try {
+            int studentId = resolveStudentId();
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Save My Academic Schedule");
+            fileChooser.setInitialFileName("Student_Schedule_" + studentId + ".pdf");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
+            File file = fileChooser.showSaveDialog(feedbackLabel.getScene().getWindow());
+
+            if (file != null) {
+                service.downloadStudentSchedule(studentId, file);
+                showFeedback("Schedule downloaded: " + file.getName(), false);
+                if (Desktop.isDesktopSupported()) {
+                    Desktop.getDesktop().open(file);
+                }
+            }
+        } catch (Exception e) {
+            showFeedback("Download schedule failed: " + e.getMessage(), true);
         }
     }
 
@@ -376,9 +431,9 @@ public class EvaluationStudentController {
             renderSchedule(service.getScheduleByClasse(classId));
             refreshComplaints(studentId);
             refreshDocRequests(studentId);
-            showFeedback("Evaluation data refreshed.");
+            showFeedback("Evaluation data refreshed.", false);
         } catch (Exception e) {
-            showFeedback("Refresh failed: " + e.getMessage());
+            showFeedback("Refresh failed: " + e.getMessage(), true);
         }
     }
 
@@ -386,17 +441,16 @@ public class EvaluationStudentController {
         List<Reclamation> rows = service.getReclamationsByStudent(studentId);
         complaintsCardsBox.getChildren().clear();
         if (rows.isEmpty()) {
-            complaintsCardsBox.getChildren().add(emptyCard("No complaints yet"));
+            complaintsCardsBox.getChildren().add(emptyCard("No messages yet"));
             return;
         }
         for (Reclamation row : rows) {
             String courseTitle = row.getCourse() == null ? null : service.resolveCourseTitle(row.getCourse().getId());
             complaintsCardsBox.getChildren().add(dataCard(
-                    "Complaint #" + row.getId(),
-                "Course: " + safe(courseTitle),
-                    "Subject: " + safe(row.getSubject()),
-                    "Status: " + safe(row.getStatus()),
-                    "Response: " + safe(row.getAdminResponse())
+                    "Topic: " + safe(row.getSubject()),
+                "Regarding Course: " + safe(courseTitle),
+                    "Status: " + safe(row.getStatus()).toUpperCase(),
+                    "Teacher Reply: " + safe(row.getAdminResponse())
             ));
         }
     }
@@ -428,7 +482,7 @@ public class EvaluationStudentController {
                     if (selectedPdfLabel != null) {
                         selectedPdfLabel.setText("Selected PDF: " + documentPath);
                     }
-                    showFeedback("PDF selected for AI translation.");
+                    showFeedback("PDF selected for AI translation.", false);
                 });
 
                 HBox actions = new HBox(8, downloadButton, selectForTranslateButton);
@@ -445,14 +499,68 @@ public class EvaluationStudentController {
             gradesCardsBox.getChildren().add(emptyCard("No grades available"));
             return;
         }
+
+        Map<String, List<Grade>> grouped = new LinkedHashMap<>();
         for (Grade grade : grades) {
-            String status = grade.getScore() >= 10.0 ? "Passed" : "Failed";
-            gradesCardsBox.getChildren().add(dataCard(
-                    resolveAssessmentCourseTitle(grade.getAssessment()),
-                    "Type: " + safe(grade.getAssessment() == null ? null : grade.getAssessment().getType()),
-                    "Assessment: " + safe(grade.getAssessment() == null ? null : grade.getAssessment().getTitle()),
-                    "Score: " + df.format(grade.getScore()) + " | " + status
-            ));
+            if (grade.getAssessment() == null) continue;
+            String courseName = resolveAssessmentCourseTitle(grade.getAssessment());
+            String title = safe(grade.getAssessment().getTitle());
+            String key = courseName + " - " + title;
+            grouped.computeIfAbsent(key, k -> new ArrayList<>()).add(grade);
+        }
+
+        for (Map.Entry<String, List<Grade>> entry : grouped.entrySet()) {
+            String key = entry.getKey();
+            List<Grade> courseGrades = entry.getValue();
+
+            VBox card = new VBox(6);
+            card.getStyleClass().add("eval-data-card");
+
+            HBox header = new HBox();
+            header.setAlignment(Pos.CENTER_LEFT);
+            Label titleLabel = new Label(key);
+            titleLabel.getStyleClass().add("eval-data-card-title");
+            
+            Region spacer = new Region();
+            HBox.setHgrow(spacer, Priority.ALWAYS);
+            
+            double sum = 0;
+            int count = 0;
+            for (Grade g : courseGrades) {
+                sum += g.getScore();
+                count++;
+            }
+            double moyenne = count > 0 ? sum / count : 0;
+            Label moyenneLabel = new Label("MOYENNE: " + df.format(moyenne));
+            moyenneLabel.getStyleClass().add("eval-resource-badge");
+            moyenneLabel.setStyle("-fx-background-color: #0ea5e9; -fx-font-size: 13px;");
+
+            header.getChildren().addAll(titleLabel, spacer, moyenneLabel);
+            card.getChildren().add(header);
+
+            for (Grade grade : courseGrades) {
+                String type = safe(grade.getAssessment().getType());
+                String scoreStr = df.format(grade.getScore());
+                String status = grade.getScore() >= 10.0 ? "PASSED" : "FAILED";
+                
+                HBox row = new HBox(12);
+                row.setAlignment(Pos.CENTER_LEFT);
+                Label typeLabel = new Label(type.toUpperCase());
+                typeLabel.setMinWidth(60);
+                typeLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #475569;");
+                
+                Label scoreLabel = new Label("Score: " + scoreStr);
+                scoreLabel.setMinWidth(100);
+                
+                Label statusLabel = new Label(status);
+                statusLabel.setStyle(status.equals("PASSED") ? "-fx-text-fill: #10b981;" : "-fx-text-fill: #ef4444;");
+                statusLabel.setStyle(statusLabel.getStyle() + " -fx-font-weight: bold;");
+
+                row.getChildren().addAll(typeLabel, scoreLabel, statusLabel);
+                card.getChildren().add(row);
+            }
+            
+            gradesCardsBox.getChildren().add(card);
         }
     }
 
@@ -536,14 +644,70 @@ public class EvaluationStudentController {
             scheduleCardsBox.getChildren().add(emptyCard("No schedule entries available"));
             return;
         }
-        for (Schedule row : rows) {
-            String courseTitle = row.getCourse() == null ? null : service.resolveCourseTitle(row.getCourse().getId());
-            scheduleCardsBox.getChildren().add(dataCard(
-                    safe(row.getDayOfWeek()),
-                    "Time: " + row.getStartTime() + " - " + row.getEndTime(),
-                "Course: " + safe(courseTitle),
-                    "Room: " + safe(row.getRoom())
-            ));
+
+        Map<String, List<Schedule>> byDay = new LinkedHashMap<>();
+        String[] daysOrder = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+        for (String d : daysOrder) byDay.put(d, new ArrayList<>());
+
+        for (Schedule s : rows) {
+            String day = s.getDayOfWeek() == null ? "Monday" : s.getDayOfWeek().trim();
+            String normalized = day.substring(0, 1).toUpperCase() + day.substring(1).toLowerCase();
+            if (byDay.containsKey(normalized)) {
+                byDay.get(normalized).add(s);
+            }
+        }
+
+        for (Map.Entry<String, List<Schedule>> entry : byDay.entrySet()) {
+            String dayName = entry.getKey();
+            List<Schedule> dayClasses = entry.getValue();
+
+            VBox dayCard = new VBox(10);
+            dayCard.getStyleClass().add("eval-data-card");
+            dayCard.setMinWidth(280);
+            dayCard.setPadding(new Insets(14));
+            dayCard.setStyle("-fx-background-color: #ffffff; -fx-border-color: #d1d5db; -fx-background-radius: 12; -fx-border-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 8, 0, 0, 2);");
+
+            Label dayLabel = new Label(dayName.toUpperCase());
+            dayLabel.setStyle("-fx-font-weight: 900; -fx-text-fill: #111827; -fx-font-size: 15px; -fx-border-color: transparent transparent #3b82f6 transparent; -fx-border-width: 0 0 2 0; -fx-padding: 0 0 4 0;");
+            dayCard.getChildren().add(dayLabel);
+
+            if (dayClasses.isEmpty()) {
+                Label empty = new Label("No sessions scheduled");
+                empty.setStyle("-fx-text-fill: #9ca3af; -fx-font-style: italic; -fx-font-size: 12px;");
+                dayCard.getChildren().add(empty);
+            } else {
+                dayClasses.sort(Comparator.comparing(Schedule::getStartTime));
+                for (Schedule s : dayClasses) {
+                    VBox classItem = new VBox(4);
+                    classItem.setPadding(new Insets(10));
+                    classItem.setStyle("-fx-background-color: #f9fafb; -fx-background-radius: 8; -fx-border-color: #e5e7eb; -fx-border-radius: 8;");
+                    
+                    String courseTitle = s.getCourse() == null ? "Unknown Course" : service.resolveCourseTitle(s.getCourse().getId());
+                    Label title = new Label(courseTitle);
+                    title.setStyle("-fx-font-weight: bold; -fx-text-fill: #1f2937; -fx-font-size: 13px;");
+                    title.setWrapText(true);
+
+                    HBox timeRow = new HBox(6);
+                    timeRow.setAlignment(Pos.CENTER_LEFT);
+                    Label clock = new Label("🕒");
+                    clock.setStyle("-fx-font-size: 12px;");
+                    Label time = new Label(s.getStartTime() + " - " + s.getEndTime());
+                    time.setStyle("-fx-text-fill: #4b5563; -fx-font-size: 12px; -fx-font-weight: 600;");
+                    timeRow.getChildren().addAll(clock, time);
+
+                    HBox roomRow = new HBox(6);
+                    roomRow.setAlignment(Pos.CENTER_LEFT);
+                    Label map = new Label("📍");
+                    map.setStyle("-fx-font-size: 12px;");
+                    Label room = new Label(safe(s.getRoom()));
+                    room.setStyle("-fx-text-fill: #6b7280; -fx-font-size: 12px;");
+                    roomRow.getChildren().addAll(map, room);
+
+                    classItem.getChildren().addAll(title, timeRow, roomRow);
+                    dayCard.getChildren().add(classItem);
+                }
+            }
+            scheduleCardsBox.getChildren().add(dayCard);
         }
     }
 
@@ -631,9 +795,6 @@ public class EvaluationStudentController {
         if (aiRecommendationArea != null) {
             setLengthField(aiRecommendationArea, 12000);
         }
-        if (aiTeacherMessageArea != null) {
-            setLengthField(aiTeacherMessageArea, 8000);
-        }
         if (pdfTranslationArea != null) {
             setLengthField(pdfTranslationArea, 20000);
         }
@@ -716,8 +877,14 @@ public class EvaluationStudentController {
         return safe(assessment.getTitle());
     }
 
-    private void showFeedback(String text) {
+    private void showFeedback(String text, boolean isError) {
         feedbackLabel.setText(new SimpleDateFormat("HH:mm:ss").format(new java.util.Date()) + " - " + text);
+        feedbackLabel.getStyleClass().removeAll("eval-feedback", "eval-feedback-error");
+        if (isError) {
+            feedbackLabel.getStyleClass().add("eval-feedback-error");
+        } else {
+            feedbackLabel.getStyleClass().add("eval-feedback");
+        }
     }
 
     private void openDocument(String documentPath) {
@@ -734,7 +901,7 @@ public class EvaluationStudentController {
 
             if (normalized.startsWith("http://") || normalized.startsWith("https://")) {
                 desktop.browse(URI.create(normalized));
-                showFeedback("Opened document URL.");
+                showFeedback("Opened document URL.", false);
                 return;
             }
 
@@ -743,9 +910,9 @@ public class EvaluationStudentController {
                 throw new IllegalArgumentException("Document file not found: " + normalized);
             }
             desktop.open(file);
-            showFeedback("Opened document file.");
+            showFeedback("Opened document file.", false);
         } catch (Exception exception) {
-            showFeedback("Unable to open document: " + exception.getMessage());
+            showFeedback("Unable to open document: " + exception.getMessage(), true);
         }
     }
 
@@ -758,9 +925,9 @@ public class EvaluationStudentController {
                 throw new IllegalStateException("Desktop actions are not supported on this system.");
             }
             Desktop.getDesktop().browse(URI.create(url.trim()));
-            showFeedback("Opened learning resource.");
+            showFeedback("Opened learning resource.", false);
         } catch (Exception exception) {
-            showFeedback("Unable to open learning resource: " + exception.getMessage());
+            showFeedback("Unable to open learning resource: " + exception.getMessage(), true);
         }
     }
 }

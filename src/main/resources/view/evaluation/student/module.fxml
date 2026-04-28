@@ -79,7 +79,7 @@
             <Button fx:id="gradesNavBtn" text="📋 My Grades" onAction="#showGrades" styleClass="eval-nav-btn eval-nav-btn-active" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
             <Button fx:id="recommendationsNavBtn" text="💡 AI Insights" onAction="#showRecommendations" styleClass="eval-nav-btn" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
             <Button fx:id="scheduleNavBtn" text="📅 Schedule" onAction="#showSchedule" styleClass="eval-nav-btn" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
-            <Button fx:id="complaintsNavBtn" text="📝 Complaints" onAction="#showComplaints" styleClass="eval-nav-btn" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+            <Button fx:id="complaintsNavBtn" text="📝 Support &amp; Chat" onAction="#showComplaints" styleClass="eval-nav-btn" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
             <Button fx:id="documentsNavBtn" text="📄 Documents" onAction="#showDocuments" styleClass="eval-nav-btn" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
         </children>
     </HBox>
@@ -91,8 +91,14 @@
             <VBox fx:id="gradesPane" spacing="12.0" styleClass="eval-panel" visible="true" managed="true">
                 <padding><Insets top="20.0" right="20.0" bottom="20.0" left="20.0"/></padding>
                 <children>
-                    <Label text="Academic Performance" styleClass="eval-card-title"/>
-                    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="eval-scroll-clean">
+                    <HBox alignment="CENTER_LEFT" spacing="12.0">
+                        <children>
+                            <Label text="Academic Performance" styleClass="eval-card-title"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button text="📜 Download Official Transcript" onAction="#onDownloadTranscript" styleClass="eval-primary-btn" style="-fx-background-color: #10b981; -fx-background-radius: 20;"/>
+                        </children>
+                    </HBox>
+                    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="eval-scroll-clean" hbarPolicy="NEVER">
                         <content>
                             <VBox fx:id="gradesCardsBox" spacing="10.0"/>
                         </content>
@@ -100,7 +106,7 @@
                 </children>
             </VBox>
 
-            <!-- RECOMMENDATIONS SECTION (Pro AI UI) -->
+            <!-- AI INSIGHTS SECTION -->
             <VBox fx:id="recommendationsPane" spacing="16.0" styleClass="eval-panel eval-recommendations-panel" visible="false" managed="false">
                 <padding><Insets top="20.0" right="20.0" bottom="20.0" left="20.0"/></padding>
                 <children>
@@ -109,7 +115,6 @@
                             <Label text="✨ AI Smart Insights" styleClass="eval-card-title" style="-fx-text-fill: #f4f8ff; -fx-font-size: 18px;"/>
                             <Region HBox.hgrow="ALWAYS"/>
                             <Button text="Generate Insights" onAction="#onGenerateAiRecommendations" styleClass="eval-primary-btn" style="-fx-background-color: linear-gradient(to right, #6366f1, #a855f7); -fx-background-radius: 20;"/>
-                            <Button text="Draft Teacher Email" onAction="#onGenerateTeacherMessage" styleClass="eval-ghost-btn" style="-fx-text-fill: white; -fx-border-color: rgba(255,255,255,0.4); -fx-background-radius: 20;"/>
                         </children>
                     </HBox>
 
@@ -117,7 +122,6 @@
                         <content>
                             <VBox spacing="16.0">
                                 <children>
-                                    <!-- ROADMAP CARD -->
                                     <VBox spacing="12.0" styleClass="eval-resource-card">
                                         <children>
                                             <HBox alignment="CENTER_LEFT" spacing="8.0">
@@ -128,22 +132,6 @@
                                             </HBox>
                                             <TextArea fx:id="aiRecommendationArea" prefHeight="250.0" editable="false" wrapText="true"
                                                       promptText="AI will analyze your performance and build a roadmap..."
-                                                      styleClass="eval-reco-textarea"
-                                                      style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-text-fill: #e2e8f0;"/>
-                                        </children>
-                                    </VBox>
-
-                                    <!-- TEACHER MESSAGE CARD -->
-                                    <VBox spacing="12.0" styleClass="eval-resource-card">
-                                        <children>
-                                            <HBox alignment="CENTER_LEFT" spacing="8.0">
-                                                <Label text="✉️" style="-fx-font-size: 20px;"/>
-                                                <Label text="Teacher Correspondence" styleClass="eval-resource-title"/>
-                                                <Region HBox.hgrow="ALWAYS"/>
-                                                <Label text="DRAFT" styleClass="eval-resource-badge" style="-fx-background-color: #a855f7;"/>
-                                            </HBox>
-                                            <TextArea fx:id="aiTeacherMessageArea" prefHeight="150.0" editable="false" wrapText="true"
-                                                      promptText="AI will draft a professional message for your mentors..."
                                                       styleClass="eval-reco-textarea"
                                                       style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-text-fill: #e2e8f0;"/>
                                         </children>
@@ -170,46 +158,67 @@
             <VBox fx:id="schedulePane" spacing="12.0" styleClass="eval-panel" visible="false" managed="false">
                 <padding><Insets top="20.0" right="20.0" bottom="20.0" left="20.0"/></padding>
                 <children>
-                    <Label text="Weekly Schedule" styleClass="eval-card-title"/>
-                    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="eval-scroll-clean">
+                    <HBox alignment="CENTER_LEFT" spacing="12.0">
+                        <children>
+                            <Label text="Weekly Academic Schedule" styleClass="eval-card-title"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button text="⬇️ Download My Schedule" onAction="#onDownloadStudentSchedule" styleClass="eval-primary-btn" style="-fx-background-color: #0ea5e9; -fx-background-radius: 20;"/>
+                        </children>
+                    </HBox>
+                    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="eval-scroll-clean" hbarPolicy="NEVER">
                         <content>
-                            <VBox fx:id="scheduleCardsBox" spacing="10.0"/>
+                            <VBox fx:id="scheduleCardsBox" spacing="16.0" style="-fx-padding: 5;"/>
                         </content>
                     </ScrollPane>
                 </children>
             </VBox>
 
-            <!-- COMPLAINTS SECTION -->
+            <!-- CHAT / SUPPORT SECTION -->
             <VBox fx:id="complaintsPane" spacing="16.0" styleClass="eval-panel" visible="false" managed="false">
                 <padding><Insets top="20.0" right="20.0" bottom="20.0" left="20.0"/></padding>
                 <children>
-                    <Label text="Complaint Management" styleClass="eval-card-title"/>
-                    <VBox spacing="12.0" styleClass="eval-form-card">
-                        <children>
-                            <Label text="Submit New Complaint" styleClass="eval-section-label"/>
-                            <HBox spacing="12.0" alignment="CENTER_LEFT">
-                                <children>
-                                    <VBox HBox.hgrow="ALWAYS">
-                                        <Label text="Course" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
-                                        <ComboBox fx:id="complaintCourseBox" maxWidth="Infinity" promptText="Select your course"/>
-                                    </VBox>
-                                    <VBox HBox.hgrow="ALWAYS">
-                                        <Label text="Subject" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
-                                        <TextField fx:id="complaintSubjectField" promptText="Brief summary" styleClass="eval-pill-input"/>
-                                    </VBox>
-                                </children>
-                            </HBox>
-                            <VBox>
-                                <Label text="Description" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
-                                <TextArea fx:id="complaintDescriptionArea" promptText="Provide detailed information about your issue..." prefHeight="100.0" styleClass="eval-textarea"/>
-                            </VBox>
-                            <Button text="🚀 Submit for Review" onAction="#onCreateComplaint" styleClass="eval-primary-btn" maxWidth="200.0"/>
-                        </children>
-                    </VBox>
-                    <Label text="History" styleClass="eval-section-label"/>
-                    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="eval-scroll-clean">
+                    <Label text="Student-Teacher Communication" styleClass="eval-card-title"/>
+
+                    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="eval-scroll-clean" VBox.vgrow="ALWAYS">
                         <content>
-                            <VBox fx:id="complaintsCardsBox" spacing="10.0"/>
+                            <VBox spacing="16.0">
+                                <children>
+                                    <VBox spacing="12.0" styleClass="eval-resource-card" style="-fx-background-color: rgba(15, 23, 42, 0.6); -fx-border-color: rgba(99, 102, 241, 0.3);">
+                                        <children>
+                                            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                                <Label text="💬" style="-fx-font-size: 24px;"/>
+                                                <VBox>
+                                                    <Label text="Live Messenger" styleClass="eval-resource-title"/>
+                                                    <Label text="Send a direct message to your professor. AI will auto-correct your draft." styleClass="eval-resource-text"/>
+                                                </VBox>
+                                            </HBox>
+
+                                            <VBox spacing="8.0">
+                                                <Label text="Message Draft (AI Auto-Refine Enabled)" styleClass="eval-label" style="-fx-text-fill: #94a3b8;"/>
+                                                <TextArea fx:id="complaintDescriptionArea" promptText="Type your message here..." prefHeight="120.0" styleClass="eval-reco-textarea" style="-fx-background-color: rgba(255,255,255,0.03);"/>
+                                            </VBox>
+
+                                            <HBox spacing="12.0" alignment="CENTER_LEFT">
+                                                <children>
+                                                    <VBox HBox.hgrow="ALWAYS">
+                                                        <Label text="Related Subject" styleClass="eval-label" style="-fx-text-fill: #94a3b8;"/>
+                                                        <TextField fx:id="complaintSubjectField" promptText="Subject..." styleClass="eval-pill-input" style="-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: white;"/>
+                                                    </VBox>
+                                                    <VBox prefWidth="200.0">
+                                                        <Label text="Course" styleClass="eval-label" style="-fx-text-fill: #94a3b8;"/>
+                                                        <ComboBox fx:id="complaintCourseBox" maxWidth="Infinity" style="-fx-background-color: rgba(255,255,255,0.1);"/>
+                                                    </VBox>
+                                                </children>
+                                            </HBox>
+
+                                            <Button text="📤 Send Professional Message" onAction="#onCreateComplaint" styleClass="eval-primary-btn" style="-fx-background-color: #2563eb;" maxWidth="Infinity"/>
+                                        </children>
+                                    </VBox>
+
+                                    <Label text="Message History" styleClass="eval-section-label"/>
+                                    <VBox fx:id="complaintsCardsBox" spacing="10.0"/>
+                                </children>
+                            </VBox>
                         </content>
                     </ScrollPane>
                 </children>
@@ -220,44 +229,50 @@
                 <padding><Insets top="20.0" right="20.0" bottom="20.0" left="20.0"/></padding>
                 <children>
                     <Label text="Administrative Documents" styleClass="eval-card-title"/>
-                    <HBox spacing="16.0">
-                        <children>
-                            <VBox spacing="12.0" styleClass="eval-form-card" HBox.hgrow="ALWAYS">
+
+                    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="eval-scroll-clean" VBox.vgrow="ALWAYS">
+                        <content>
+                            <VBox spacing="16.0">
                                 <children>
-                                    <Label text="Request New Document" styleClass="eval-section-label"/>
-                                    <HBox spacing="12.0" alignment="CENTER_LEFT">
+                                    <HBox spacing="16.0">
                                         <children>
-                                            <VBox HBox.hgrow="ALWAYS">
-                                                <Label text="Document Type" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
-                                                <ComboBox fx:id="docTypeBox" maxWidth="Infinity" promptText="Choose type"/>
+                                            <VBox spacing="12.0" styleClass="eval-form-card" HBox.hgrow="ALWAYS">
+                                                <children>
+                                                    <Label text="Request New Document" styleClass="eval-section-label"/>
+                                                    <HBox spacing="12.0" alignment="CENTER_LEFT">
+                                                        <children>
+                                                            <VBox HBox.hgrow="ALWAYS">
+                                                                <Label text="Document Type" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                                <ComboBox fx:id="docTypeBox" maxWidth="Infinity" promptText="Choose type"/>
+                                                            </VBox>
+                                                        </children>
+                                                    </HBox>
+                                                    <VBox>
+                                                        <Label text="Additional Details" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                        <TextArea fx:id="docInfoArea" promptText="Why do you need this? (Optional)" prefHeight="60.0" styleClass="eval-textarea"/>
+                                                    </VBox>
+                                                    <Button text="📂 Request Document" onAction="#onCreateDocumentRequest" styleClass="eval-primary-btn" maxWidth="Infinity"/>
+                                                </children>
+                                            </VBox>
+                                            <VBox spacing="12.0" styleClass="eval-form-card" prefWidth="350.0">
+                                                <children>
+                                                    <Label text="AI PDF Workspace" styleClass="eval-section-label"/>
+                                                    <Label fx:id="selectedPdfLabel" text="Selected: none" styleClass="eval-page-subtitle"/>
+                                                    <VBox spacing="8.0">
+                                                        <Label text="Target Language" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                        <ComboBox fx:id="pdfTargetLanguageBox" maxWidth="Infinity"/>
+                                                        <Button text="🌐 Translate Content" onAction="#onTranslateSelectedPdf" styleClass="eval-primary-btn" maxWidth="Infinity" style="-fx-background-color: #0ea5e9;"/>
+                                                    </VBox>
+                                                    <TextArea fx:id="pdfTranslationArea" prefHeight="150.0" promptText="Translated content will be displayed here..." styleClass="eval-textarea" wrapText="true"/>
+                                                </children>
                                             </VBox>
                                         </children>
                                     </HBox>
-                                    <VBox>
-                                        <Label text="Additional Details" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
-                                        <TextArea fx:id="docInfoArea" promptText="Why do you need this? (Optional)" prefHeight="60.0" styleClass="eval-textarea"/>
-                                    </VBox>
-                                    <Button text="📂 Request Document" onAction="#onCreateDocumentRequest" styleClass="eval-primary-btn" maxWidth="Infinity"/>
+
+                                    <Label text="My Request History" styleClass="eval-section-label"/>
+                                    <VBox fx:id="docRequestsCardsBox" spacing="10.0"/>
                                 </children>
                             </VBox>
-                            <VBox spacing="12.0" styleClass="eval-form-card" prefWidth="350.0">
-                                <children>
-                                    <Label text="AI PDF Workspace" styleClass="eval-section-label"/>
-                                    <Label fx:id="selectedPdfLabel" text="Selected: none" styleClass="eval-page-subtitle"/>
-                                    <VBox spacing="8.0">
-                                        <Label text="Target Language" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
-                                        <ComboBox fx:id="pdfTargetLanguageBox" maxWidth="Infinity"/>
-                                        <Button text="🌐 Translate Content" onAction="#onTranslateSelectedPdf" styleClass="eval-primary-btn" maxWidth="Infinity" style="-fx-background-color: #0ea5e9;"/>
-                                    </VBox>
-                                    <TextArea fx:id="pdfTranslationArea" VBox.vgrow="ALWAYS" promptText="Translated content will be displayed here..." styleClass="eval-textarea" wrapText="true"/>
-                                </children>
-                            </VBox>
-                        </children>
-                    </HBox>
-                    <Label text="My Request History" styleClass="eval-section-label"/>
-                    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="eval-scroll-clean">
-                        <content>
-                            <VBox fx:id="docRequestsCardsBox" spacing="10.0"/>
                         </content>
                     </ScrollPane>
                 </children>

@@ -39,10 +39,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -422,6 +425,156 @@ public class EvaluationService {
         }
     }
 
+    public String generateStudentTranscriptPdfContent(int studentId) {
+        StringBuilder content = new StringBuilder();
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH);
+        DecimalFormat scoreFormat = new DecimalFormat("00.00");
+
+        User student = userService.getById(studentId);
+        if (student == null) {
+            return "ERROR: Student identity not found in database.";
+        }
+
+        content.append("************************************************************************\n");
+        content.append("                       UniLearn UNIVERSITY GROUP\n");
+        content.append("                  OFFICIAL ACADEMIC TRANSCRIPT OF RECORDS\n");
+        content.append("************************************************************************\n\n");
+
+        content.append(String.format("STUDENT IDENTIFICATION\n"));
+        content.append(String.format("Full Name: %-30s | Student ID: %d\n", resolveUserDisplayName(studentId), studentId));
+        content.append(String.format("Email: %-34s | Academic Year: 2023-2024\n", student.getEmail()));
+        
+        Integer primaryClassId = resolvePrimaryClassIdForStudent(studentId);
+        if (primaryClassId != null) {
+            content.append(String.format("Assigned Class: %-27s | Status: ACTIVE\n", resolveClasseName(primaryClassId)));
+        }
+        content.append("\n------------------------------------------------------------------------\n");
+        content.append(String.format("%-40s | %-10s | %-10s\n", "COURSE TITLE", "RESULT", "STATUS"));
+        content.append("------------------------------------------------------------------------\n");
+
+        List<Grade> grades = getGradesByStudent(studentId);
+        if (grades.isEmpty()) {
+            content.append("\n[ No academic records currently available for this student profile ]\n\n");
+        } else {
+            for (Grade grade : grades) {
+                String courseTitle = (grade.getAssessment() != null && grade.getAssessment().getCourse() != null)
+                        ? resolveCourseTitle(grade.getAssessment().getCourse().getId()) : "N/A";
+                String status = grade.getScore() >= 10.0 ? "VALIDATED" : "RETAKE";
+
+                content.append(String.format("%-40s | %-10s | %-10s\n", 
+                        clipText(courseTitle, 38), 
+                        scoreFormat.format(grade.getScore()) + "/20", 
+                        status));
+            }
+            content.append("------------------------------------------------------------------------\n\n");
+
+            StudentSummary summary = computeStudentSummary(studentId);
+            content.append("PERFORMANCE SUMMARY\n");
+            content.append(String.format("Total Courses Evaluated: %d\n", summary.getTotalGrades()));
+            content.append(String.format("Passed Credits: %d\n", summary.getPassed()));
+            content.append(String.format("Failed / To Retake: %d\n", summary.getFailed()));
+            content.append(String.format("General Grade Point Average (GPA): %s / 20.00\n", scoreFormat.format(summary.getAverage())));
+            content.append("\n");
+        }
+
+        content.append("************************************************************************\n");
+        content.append("OFFICIAL VERIFICATION\n");
+        content.append("Generated on: ").append(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))).append("\n");
+        content.append("Digital Signature: UniLearn_ADMIN_VERIFIED_").append(System.currentTimeMillis()).append("\n");
+        content.append("This document is a certified copy of the student's academic standing.\n");
+        content.append("************************************************************************\n");
+
+        return content.toString();
+    }
+
+    public String generateSchedulePdfContent(List<Schedule> schedules, String title) {
+        StringBuilder content = new StringBuilder();
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        content.append("************************************************************************\n");
+        content.append("                       UniLearn UNIVERSITY GROUP\n");
+        content.append("                      ").append(title.toUpperCase()).append("\n");
+        content.append("************************************************************************\n\n");
+
+        if (schedules == null || schedules.isEmpty()) {
+            content.append("\n[ No schedule entries found for the selected period ]\n\n");
+        } else {
+            Map<String, List<Schedule>> schedulesByDay = new LinkedHashMap<>();
+            String[] daysOrder = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+            for (String d : daysOrder) {
+                schedulesByDay.put(d, new ArrayList<>());
+            }
+
+            for (Schedule s : schedules) {
+                String day = s.getDayOfWeek();
+                if (day != null) {
+                    String normalizedDay = day.substring(0, 1).toUpperCase() + day.substring(1).toLowerCase();
+                    if (schedulesByDay.containsKey(normalizedDay)) {
+                        schedulesByDay.get(normalizedDay).add(s);
+                    }
+                }
+            }
+
+            for (Map.Entry<String, List<Schedule>> entry : schedulesByDay.entrySet()) {
+                if (entry.getValue().isEmpty()) continue;
+
+                content.append("========================================================================\n");
+                content.append(String.format("                         %s\n", entry.getKey().toUpperCase()));
+                content.append("========================================================================\n");
+                content.append(String.format("%-12s | %-30s | %-25s\n", "TIME", "COURSE", "ROOM"));
+                content.append("------------------------------------------------------------------------\n");
+
+                entry.getValue().sort(Comparator.comparing(Schedule::getStartTime));
+                for (Schedule s : entry.getValue()) {
+                    String course = s.getCourse() == null ? "N/A" : resolveCourseTitle(s.getCourse().getId());
+                    String classe = s.getClasse() == null ? "N/A" : resolveClasseName(s.getClasse().getId());
+                    String teacher = s.getUser() == null ? "N/A" : resolveUserDisplayName(s.getUser().getId());
+                    String startTime = s.getStartTime() != null ? s.getStartTime().toLocalTime().format(timeFormatter) : "--:--";
+                    String endTime = s.getEndTime() != null ? s.getEndTime().toLocalTime().format(timeFormatter) : "--:--";
+                    String room = safe(s.getRoom());
+
+                    content.append(String.format("%-12s | %-30s | %-25s\n", 
+                            startTime + "-" + endTime,
+                            clipText(course + " (" + classe + ")", 28),
+                            clipText(room + " - " + teacher, 23)));
+                }
+                content.append("------------------------------------------------------------------------\n\n");
+            }
+        }
+
+        content.append("************************************************************************\n");
+        content.append("Generated by UniLearn Academic System - Admin Certified\n");
+        content.append("Digital Signature ID: ").append(System.currentTimeMillis()).append("_SCHEDULE\n");
+        content.append("************************************************************************\n");
+
+        return content.toString();
+    }
+
+    public void downloadStudentTranscript(int studentId, File file) throws IOException {
+        String content = generateStudentTranscriptPdfContent(studentId);
+        saveTextAsPdf(content, file);
+    }
+
+    public void downloadAcademicSchedule(File file) throws IOException {
+        String content = generateSchedulePdfContent(getAllSchedules(), "Official University Schedule");
+        saveTextAsPdf(content, file);
+    }
+
+    public void downloadTeacherSchedule(int teacherId, File file) throws IOException {
+        String teacherName = resolveUserDisplayName(teacherId);
+        String content = generateSchedulePdfContent(getScheduleByTeacher(teacherId), "Personal Schedule: Prof. " + teacherName);
+        saveTextAsPdf(content, file);
+    }
+
+    public void downloadStudentSchedule(int studentId, File file) throws IOException {
+        Integer classId = resolvePrimaryClassIdForStudent(studentId);
+        String studentName = resolveUserDisplayName(studentId);
+        if (classId == null) throw new IOException("No primary class found for student ID: " + studentId);
+        String content = generateSchedulePdfContent(getScheduleByClasse(classId), "Student Schedule: " + studentName);
+        saveTextAsPdf(content, file);
+    }
+
     private String buildLocalStudentRecommendations(StudentSummary summary, List<RecommendationRow> rows) {
         StringBuilder result = new StringBuilder();
         result.append("STRATEGIC ACADEMIC ROADMAP\n\n");
@@ -489,7 +642,7 @@ public class EvaluationService {
         if (text.length() <= maxLength) {
             return text;
         }
-        return text.substring(0, maxLength) + "...";
+        return text.substring(0, maxLength - 3) + "...";
     }
 
     private String buildYoutubeSearchUrl(String topic) {
@@ -521,6 +674,10 @@ public class EvaluationService {
             return email.trim();
         }
         return user.getId() == null ? null : ("User #" + user.getId());
+    }
+
+    private String safe(String value) {
+        return value == null || value.isBlank() ? "-" : value;
     }
 
     public List<RecommendationRow> buildRecommendations(int studentId) {
@@ -620,7 +777,7 @@ public class EvaluationService {
                 .sorted(Comparator
                         .comparing((Reclamation r) -> statusWeight(r.getStatus()))
                         .thenComparing(Reclamation::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder()))
-                        .thenComparing(Reclamation::getId, Comparator.nullsLast(Comparator.reverseOrder())))
+                        .thenComparing(Reclamation::getId, Comparator.nullsLast(Integer::compareTo)))
                 .collect(Collectors.toList());
     }
 
@@ -629,7 +786,7 @@ public class EvaluationService {
                 .sorted(Comparator
                         .comparing((Reclamation r) -> statusWeight(r.getStatus()))
                         .thenComparing(Reclamation::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder()))
-                        .thenComparing(Reclamation::getId, Comparator.nullsLast(Comparator.reverseOrder())))
+                        .thenComparing(Reclamation::getId, Comparator.nullsLast(Integer::compareTo)))
                 .collect(Collectors.toList());
     }
 
@@ -778,7 +935,7 @@ public class EvaluationService {
                 .sorted(Comparator
                         .comparing((DocumentRequest d) -> statusWeight(d.getStatus()))
                         .thenComparing(DocumentRequest::getRequestedAt, Comparator.nullsLast(Comparator.reverseOrder()))
-                        .thenComparing(DocumentRequest::getId, Comparator.nullsLast(Comparator.reverseOrder())))
+                        .thenComparing(DocumentRequest::getId, Comparator.nullsLast(Integer::compareTo)))
                 .collect(Collectors.toList());
     }
 
@@ -787,7 +944,7 @@ public class EvaluationService {
                 .sorted(Comparator
                         .comparing((DocumentRequest d) -> statusWeight(d.getStatus()))
                         .thenComparing(DocumentRequest::getRequestedAt, Comparator.nullsLast(Comparator.reverseOrder()))
-                        .thenComparing(DocumentRequest::getId, Comparator.nullsLast(Comparator.reverseOrder())))
+                        .thenComparing(DocumentRequest::getId, Comparator.nullsLast(Integer::compareTo)))
                 .collect(Collectors.toList());
     }
 
@@ -824,7 +981,7 @@ public class EvaluationService {
                 .filter(a -> a.getUser().getId() == teacherId)
                 .sorted(Comparator
                         .comparing(Assessment::getDate, Comparator.nullsLast(Comparator.reverseOrder()))
-                        .thenComparing(Assessment::getId, Comparator.nullsLast(Comparator.reverseOrder())))
+                        .thenComparing(Assessment::getId, Comparator.nullsLast(Integer::compareTo)))
                 .collect(Collectors.toList());
     }
 

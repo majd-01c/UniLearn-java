@@ -19,12 +19,6 @@ import java.time.Duration;
 public class GroqAiService {
 
     private static final String DEFAULT_API_URL = "https://api.groq.com/openai/v1/chat/completions";
-    
-    /**
-     * Recommended stable models on Groq:
-     * - llama-3.3-70b-versatile (Powerful, stable)
-     * - llama-3.1-8b-instant (Fast, stable)
-     */
     private static final String DEFAULT_MODEL = "llama-3.3-70b-versatile";
     
     // Configured API Key
@@ -91,6 +85,18 @@ public class GroqAiService {
         } catch (IOException e) {
             return "### NETWORK ERROR ###\n\nCould not connect to Groq AI: " + e.getMessage();
         }
+    }
+
+    /**
+     * AI-powered spelling and grammar correction, including profanity filtering.
+     */
+    public String correctSpellingAndGrammar(String text) {
+        if (text == null || text.isBlank()) return "";
+        return ask(
+            "You are a professional writing assistant. Correct the spelling and grammar of the following text while maintaining its original meaning and tone. Additionally, strictly filter and remove any profanity, bad words, or inappropriate language, in both French and English. Return ONLY the corrected and filtered text, no explanations.",
+            text,
+            Math.max(500, text.length() * 2)
+        );
     }
 
     private String buildPayload(String model, String systemPrompt, String userPrompt, int maxTokens) throws IOException {

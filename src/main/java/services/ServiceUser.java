@@ -94,36 +94,55 @@ public class ServiceUser extends ServiceSupport implements IService<User> {
         try (PreparedStatement statement = connection.prepareStatement(sql);
              ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
-                User user = new User();
-                user.setId(resultSet.getInt("id"));
-                user.setRole(resultSet.getString("role"));
-                user.setEmail(resultSet.getString("email"));
-                user.setPassword(resultSet.getString("password"));
-                user.setIsActive(resultSet.getByte("is_active"));
-                user.setName(resultSet.getString("name"));
-                user.setPhone(resultSet.getString("phone"));
-                user.setProfilePic(resultSet.getString("profile_pic"));
-                user.setLocation(resultSet.getString("location"));
-                user.setSkills(resultSet.getString("skills"));
-                user.setAbout(resultSet.getString("about"));
-                user.setIsVerified(resultSet.getByte("is_verified"));
-                user.setNeedsVerification(resultSet.getByte("needs_verification"));
-                user.setEmailVerifiedAt(resultSet.getTimestamp("email_verified_at"));
-                user.setEmailVerificationCode(resultSet.getString("email_verification_code"));
-                user.setCodeExpiryDate(resultSet.getTimestamp("code_expiry_date"));
-                user.setMustChangePassword(resultSet.getByte("must_change_password"));
-                user.setTempPasswordGeneratedAt(resultSet.getTimestamp("temp_password_generated_at"));
-                user.setCreatedAt(resultSet.getTimestamp("created_at"));
-                user.setUpdatedAt(resultSet.getTimestamp("updated_at"));
-                user.setFaceEnabled(resultSet.getByte("face_enabled"));
-                user.setFaceDescriptors(resultSet.getString("face_descriptors"));
-                user.setFaceEnrolledAt(resultSet.getTimestamp("face_enrolled_at"));
-                users.add(user);
+                users.add(mapResultSetToUser(resultSet));
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
 
         return users;
+    }
+
+    public User getById(int id) {
+        String sql = "SELECT id, role, email, password, is_active, name, phone, profile_pic, location, skills, about, is_verified, needs_verification, email_verified_at, email_verification_code, code_expiry_date, must_change_password, temp_password_generated_at, created_at, updated_at, face_enabled, face_descriptors, face_enrolled_at FROM user WHERE id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, id);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return mapResultSetToUser(resultSet);
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return null;
+    }
+
+    private User mapResultSetToUser(ResultSet resultSet) throws SQLException {
+        User user = new User();
+        user.setId(resultSet.getInt("id"));
+        user.setRole(resultSet.getString("role"));
+        user.setEmail(resultSet.getString("email"));
+        user.setPassword(resultSet.getString("password"));
+        user.setIsActive(resultSet.getByte("is_active"));
+        user.setName(resultSet.getString("name"));
+        user.setPhone(resultSet.getString("phone"));
+        user.setProfilePic(resultSet.getString("profile_pic"));
+        user.setLocation(resultSet.getString("location"));
+        user.setSkills(resultSet.getString("skills"));
+        user.setAbout(resultSet.getString("about"));
+        user.setIsVerified(resultSet.getByte("is_verified"));
+        user.setNeedsVerification(resultSet.getByte("needs_verification"));
+        user.setEmailVerifiedAt(resultSet.getTimestamp("email_verified_at"));
+        user.setEmailVerificationCode(resultSet.getString("email_verification_code"));
+        user.setCodeExpiryDate(resultSet.getTimestamp("code_expiry_date"));
+        user.setMustChangePassword(resultSet.getByte("must_change_password"));
+        user.setTempPasswordGeneratedAt(resultSet.getTimestamp("temp_password_generated_at"));
+        user.setCreatedAt(resultSet.getTimestamp("created_at"));
+        user.setUpdatedAt(resultSet.getTimestamp("updated_at"));
+        user.setFaceEnabled(resultSet.getByte("face_enabled"));
+        user.setFaceDescriptors(resultSet.getString("face_descriptors"));
+        user.setFaceEnrolledAt(resultSet.getTimestamp("face_enrolled_at"));
+        return user;
     }
 }

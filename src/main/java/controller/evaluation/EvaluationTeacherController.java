@@ -3,8 +3,10 @@ package controller.evaluation;
 import entities.Assessment;
 import entities.Grade;
 import entities.Schedule;
+import entities.Reclamation; // Added import for Reclamation
 import evaluation.AssessmentType;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -17,15 +19,22 @@ import javafx.scene.control.TextFormatter;
 import javafx.scene.control.Alert;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import security.UserSession;
 import service.evaluation.EvaluationService;
+import service.evaluation.ai.GroqAiService;
 
+import java.awt.Desktop;
+import java.io.File;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.function.UnaryOperator;
 
 public class EvaluationTeacherController {
@@ -76,16 +85,25 @@ public class EvaluationTeacherController {
     @FXML
     private VBox scheduleCardsBox;
 
+    // FXML fields for Student Inquiries tab
     @FXML
-    private TextArea aiTeacherInsightsArea;
+    private Label selectedInquiryLabel;
+    @FXML
+    private TextArea inquiryResponseArea;
+    @FXML
+    private ComboBox<String> inquiryStatusBox;
+    @FXML
+    private VBox inquiriesCardsBox;
 
     @FXML
     private Label feedbackLabel;
 
     private final EvaluationService service = new EvaluationService();
+    private final GroqAiService aiService = new GroqAiService();
     private final DecimalFormat df = new DecimalFormat("0.00");
     private int teacherId;
     private Integer selectedAssessmentId;
+    private Integer selectedInquiryId; // Field to hold selected inquiry ID
 
     @FXML
     public void initialize() {
@@ -104,14 +122,82 @@ public class EvaluationTeacherController {
         scheduleSortBox.getItems().setAll("NEW", "OLD", "A-Z");
         scheduleSortBox.getSelectionModel().select("NEW");
 
+        // Initialize inquiry status box
+        if (inquiryStatusBox != null) {
+            inquiryStatusBox.getItems().setAll("Pending", "Processing", "Resolved", "Rejected");
+            inquiryStatusBox.getSelectionModel().select("Pending");
+        }
+
         selectedAssessmentLabel.setText("Selected assessment: none");
-        if (aiTeacherInsightsArea != null) {
-            aiTeacherInsightsArea.setText("Click Generate AI Insights to get student-focused teaching recommendations.");
+        if (selectedInquiryLabel != null) {
+            selectedInquiryLabel.setText("Select a student complaint from the list below to respond.");
         }
 
         installInputValidation();
         refreshTeacherSelectors();
         refreshTeacherSpace();
+
+        // AI Correction Hook for Assessment Description
+        assessmentDescriptionArea.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            if (!newVal) { // Lost focus
+                String original = assessmentDescriptionArea.getText();
+                if (original != null && original.length() > 10) {
+                    new Thread(() -> {
+                        String corrected = aiService.correctSpellingAndGrammar(original);
+                        if (corrected != null && !corrected.isEmpty() && !corrected.startsWith("###")) {
+                            javafx.application.Platform.runLater(() -> {
+                                if (assessmentDescriptionArea.getText().equals(original)) {
+                                    assessmentDescriptionArea.setText(corrected);
+                                    showFeedback("AI refined assessment description.", false);
+                                }
+                            });
+                        }
+                    }).start();
+                }
+            }
+        });
+        
+        // AI Correction Hook for Grade Comments
+        gradeCommentInputField.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            if (!newVal) {
+                String original = gradeCommentInputField.getText();
+                if (original != null && original.length() > 5) {
+                    new Thread(() -> {
+                        String corrected = aiService.correctSpellingAndGrammar(original);
+                        if (corrected != null && !corrected.isEmpty() && !corrected.startsWith("###")) {
+                            javafx.application.Platform.runLater(() -> {
+                                if (gradeCommentInputField.getText().equals(original)) {
+                                    gradeCommentInputField.setText(corrected);
+                                    showFeedback("AI refined student feedback.", false);
+                                }
+                            });
+                        }
+                    }).start();
+                }
+            }
+        });
+
+        // AI Correction Hook for Inquiry Response
+        if (inquiryResponseArea != null) {
+            inquiryResponseArea.focusedProperty().addListener((obs, oldVal, newVal) -> {
+                if (!newVal) {
+                    String original = inquiryResponseArea.getText();
+                    if (original != null && original.length() > 10) {
+                        new Thread(() -> {
+                            String corrected = aiService.correctSpellingAndGrammar(original);
+                            if (corrected != null && !corrected.isEmpty() && !corrected.startsWith("###")) {
+                                javafx.application.Platform.runLater(() -> {
+                                    if (inquiryResponseArea.getText().equals(original)) {
+                                        inquiryResponseArea.setText(corrected);
+                                        showFeedback("AI refined inquiry response.", false);
+                                    }
+                                });
+                            }
+                        }).start();
+                    }
+                }
+            });
+        }
     }
 
     @FXML
@@ -134,19 +220,6 @@ public class EvaluationTeacherController {
     @FXML
     private void onSortScheduleChanged() {
         refreshTeacherSchedule();
-    }
-
-    @FXML
-    private void onGenerateAiTeacherInsights() {
-        try {
-            String insights = service.generateAiTeacherInsights(teacherId);
-            if (aiTeacherInsightsArea != null) {
-                aiTeacherInsightsArea.setText(insights);
-            }
-            showFeedback("AI insights generated.");
-        } catch (Exception e) {
-            showFeedback("AI insights failed: " + e.getMessage());
-        }
     }
 
     @FXML
@@ -201,9 +274,9 @@ public class EvaluationTeacherController {
                 assessmentContenuBox.getSelectionModel().clearSelection();
             }
             refreshAssessments();
-            showFeedback("Assessment created.");
+            showFeedback("Assessment created.", false);
         } catch (Exception e) {
-            showFeedback("Create assessment failed: " + e.getMessage());
+            showFeedback("Create assessment failed: " + e.getMessage(), true);
         }
     }
 
@@ -214,7 +287,7 @@ public class EvaluationTeacherController {
                 throw new IllegalArgumentException("Please select an assessment card first.");
             }
             if (!confirmDeletion("Delete this assessment? This action cannot be undone.")) {
-                showFeedback("Deletion cancelled.");
+                showFeedback("Deletion cancelled.", false);
                 return;
             }
             service.deleteAssessment(selectedAssessmentId);
@@ -222,9 +295,9 @@ public class EvaluationTeacherController {
             selectedAssessmentLabel.setText("Selected assessment: none");
             gradesCardsBox.getChildren().clear();
             refreshAssessments();
-            showFeedback("Assessment deleted.");
+            showFeedback("Assessment deleted.", false);
         } catch (Exception e) {
-            showFeedback("Delete assessment failed: " + e.getMessage());
+            showFeedback("Delete assessment failed: " + e.getMessage(), true);
         }
     }
 
@@ -237,9 +310,9 @@ public class EvaluationTeacherController {
             List<Grade> grades = new ArrayList<>(service.getGradesByAssessment(selectedAssessmentId));
             sortGrades(grades, selectedSort(gradesSortBox));
             renderGradesCards(grades);
-            showFeedback("Grades loaded.");
+            showFeedback("Grades loaded.", false);
         } catch (Exception e) {
-            showFeedback("Load grades failed: " + e.getMessage());
+            showFeedback("Load grades failed: " + e.getMessage(), true);
         }
     }
 
@@ -259,9 +332,51 @@ public class EvaluationTeacherController {
 
             service.saveGrade(selectedAssessmentId, studentId, teacherId, score, comment);
             onLoadAssessmentGrades();
-            showFeedback("Grade saved.");
+            showFeedback("Grade saved.", false);
         } catch (Exception e) {
-            showFeedback("Save grade failed: " + e.getMessage());
+            showFeedback("Save grade failed: " + e.getMessage(), true);
+        }
+    }
+
+    @FXML
+    private void onUpdateInquiryStatus() {
+        try {
+            if (selectedInquiryId == null) {
+                throw new IllegalArgumentException("Please select an inquiry from the list first.");
+            }
+            String status = inquiryStatusBox.getValue();
+            String response = requireNotBlank(inquiryResponseArea.getText(), "Official Response");
+            
+            service.updateReclamationStatus(selectedInquiryId, status, response);
+            
+            inquiryResponseArea.clear();
+            selectedInquiryId = null;
+            selectedInquiryLabel.setText("Select a student complaint from the list below to respond.");
+            refreshInquiries();
+            showFeedback("Inquiry response submitted successfully.", false);
+        } catch (Exception e) {
+            showFeedback("Update inquiry failed: " + e.getMessage(), true);
+        }
+    }
+
+    @FXML
+    private void onDownloadTeacherSchedule() {
+        try {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Save My Academic Schedule");
+            fileChooser.setInitialFileName("Teacher_Schedule_" + teacherId + ".pdf");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
+            File file = fileChooser.showSaveDialog(feedbackLabel.getScene().getWindow());
+
+            if (file != null) {
+                service.downloadTeacherSchedule(teacherId, file);
+                showFeedback("Schedule downloaded: " + file.getName(), false);
+                if (Desktop.isDesktopSupported()) {
+                    Desktop.getDesktop().open(file);
+                }
+            }
+        } catch (Exception e) {
+            showFeedback("Download schedule failed: " + e.getMessage(), true);
         }
     }
 
@@ -270,6 +385,7 @@ public class EvaluationTeacherController {
         refreshTeacherStudents();
         refreshAssessments();
         refreshTeacherSchedule();
+        refreshInquiries(); // Call refreshInquiries here
     }
 
     private void refreshTeacherSelectors() {
@@ -335,76 +451,157 @@ public class EvaluationTeacherController {
             scheduleCardsBox.getChildren().add(emptyCard("No schedule entries available"));
             return;
         }
-        for (Schedule schedule : schedules) {
-            scheduleCardsBox.getChildren().add(createScheduleCard(schedule));
+
+        Map<String, List<Schedule>> byDay = new LinkedHashMap<>();
+        String[] daysOrder = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+        for (String d : daysOrder) byDay.put(d, new ArrayList<>());
+
+        for (Schedule s : schedules) {
+            String day = s.getDayOfWeek() == null ? "Monday" : s.getDayOfWeek().trim();
+            String normalized = day.substring(0, 1).toUpperCase() + day.substring(1).toLowerCase();
+            if (byDay.containsKey(normalized)) byDay.get(normalized).add(s);
         }
+
+        for (Map.Entry<String, List<Schedule>> entry : byDay.entrySet()) {
+            VBox dayCard = new VBox(10);
+            dayCard.getStyleClass().add("eval-data-card");
+            dayCard.setMinWidth(240);
+            dayCard.setPadding(new Insets(12));
+            dayCard.setStyle("-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-background-radius: 16; -fx-border-radius: 16;");
+
+            Label dayLabel = new Label(entry.getKey().toUpperCase());
+            dayLabel.setStyle("-fx-font-weight: 900; -fx-text-fill: #1e293b; -fx-font-size: 14px;");
+            dayCard.getChildren().add(dayLabel);
+
+            if (entry.getValue().isEmpty()) {
+                Label empty = new Label("No classes");
+                empty.setStyle("-fx-text-fill: #94a3b8; -fx-font-style: italic;");
+                dayCard.getChildren().add(empty);
+            } else {
+                for (Schedule s : entry.getValue()) {
+                    VBox item = new VBox(2);
+                    item.setPadding(new Insets(8));
+                    item.setStyle("-fx-background-color: #f8fafc; -fx-background-radius: 10;");
+                    String course = s.getCourse() == null ? "Course" : service.resolveCourseTitle(s.getCourse().getId());
+                    String classe = s.getClasse() == null ? "Class" : service.resolveClasseName(s.getClasse().getId());
+                    Label title = new Label(course + " (" + classe + ")");
+                    title.setStyle("-fx-font-weight: bold; -fx-font-size: 11px;");
+                    Label time = new Label("🕒 " + s.getStartTime() + " - " + s.getEndTime());
+                    time.setStyle("-fx-text-fill: #64748b; -fx-font-size: 10px;");
+                    item.getChildren().addAll(title, time);
+                    dayCard.getChildren().add(item);
+                }
+            }
+            scheduleCardsBox.getChildren().add(dayCard);
+        }
+    }
+
+    // New method to refresh and display inquiries
+    private void refreshInquiries() {
+        if (inquiriesCardsBox == null) return;
+        
+        List<Reclamation> reclamations = service.getAllReclamations(); // Assuming a method to get all reclamations
+        inquiriesCardsBox.getChildren().clear();
+        
+        if (reclamations.isEmpty()) {
+            inquiriesCardsBox.getChildren().add(emptyCard("No student inquiries found."));
+            return;
+        }
+        
+        for (Reclamation r : reclamations) {
+            inquiriesCardsBox.getChildren().add(createInquiryCard(r));
+        }
+    }
+
+    // New method to create an inquiry card
+    private VBox createInquiryCard(Reclamation r) {
+        VBox card = new VBox(8);
+        card.getStyleClass().addAll("eval-data-card");
+        
+        String studentName = r.getUser() == null ? "Unknown" : service.resolveUserDisplayName(r.getUser().getId());
+        String courseName = r.getCourse() == null ? "General" : service.resolveCourseTitle(r.getCourse().getId());
+        
+        Label studentLabel = new Label(studentName + " | " + courseName);
+        studentLabel.getStyleClass().add("eval-data-card-title");
+        
+        Label subjectLabel = new Label("Subject: " + safe(r.getSubject()));
+        subjectLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #1e293b;");
+        
+        Label descLabel = new Label(safe(r.getDescription()));
+        descLabel.setWrapText(true);
+        descLabel.setStyle("-fx-text-fill: #475569; -fx-font-style: italic;");
+        
+        Label statusLabel = new Label("Status: " + safe(r.getStatus()).toUpperCase());
+        String statusColor = switch(safe(r.getStatus()).toLowerCase()) {
+            case "resolved" -> "#10b981";
+            case "rejected" -> "#ef4444";
+            case "processing" -> "#f59e0b";
+            default -> "#6366f1";
+        };
+        statusLabel.setStyle("-fx-text-fill: " + statusColor + "; -fx-font-weight: bold;");
+        
+        Button selectBtn = new Button("Respond to Inquiry");
+        selectBtn.getStyleClass().add("eval-ghost-btn");
+        selectBtn.setOnAction(e -> {
+            selectedInquiryId = r.getId();
+            selectedInquiryLabel.setText("Responding to: " + studentName + " (" + safe(r.getSubject()) + ")");
+            inquiryResponseArea.setText(r.getAdminResponse() == null ? "" : r.getAdminResponse());
+            if (r.getStatus() != null) {
+                // Try to map status to the closest ComboBox item
+                String norm = r.getStatus().substring(0,1).toUpperCase() + r.getStatus().substring(1).toLowerCase();
+                if (inquiryStatusBox.getItems().contains(norm)) {
+                    inquiryStatusBox.getSelectionModel().select(norm);
+                }
+            }
+        });
+        
+        card.getChildren().addAll(studentLabel, subjectLabel, descLabel, statusLabel, selectBtn);
+        return card;
     }
 
     private VBox createAssessmentCard(Assessment assessment) {
         VBox card = new VBox(8);
-        card.getStyleClass().addAll("home-card", "eval-card");
+        card.getStyleClass().addAll("eval-data-card");
 
         Label titleLabel = new Label(safe(assessment.getTitle()));
-        titleLabel.getStyleClass().add("card-title");
+        titleLabel.getStyleClass().add("eval-data-card-title");
 
         String courseName = assessment.getCourse() == null ? null : service.resolveCourseTitle(assessment.getCourse().getId());
         String classeName = assessment.getClasse() == null ? null : service.resolveClasseName(assessment.getClasse().getId());
-        String contenuTitle = assessment.getContenu() == null ? null : service.resolveContenuTitle(assessment.getContenu().getId());
 
         Label typeLabel = new Label("Type: " + safe(assessment.getType()));
-        Label courseLabel = new Label("Course: " + safe(courseName));
-        Label classeLabel = new Label("Class: " + safe(classeName));
-        Label contentLabel = new Label("Content: " + safe(contenuTitle));
-        Label maxScoreLabel = new Label("Max Score: " + df.format(assessment.getMaxScore()));
-        Label dateLabel = new Label("Date: " + formatDate(assessment.getDate()));
-        Label descriptionLabel = new Label("Description: " + safe(assessment.getDescription()));
+        Label courseLabel = new Label("Course: " + safe(courseName) + " | Class: " + safe(classeName));
+        Label dateLabel = new Label("Date: " + formatDate(assessment.getDate()) + " | Max Score: " + df.format(assessment.getMaxScore()));
+        Label descriptionLabel = new Label(safe(assessment.getDescription()));
         descriptionLabel.setWrapText(true);
+        descriptionLabel.setStyle("-fx-text-fill: #64748b; -fx-font-style: italic;");
 
-        Button viewButton = new Button("Select");
-        viewButton.getStyleClass().add("ghost-button");
+        Button viewButton = new Button("Select Assessment");
+        viewButton.getStyleClass().add("eval-ghost-btn");
         viewButton.setOnAction(event -> {
-            if (assessment.getId() == null) {
-                showFeedback("Unable to select unsaved assessment.");
-                return;
-            }
             selectedAssessmentId = assessment.getId();
-            selectedAssessmentLabel.setText("Selected assessment: " + safe(assessment.getTitle()));
+            selectedAssessmentLabel.setText("Selected: " + safe(assessment.getTitle()));
             onLoadAssessmentGrades();
         });
 
-        Button editButton = new Button("Load to Form");
-        editButton.getStyleClass().add("primary-button");
-        editButton.setOnAction(event -> loadForEdit(assessment));
-
         Button deleteButton = new Button("Delete");
-        deleteButton.getStyleClass().add("danger-button");
+        deleteButton.getStyleClass().add("eval-danger-btn");
         deleteButton.setOnAction(event -> {
             selectedAssessmentId = assessment.getId();
-            selectedAssessmentLabel.setText("Selected assessment: " + safe(assessment.getTitle()));
             onDeleteSelectedAssessment();
         });
 
-        HBox actions = new HBox(8, viewButton, editButton, deleteButton);
+        HBox actions = new HBox(8, viewButton, deleteButton);
         actions.setAlignment(Pos.CENTER_LEFT);
 
-        card.getChildren().addAll(
-                titleLabel,
-                typeLabel,
-                courseLabel,
-                classeLabel,
-                contentLabel,
-                maxScoreLabel,
-                dateLabel,
-                descriptionLabel,
-                actions
-        );
+        card.getChildren().addAll(titleLabel, typeLabel, courseLabel, dateLabel, descriptionLabel, actions);
         return card;
     }
 
     private void renderGradesCards(List<Grade> grades) {
         gradesCardsBox.getChildren().clear();
         if (grades.isEmpty()) {
-            gradesCardsBox.getChildren().add(emptyCard("No grades available for this assessment"));
+            gradesCardsBox.getChildren().add(emptyCard("No grades recorded for this assessment"));
             return;
         }
         for (Grade grade : grades) {
@@ -413,42 +610,25 @@ public class EvaluationTeacherController {
     }
 
     private VBox createGradeCard(Grade grade) {
-        VBox card = new VBox(8);
-        card.getStyleClass().addAll("home-card", "eval-card");
+        VBox card = new VBox(6);
+        card.getStyleClass().addAll("eval-data-card");
 
         String studentName = grade.getUserByStudentId() == null ? null : service.resolveUserDisplayName(grade.getUserByStudentId().getId());
-        Label studentLabel = new Label("Student: " + safe(studentName));
-        studentLabel.getStyleClass().add("card-title");
+        Label studentLabel = new Label(safe(studentName));
+        studentLabel.getStyleClass().add("eval-data-card-title");
 
-        Label scoreLabel = new Label("Score: " + df.format(grade.getScore()));
-        Label commentLabel = new Label("Comment: " + safe(grade.getComment()));
+        Label scoreLabel = new Label("Grade Score: " + df.format(grade.getScore()));
+        scoreLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #0ea5e9;");
+        Label commentLabel = new Label("Feedback: " + safe(grade.getComment()));
         commentLabel.setWrapText(true);
 
         card.getChildren().addAll(studentLabel, scoreLabel, commentLabel);
         return card;
     }
 
-    private VBox createScheduleCard(Schedule schedule) {
-        VBox card = new VBox(8);
-        card.getStyleClass().addAll("home-card", "eval-card");
-
-        Label dayLabel = new Label(safe(schedule.getDayOfWeek()));
-        dayLabel.getStyleClass().add("card-title");
-
-        String className = schedule.getClasse() == null ? null : service.resolveClasseName(schedule.getClasse().getId());
-        String courseName = schedule.getCourse() == null ? null : service.resolveCourseTitle(schedule.getCourse().getId());
-        Label timeLabel = new Label("Time: " + schedule.getStartTime() + " - " + schedule.getEndTime());
-        Label classLabel = new Label("Class: " + safe(className));
-        Label courseLabel = new Label("Course: " + safe(courseName));
-        Label roomLabel = new Label("Room: " + safe(schedule.getRoom()));
-
-        card.getChildren().addAll(dayLabel, timeLabel, classLabel, courseLabel, roomLabel);
-        return card;
-    }
-
     private VBox emptyCard(String message) {
         VBox card = new VBox(8);
-        card.getStyleClass().addAll("home-card", "eval-card");
+        card.getStyleClass().add("eval-empty-card");
         card.getChildren().add(new Label(message));
         return card;
     }
@@ -463,20 +643,16 @@ public class EvaluationTeacherController {
         selectComboValue(assessmentClassBox, assessment.getClasse() == null ? null : service.resolveClasseName(assessment.getClasse().getId()));
         selectComboValue(assessmentContenuBox, assessment.getContenu() == null ? null : service.resolveContenuTitle(assessment.getContenu().getId()));
         selectedAssessmentId = assessment.getId();
-        selectedAssessmentLabel.setText("Selected assessment: " + safe(assessment.getTitle()));
+        selectedAssessmentLabel.setText("Selected: " + safe(assessment.getTitle()));
     }
 
     private void selectComboValue(ComboBox<String> comboBox, String value) {
-        if (comboBox == null) {
-            return;
-        }
+        if (comboBox == null) return;
         if (value == null || value.isBlank()) {
             comboBox.getSelectionModel().clearSelection();
             return;
         }
-        if (!comboBox.getItems().contains(value)) {
-            comboBox.getItems().add(value);
-        }
+        if (!comboBox.getItems().contains(value)) comboBox.getItems().add(value);
         comboBox.getSelectionModel().select(value);
     }
 
@@ -486,12 +662,10 @@ public class EvaluationTeacherController {
             return;
         }
         if ("OLD".equals(mode)) {
-            rows.sort(Comparator.comparing(Assessment::getDate, Comparator.nullsLast(Comparator.naturalOrder()))
-                    .thenComparing(Assessment::getId, Comparator.nullsLast(Comparator.naturalOrder())));
+            rows.sort(Comparator.comparing(Assessment::getDate, Comparator.nullsLast(Comparator.naturalOrder())));
             return;
         }
-        rows.sort(Comparator.comparing(Assessment::getDate, Comparator.nullsLast(Comparator.reverseOrder()))
-                .thenComparing(Assessment::getId, Comparator.nullsLast(Comparator.reverseOrder())));
+        rows.sort(Comparator.comparing(Assessment::getDate, Comparator.nullsLast(Comparator.reverseOrder())));
     }
 
     private void sortGrades(List<Grade> rows, String mode) {
@@ -499,24 +673,11 @@ public class EvaluationTeacherController {
             rows.sort(Comparator.comparing(g -> safeForSort(g.getUserByStudentId() == null ? null : service.resolveUserDisplayName(g.getUserByStudentId().getId()))));
             return;
         }
-        if ("OLD".equals(mode)) {
-            rows.sort(Comparator.comparing(Grade::getId, Comparator.nullsLast(Comparator.naturalOrder())));
-            return;
-        }
-        rows.sort(Comparator.comparing(Grade::getId, Comparator.nullsLast(Comparator.reverseOrder())));
+        rows.sort(Comparator.comparing(Grade::getScore, Comparator.nullsLast(Double::compareTo)).reversed());
     }
 
     private void sortSchedules(List<Schedule> rows, String mode) {
-        if ("A-Z".equals(mode)) {
-            rows.sort(Comparator.comparing((Schedule s) -> safeForSort(s.getCourse() == null ? null : service.resolveCourseTitle(s.getCourse().getId())))
-                    .thenComparing((Schedule s) -> safeForSort(s.getClasse() == null ? null : service.resolveClasseName(s.getClasse().getId()))));
-            return;
-        }
-        if ("OLD".equals(mode)) {
-            rows.sort(Comparator.comparing(Schedule::getId, Comparator.nullsLast(Comparator.naturalOrder())));
-            return;
-        }
-        rows.sort(Comparator.comparing(Schedule::getId, Comparator.nullsLast(Comparator.reverseOrder())));
+        rows.sort(Comparator.comparing(Schedule::getStartTime, Comparator.nullsLast(java.sql.Time::compareTo)));
     }
 
     private String selectedSort(ComboBox<String> comboBox) {
@@ -561,13 +722,9 @@ public class EvaluationTeacherController {
     }
 
     private Integer optionalNameToId(String rawValue, String fieldName, java.util.function.Function<String, Integer> resolver) {
-        if (rawValue == null || rawValue.trim().isEmpty()) {
-            return null;
-        }
+        if (rawValue == null || rawValue.trim().isEmpty()) return null;
         Integer id = resolver.apply(rawValue.trim());
-        if (id == null) {
-            throw new IllegalArgumentException(fieldName + " not found.");
-        }
+        if (id == null) throw new IllegalArgumentException(fieldName + " not found.");
         return id;
     }
 
@@ -590,8 +747,14 @@ public class EvaluationTeacherController {
         return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
     }
 
-    private void showFeedback(String text) {
+    private void showFeedback(String text, boolean isError) {
         feedbackLabel.setText(text);
+        feedbackLabel.getStyleClass().removeAll("eval-feedback", "eval-feedback-error");
+        if (isError) {
+            feedbackLabel.getStyleClass().add("eval-feedback-error");
+        } else {
+            feedbackLabel.getStyleClass().add("eval-feedback");
+        }
     }
 
     private boolean confirmDeletion(String message) {
