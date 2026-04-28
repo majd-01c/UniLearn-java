@@ -428,7 +428,7 @@ public class AtsApplicationDetailController implements Initializable {
 
     @FXML
     private void onBack() {
-        AppNavigator.showAtsPipelineBoard();
+        AppNavigator.showPartnerApplications();
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

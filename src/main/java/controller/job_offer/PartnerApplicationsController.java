@@ -1,10 +1,13 @@
 package controller.job_offer;
 
-import service.job_offer.GeminiApplicationFeedbackService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import entities.User;
+import entities.job_offer.CandidateProfile;
 import entities.job_offer.JobApplication;
 import entities.job_offer.JobApplicationStatus;
 import entities.job_offer.JobOffer;
+import entities.job_offer.ScoreBreakdown;
+import entities.job_offer.ScoreCriteria;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -18,15 +21,18 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
-import javafx.stage.FileChooser;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
+import service.job_offer.AtsApplicationScoringService;
+import service.job_offer.AtsScoringEngine;
+import service.job_offer.GeminiApplicationFeedbackService;
 import services.ServiceUser;
 import services.job_offer.ServiceJobApplication;
 import services.job_offer.ServiceJobOffer;
@@ -56,116 +62,85 @@ public class PartnerApplicationsController implements Initializable {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMM yyyy");
 
-    @FXML
-    private VBox rootContainer;
+    @FXML private Label pageTitleLabel;
+    @FXML private Label pageSubtitleLabel;
+    @FXML private Button backButton;
+    @FXML private Button refreshButton;
 
-    @FXML
-    private Label pageTitleLabel;
+    @FXML private Label offersCountLabel;
+    @FXML private Label applicationsCountLabel;
+    @FXML private Label pendingCountLabel;
 
-    @FXML
-    private Label pageSubtitleLabel;
+    @FXML private Label stepOneBadge;
+    @FXML private Label stepTwoBadge;
+    @FXML private Label stepThreeBadge;
+    @FXML private Label stepFourBadge;
 
-    @FXML
-    private Button backButton;
+    @FXML private HBox fixedStepOneActions;
+    @FXML private HBox fixedStepTwoActions;
+    @FXML private HBox fixedStepThreeActions;
+    @FXML private HBox fixedStepFourActions;
+    @FXML private BorderPane stepOnePane;
+    @FXML private VBox stepTwoPane;
+    @FXML private VBox stepThreePane;
+    @FXML private VBox stepFourPane;
+    @FXML private VBox donePane;
 
-    @FXML
-    private Button refreshButton;
+    @FXML private Label offersMetaLabel;
+    @FXML private TextField offerSearchField;
+    @FXML private VBox offersList;
+    @FXML private Label selectedOfferHeroLabel;
+    @FXML private Label selectedOfferHeroMetaLabel;
+    @FXML private Button nextFromOfferButton;
 
-    @FXML
-    private Button atsBoardButton;
+    @FXML private Label selectedOfferLabel;
+    @FXML private Label selectedOfferMetaLabel;
+    @FXML private ComboBox<String> statusFilterCombo;
+    @FXML private VBox applicationsList;
+    @FXML private Label emptyStateLabel;
+    @FXML private Button scoreAllCandidatesButton;
+    @FXML private Label candidatesHelperLabel;
+    @FXML private Button nextFromCandidateButton;
 
-    @FXML
-    private Label offersCountLabel;
+    @FXML private Label reviewTitleLabel;
+    @FXML private Label reviewSubtitleLabel;
+    @FXML private Label reviewStatusChip;
+    @FXML private Label candidateNameLabel;
+    @FXML private Label candidateEmailLabel;
+    @FXML private Label scoreLabel;
+    @FXML private Label scoreCaptionLabel;
+    @FXML private Label appliedDateLabel;
+    @FXML private Label statusTextLabel;
+    @FXML private TextArea messageArea;
+    @FXML private VBox scoreBreakdownList;
+    @FXML private Label profileSkillsLabel;
+    @FXML private Label profileExperienceLabel;
+    @FXML private Label profileEducationLabel;
+    @FXML private Label profileLanguagesLabel;
+    @FXML private Label profilePortfolioLabel;
+    @FXML private Label profileExtractionNoteLabel;
+    @FXML private Button openCvButton;
+    @FXML private Button openAtsButton;
 
-    @FXML
-    private Label applicationsCountLabel;
+    @FXML private Label decisionCandidateLabel;
+    @FXML private Label decisionOfferLabel;
+    @FXML private ComboBox<String> feedbackDecisionCombo;
+    @FXML private Button generateFeedbackButton;
+    @FXML private Label feedbackHelperLabel;
+    @FXML private TextArea feedbackArea;
+    @FXML private Button submitDecisionButton;
 
-    @FXML
-    private Label pendingCountLabel;
-
-    @FXML
-    private SplitPane reviewSplitPane;
-
-    @FXML
-    private Label offersMetaLabel;
-
-    @FXML
-    private TextField offerSearchField;
-
-    @FXML
-    private VBox offersList;
-
-    @FXML
-    private Label selectedOfferLabel;
-
-    @FXML
-    private Label selectedOfferMetaLabel;
-
-    @FXML
-    private ComboBox<String> statusFilterCombo;
-
-    @FXML
-    private VBox applicationsList;
-
-    @FXML
-    private Label emptyStateLabel;
-
-    @FXML
-    private Label reviewTitleLabel;
-
-    @FXML
-    private Label reviewSubtitleLabel;
-
-    @FXML
-    private Label reviewStatusChip;
-
-    @FXML
-    private Label candidateNameLabel;
-
-    @FXML
-    private Label candidateEmailLabel;
-
-    @FXML
-    private Label scoreLabel;
-
-    @FXML
-    private Label scoreCaptionLabel;
-
-    @FXML
-    private Label appliedDateLabel;
-
-    @FXML
-    private Label statusTextLabel;
-
-    @FXML
-    private TextArea messageArea;
-
-    @FXML
-    private TextArea feedbackArea;
-
-    @FXML
-    private ComboBox<String> feedbackDecisionCombo;
-
-    @FXML
-    private Button generateFeedbackButton;
-
-    @FXML
-    private Label feedbackHelperLabel;
-
-    @FXML
-    private Button openCvButton;
-
-    @FXML
-    private Button openAtsButton;
-
-    @FXML
-    private Button submitDecisionButton;
+    @FXML private Label doneTitleLabel;
+    @FXML private Label doneSummaryLabel;
 
     private User currentUser;
     private ServiceJobApplication serviceJobApplication;
     private ServiceJobOffer serviceJobOffer;
     private ServiceUser serviceUser;
     private GeminiApplicationFeedbackService aiFeedbackService;
+    private AtsScoringEngine atsScoringEngine;
+    private AtsApplicationScoringService atsApplicationScoringService;
+    private ObjectMapper objectMapper;
 
     private final ObservableList<JobApplication> allApplications = FXCollections.observableArrayList();
     private final ObservableList<JobOffer> ownedOffers = FXCollections.observableArrayList();
@@ -173,6 +148,7 @@ public class PartnerApplicationsController implements Initializable {
 
     private JobOffer selectedOffer;
     private JobApplication selectedApplication;
+    private int currentStep = 1;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -180,22 +156,25 @@ public class PartnerApplicationsController implements Initializable {
         serviceJobOffer = new ServiceJobOffer();
         serviceUser = new ServiceUser();
         aiFeedbackService = new GeminiApplicationFeedbackService();
+        atsScoringEngine = new AtsScoringEngine();
+        atsApplicationScoringService = new AtsApplicationScoringService();
+        objectMapper = new ObjectMapper();
 
         setupFilters();
         setupInteraction();
+        resetStepOneSelection();
+        resetStepTwoSelection();
         resetReviewPanel();
+        resetDecisionPanel();
+        showStep(1);
 
         Platform.runLater(this::loadApplications);
     }
 
     public void setCurrentUser(User user) {
         this.currentUser = user;
-        if (pageTitleLabel != null) {
-            pageTitleLabel.setText("Applications to Review");
-        }
-        if (pageSubtitleLabel != null) {
-            pageSubtitleLabel.setText("Start with a job offer, then review every candidate in a cleaner side-by-side workspace.");
-        }
+        pageTitleLabel.setText("Application Review");
+        pageSubtitleLabel.setText("Pick an offer, select one candidate, review the dossier, then submit a final decision.");
         loadApplications();
     }
 
@@ -203,22 +182,15 @@ public class PartnerApplicationsController implements Initializable {
         statusFilterCombo.setItems(FXCollections.observableArrayList(
                 "All statuses",
                 JobApplicationStatus.SUBMITTED.name(),
-                JobApplicationStatus.REVIEWED.name(),
                 JobApplicationStatus.ACCEPTED.name(),
-                JobApplicationStatus.REJECTED.name(),
-                JobApplicationStatus.SCREENING.name(),
-                JobApplicationStatus.SHORTLISTED.name(),
-                JobApplicationStatus.INTERVIEW.name(),
-                JobApplicationStatus.OFFER_SENT.name(),
-                JobApplicationStatus.HIRED.name(),
-                JobApplicationStatus.WITHDRAWN.name()
+                JobApplicationStatus.REJECTED.name()
         ));
         statusFilterCombo.setValue("All statuses");
 
         feedbackDecisionCombo.setItems(FXCollections.observableArrayList(
+                JobApplicationStatus.REVIEWED.name(),
                 JobApplicationStatus.ACCEPTED.name(),
-                JobApplicationStatus.REJECTED.name(),
-                JobApplicationStatus.REVIEWED.name()
+                JobApplicationStatus.REJECTED.name()
         ));
         feedbackDecisionCombo.setValue(JobApplicationStatus.REVIEWED.name());
     }
@@ -295,23 +267,40 @@ public class PartnerApplicationsController implements Initializable {
 
     private void restoreSelection(Integer previousOfferId, Integer previousApplicationId) {
         JobOffer restoredOffer = previousOfferId == null ? null : findOfferById(previousOfferId);
-        if (restoredOffer == null && !ownedOffers.isEmpty()) {
-            restoredOffer = findBestDefaultOffer();
-        }
-
-        selectOffer(restoredOffer);
+        selectedOffer = restoredOffer;
 
         if (selectedOffer == null) {
+            resetStepOneSelection();
+            resetStepTwoSelection();
+            resetReviewPanel();
+            resetDecisionPanel();
+            showStep(1);
             return;
         }
 
+        updateStepOneSelection();
+        renderOffers();
+        renderApplicationsForSelection();
+
         JobApplication restoredApplication = previousApplicationId == null ? null : findApplicationById(previousApplicationId);
-        if (restoredApplication != null && restoredApplication.getJobOffer() != null
+        if (restoredApplication != null
+                && restoredApplication.getJobOffer() != null
                 && restoredApplication.getJobOffer().getId() == selectedOffer.getId()) {
-            selectApplication(restoredApplication);
+            selectedApplication = restoredApplication;
+            renderApplicationsForSelection();
+            nextFromCandidateButton.setDisable(false);
+            if (currentStep > 2) {
+                populateReviewPanel(restoredApplication);
+                populateDecisionPanel(restoredApplication);
+            }
         } else {
-            List<JobApplication> visibleApplications = getFilteredApplicationsForSelectedOffer();
-            selectApplication(visibleApplications.isEmpty() ? null : visibleApplications.get(0));
+            selectedApplication = null;
+            resetStepTwoSelection();
+            resetReviewPanel();
+            resetDecisionPanel();
+            if (currentStep > 2) {
+                showStep(2);
+            }
         }
     }
 
@@ -348,7 +337,9 @@ public class PartnerApplicationsController implements Initializable {
         }
 
         if (selectedOffer != null && filteredOffers.stream().noneMatch(offer -> offer.getId() == selectedOffer.getId())) {
-            selectOffer(filteredOffers.isEmpty() ? null : filteredOffers.get(0));
+            selectedOffer = null;
+            resetStepOneSelection();
+            renderApplicationsForSelection();
         }
     }
 
@@ -371,8 +362,8 @@ public class PartnerApplicationsController implements Initializable {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Label countLabel = new Label(applicationCount + (applicationCount == 1 ? " app" : " apps"));
-        countLabel.getStyleClass().add("job-offer-score-badge");
+        Label countLabel = new Label(applicationCount + (applicationCount == 1 ? " applicant" : " applicants"));
+        countLabel.getStyleClass().addAll("job-offer-score-badge", "job-offer-review-offer-count");
 
         topRow.getChildren().addAll(typeLabel, spacer, countLabel);
 
@@ -380,8 +371,9 @@ public class PartnerApplicationsController implements Initializable {
         titleLabel.getStyleClass().add("job-offer-card-title");
         titleLabel.setWrapText(true);
 
-        Label metaLabel = new Label("📍 " + safeText(offer.getLocation(), "Location not specified"));
+        Label metaLabel = new Label("Location: " + safeText(offer.getLocation(), "Not specified"));
         metaLabel.getStyleClass().add("job-offer-card-meta");
+        metaLabel.setWrapText(true);
 
         Label statusLabel = new Label(safeText(offer.getStatus(), "PENDING"));
         statusLabel.getStyleClass().add("job-offer-status-chip");
@@ -389,33 +381,93 @@ public class PartnerApplicationsController implements Initializable {
 
         Label footerLabel = new Label(applicationCount == 0
                 ? "No applications yet."
-                : "Click to review candidates for this offer.");
+                : "Click to select this offer for review.");
         footerLabel.getStyleClass().add("job-offer-card-meta");
         footerLabel.setWrapText(true);
 
-        card.getChildren().addAll(topRow, titleLabel, metaLabel, statusLabel, footerLabel);
+        HBox actionRow = new HBox(8);
+        actionRow.getStyleClass().add("job-offer-review-offer-actions");
+
+        Button viewButton = createOfferActionButton("View Details", "ghost-button", event -> {
+            event.consume();
+            AppNavigator.showJobOfferDetail(offer);
+        });
+
+        Button editButton = createOfferActionButton("Edit", "ghost-button", event -> {
+            event.consume();
+            AppNavigator.showJobOfferForm(offer);
+        });
+
+        Button deleteButton = createOfferActionButton("Delete", "job-offer-delete-button", event -> {
+            event.consume();
+            deleteOffer(offer);
+        });
+
+        actionRow.getChildren().addAll(viewButton, editButton, deleteButton);
+
+        card.getChildren().addAll(topRow, titleLabel, metaLabel, statusLabel, footerLabel, actionRow);
         card.setOnMouseClicked(event -> selectOffer(offer));
         return card;
     }
 
-    private void selectOffer(JobOffer offer) {
-        selectedOffer = offer;
-        renderOffers();
-        updateOfferHeader();
-        renderApplicationsForSelection();
+    private Button createOfferActionButton(String text, String styleClass, javafx.event.EventHandler<javafx.event.ActionEvent> action) {
+        Button button = new Button(text);
+        button.getStyleClass().addAll("job-offer-card-button", "job-offer-review-offer-action-button", styleClass);
+        button.setFocusTraversable(false);
+        button.setOnAction(action);
+        return button;
     }
 
-    private void updateOfferHeader() {
-        if (selectedOffer == null) {
-            selectedOfferLabel.setText("Select a job offer");
-            selectedOfferMetaLabel.setText("Applications will appear here.");
+    private void deleteOffer(JobOffer offer) {
+        if (!canManageOffer(offer)) {
+            showError("Access denied", "You can only delete your own offers.");
             return;
         }
 
-        int count = applicationsByOfferId.getOrDefault(selectedOffer.getId(), List.of()).size();
-        selectedOfferLabel.setText(safeText(selectedOffer.getTitle(), "Untitled offer"));
-        selectedOfferMetaLabel.setText(count + (count == 1 ? " application" : " applications")
-                + " • " + safeText(selectedOffer.getLocation(), "Location not specified"));
+        Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmDialog.setTitle("Delete job offer");
+        confirmDialog.setHeaderText(null);
+        confirmDialog.setContentText("Delete \"" + safeText(offer != null ? offer.getTitle() : null, "this offer") + "\"?");
+
+        if (confirmDialog.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
+            return;
+        }
+
+        try {
+            serviceJobOffer.delete(offer);
+            if (selectedOffer != null && offer != null && selectedOffer.getId() == offer.getId()) {
+                selectedOffer = null;
+                selectedApplication = null;
+                resetStepOneSelection();
+                resetStepTwoSelection();
+                resetReviewPanel();
+                resetDecisionPanel();
+                showStep(1);
+            }
+            loadApplications();
+        } catch (Exception exception) {
+            showError("Delete failed", exception.getMessage());
+        }
+    }
+
+    private boolean canManageOffer(JobOffer offer) {
+        if (offer == null || currentUser == null || offer.getUser() == null || offer.getUser().getId() == null) {
+            return false;
+        }
+        return RoleGuard.isAdmin(currentUser) || offer.getUser().getId().equals(currentUser.getId());
+    }
+
+    private void selectOffer(JobOffer offer) {
+        selectedOffer = offer;
+        selectedApplication = null;
+        renderOffers();
+        updateStepOneSelection();
+        renderApplicationsForSelection();
+        resetReviewPanel();
+        resetDecisionPanel();
+        if (currentStep > 2) {
+            showStep(2);
+        }
     }
 
     private void renderApplicationsForSelection() {
@@ -428,23 +480,26 @@ public class PartnerApplicationsController implements Initializable {
         emptyStateLabel.setVisible(empty);
 
         if (selectedOffer == null) {
-            emptyStateLabel.setText("Select a job offer to load its applications.");
-            resetReviewPanel();
+            emptyStateLabel.setText("Select a job offer first.");
+            resetStepTwoSelection();
             return;
         }
 
-        emptyStateLabel.setText("No applications match the current filter for this offer.");
+        emptyStateLabel.setText("No candidates match the current filter for this offer.");
+        candidatesHelperLabel.setText("Candidates are sorted by ATS score, highest first.");
 
         for (JobApplication application : filteredApplications) {
             applicationsList.getChildren().add(buildApplicationCard(application));
         }
 
         if (selectedApplication != null && filteredApplications.stream().noneMatch(app -> app.getId() == selectedApplication.getId())) {
-            selectApplication(filteredApplications.isEmpty() ? null : filteredApplications.get(0));
-        } else if (selectedApplication == null && !filteredApplications.isEmpty()) {
-            selectApplication(filteredApplications.get(0));
-        } else if (filteredApplications.isEmpty()) {
-            selectApplication(null);
+            selectedApplication = null;
+            resetStepTwoSelection();
+            if (currentStep > 2) {
+                showStep(2);
+            }
+        } else {
+            updateStepTwoSelection();
         }
     }
 
@@ -457,7 +512,9 @@ public class PartnerApplicationsController implements Initializable {
         return applicationsByOfferId.getOrDefault(selectedOffer.getId(), List.of()).stream()
                 .filter(application -> "All statuses".equals(selectedStatus)
                         || JobApplicationStatus.fromString(application.getStatus()).name().equalsIgnoreCase(selectedStatus))
-                .sorted(Comparator.comparing(JobApplication::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
+                .sorted(Comparator
+                        .comparing(JobApplication::getScore, Comparator.nullsLast(Comparator.reverseOrder()))
+                        .thenComparing(JobApplication::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
                 .collect(Collectors.toList());
     }
 
@@ -471,6 +528,11 @@ public class PartnerApplicationsController implements Initializable {
 
         HBox topRow = new HBox(10);
         topRow.setAlignment(Pos.CENTER_LEFT);
+
+        HBox layoutRow = new HBox(14);
+
+        VBox contentBox = new VBox(10);
+        HBox.setHgrow(contentBox, Priority.ALWAYS);
 
         VBox identityBox = new VBox(4);
         Label candidateLabel = new Label(resolveCandidateName(application));
@@ -495,54 +557,60 @@ public class PartnerApplicationsController implements Initializable {
         Label dateLabel = new Label("Applied " + formatDate(application.getCreatedAt()));
         dateLabel.getStyleClass().add("job-offer-card-meta");
 
-        Label scoreBadge = new Label(application.getScore() == null ? "No ATS score" : application.getScore() + "/100");
-        scoreBadge.getStyleClass().add("job-offer-score-badge");
-
-        metaRow.getChildren().addAll(dateLabel, scoreBadge);
+        metaRow.getChildren().add(dateLabel);
 
         Label messagePreview = new Label(buildMessagePreview(application));
         messagePreview.getStyleClass().add("job-offer-card-meta");
         messagePreview.setWrapText(true);
 
-        HBox actions = new HBox(8);
-        Button reviewButton = new Button("Review");
-        reviewButton.getStyleClass().addAll("primary-button", "job-offer-card-button");
-        reviewButton.setOnAction(event -> {
-            event.consume();
-            selectApplication(application);
-        });
+        VBox scorePanel = new VBox(4);
+        scorePanel.getStyleClass().addAll("job-offer-review-candidate-score-panel", resolveScorePanelStyle(application.getScore()));
+        scorePanel.setAlignment(Pos.CENTER);
 
-        Button atsButton = new Button("ATS");
-        atsButton.getStyleClass().addAll("ghost-button", "job-offer-card-button");
-        atsButton.setOnAction(event -> {
-            event.consume();
-            selectApplication(application);
-            AppNavigator.showAtsApplicationDetail(application);
-        });
+        Label scoreValueLabel = new Label(application.getScore() == null ? "—" : application.getScore().toString());
+        scoreValueLabel.getStyleClass().add("job-offer-review-candidate-score-value");
 
-        Button cvButton = new Button("CV");
-        cvButton.getStyleClass().addAll("ghost-button", "job-offer-card-button");
-        cvButton.setOnAction(event -> {
-            event.consume();
-            selectApplication(application);
-            openCvFile(application);
-        });
+        Label scoreUnitLabel = new Label(application.getScore() == null ? "No ATS score" : "ATS / 100");
+        scoreUnitLabel.getStyleClass().add("job-offer-review-candidate-score-unit");
+        scoreUnitLabel.setWrapText(true);
 
-        boolean hasCv = application.getCvFileName() != null && !application.getCvFileName().trim().isEmpty();
-        cvButton.setVisible(hasCv);
-        cvButton.setManaged(hasCv);
+        scorePanel.getChildren().addAll(scoreValueLabel, scoreUnitLabel);
 
-        actions.getChildren().addAll(reviewButton, atsButton, cvButton);
+        contentBox.getChildren().addAll(topRow, metaRow, messagePreview);
+        layoutRow.getChildren().addAll(contentBox, scorePanel);
 
-        card.getChildren().addAll(topRow, metaRow, messagePreview, actions);
+        card.getChildren().add(layoutRow);
         card.setOnMouseClicked(event -> selectApplication(application));
         return card;
     }
 
+    private String resolveScorePanelStyle(Integer score) {
+        if (score == null) {
+            return "job-offer-review-candidate-score-none";
+        }
+        if (score >= 85) {
+            return "job-offer-review-candidate-score-high";
+        }
+        if (score >= 70) {
+            return "job-offer-review-candidate-score-good";
+        }
+        if (score >= 50) {
+            return "job-offer-review-candidate-score-mid";
+        }
+        return "job-offer-review-candidate-score-low";
+    }
+
     private void selectApplication(JobApplication application) {
         selectedApplication = application;
-        renderApplicationsForSelectionSilently();
+        renderApplicationsForSelection();
+        nextFromCandidateButton.setDisable(selectedApplication == null);
+        if (currentStep > 2 && application != null) {
+            populateReviewPanel(application);
+            populateDecisionPanel(application);
+        }
+    }
 
+    private void populateReviewPanel(JobApplication application) {
         if (application == null) {
             resetReviewPanel();
             return;
@@ -550,9 +618,128 @@ public class PartnerApplicationsController implements Initializable {
 
         reviewTitleLabel.setText(resolveCandidateName(application));
         reviewSubtitleLabel.setText(safeText(application.getJobOffer() != null ? application.getJobOffer().getTitle() : null, "Unknown offer"));
+
+        JobApplicationStatus status = JobApplicationStatus.fromString(application.getStatus());
+        reviewStatusChip.setText(status.getLabel());
+        reviewStatusChip.getStyleClass().clear();
+        reviewStatusChip.getStyleClass().add("job-offer-status-chip");
+        applyStatusStyle(reviewStatusChip, status.name());
+
         candidateNameLabel.setText(resolveCandidateName(application));
         candidateEmailLabel.setText(resolveCandidateEmail(application));
         appliedDateLabel.setText(formatDate(application.getCreatedAt()));
+        statusTextLabel.setText(status.getDescription());
+        messageArea.setText(safeText(application.getMessage(), "No motivation letter provided."));
+
+        if (application.getScore() == null) {
+            scoreLabel.setText("Not scored");
+            scoreCaptionLabel.setText("No ATS score available yet.");
+        } else {
+            scoreLabel.setText(application.getScore() + "/100");
+            scoreCaptionLabel.setText(resolveScoreCaption(application.getScore()));
+        }
+
+        renderScoreBreakdown(application);
+        renderCandidateProfile(application);
+
+        boolean hasCv = application.getCvFileName() != null && !application.getCvFileName().trim().isEmpty();
+        openCvButton.setDisable(!hasCv);
+        openAtsButton.setDisable(false);
+    }
+
+    private void renderScoreBreakdown(JobApplication application) {
+        scoreBreakdownList.getChildren().clear();
+
+        ScoreBreakdown breakdown = atsScoringEngine.parseBreakdown(application.getScoreBreakdown());
+        if (breakdown.getCriteria() == null || breakdown.getCriteria().isEmpty()) {
+            Label emptyLabel = new Label("No ATS breakdown available for this application.");
+            emptyLabel.getStyleClass().add("job-offer-card-meta");
+            scoreBreakdownList.getChildren().add(emptyLabel);
+            return;
+        }
+
+        for (ScoreCriteria criteria : breakdown.getCriteria()) {
+            VBox row = new VBox(4);
+            row.getStyleClass().add("job-offer-review-breakdown-row");
+
+            HBox header = new HBox(10);
+            header.setAlignment(Pos.CENTER_LEFT);
+
+            Label nameLabel = new Label(safeText(criteria.getName(), "Criterion"));
+            nameLabel.getStyleClass().add("job-offer-section-label");
+
+            Region spacer = new Region();
+            HBox.setHgrow(spacer, Priority.ALWAYS);
+
+            Label valueLabel = new Label(criteria.getPointsAwarded() + "/" + criteria.getWeight());
+            valueLabel.getStyleClass().add("job-offer-score-badge");
+
+            header.getChildren().addAll(nameLabel, spacer, valueLabel);
+
+            Label explanationLabel = new Label(safeText(criteria.getExplanation(), "No explanation available."));
+            explanationLabel.getStyleClass().add("job-offer-card-meta");
+            explanationLabel.setWrapText(true);
+
+            row.getChildren().addAll(header, explanationLabel);
+            scoreBreakdownList.getChildren().add(row);
+        }
+    }
+
+    private void renderCandidateProfile(JobApplication application) {
+        String json = application.getExtractedData();
+        if (json == null || json.isBlank()) {
+            profileSkillsLabel.setText("Not extracted yet");
+            profileExperienceLabel.setText("—");
+            profileEducationLabel.setText("—");
+            profileLanguagesLabel.setText("—");
+            profilePortfolioLabel.setText("—");
+            profileExtractionNoteLabel.setText("No extracted profile is available for this candidate yet.");
+            profileExtractionNoteLabel.setVisible(true);
+            profileExtractionNoteLabel.setManaged(true);
+            return;
+        }
+
+        try {
+            CandidateProfile profile = objectMapper.readValue(json, CandidateProfile.class);
+            profileSkillsLabel.setText(profile.getSkills().isEmpty() ? "—" : String.join(", ", profile.getSkills()));
+            profileExperienceLabel.setText(profile.getExperienceYears() <= 0 ? "—" : profile.getExperienceYears() + " years");
+
+            String educationLevel = safeText(profile.getEducationLevel());
+            String educationField = safeText(profile.getEducationField());
+            if (!educationLevel.isEmpty() && !educationField.isEmpty()) {
+                profileEducationLabel.setText(educationLevel + " • " + educationField);
+            } else if (!educationLevel.isEmpty()) {
+                profileEducationLabel.setText(educationLevel);
+            } else if (!educationField.isEmpty()) {
+                profileEducationLabel.setText(educationField);
+            } else {
+                profileEducationLabel.setText("—");
+            }
+
+            profileLanguagesLabel.setText(profile.getLanguages().isEmpty() ? "—" : String.join(", ", profile.getLanguages()));
+            profilePortfolioLabel.setText(profile.getPortfolioUrls().isEmpty() ? "—" : String.join(", ", profile.getPortfolioUrls()));
+            profileExtractionNoteLabel.setVisible(false);
+            profileExtractionNoteLabel.setManaged(false);
+        } catch (Exception exception) {
+            profileSkillsLabel.setText("Profile unavailable");
+            profileExperienceLabel.setText("—");
+            profileEducationLabel.setText("—");
+            profileLanguagesLabel.setText("—");
+            profilePortfolioLabel.setText("—");
+            profileExtractionNoteLabel.setText("Stored extracted profile could not be parsed.");
+            profileExtractionNoteLabel.setVisible(true);
+            profileExtractionNoteLabel.setManaged(true);
+        }
+    }
+
+    private void populateDecisionPanel(JobApplication application) {
+        if (application == null) {
+            resetDecisionPanel();
+            return;
+        }
+
+        decisionCandidateLabel.setText(resolveCandidateName(application));
+        decisionOfferLabel.setText(safeText(application.getJobOffer() != null ? application.getJobOffer().getTitle() : null, "Unknown offer"));
 
         JobApplicationStatus status = JobApplicationStatus.fromString(application.getStatus());
         if (status == JobApplicationStatus.ACCEPTED
@@ -562,101 +749,132 @@ public class PartnerApplicationsController implements Initializable {
         } else {
             feedbackDecisionCombo.setValue(JobApplicationStatus.REVIEWED.name());
         }
-        reviewStatusChip.setText(status.getLabel());
-        reviewStatusChip.getStyleClass().clear();
-        reviewStatusChip.getStyleClass().add("job-offer-status-chip");
-        applyStatusStyle(reviewStatusChip, status.name());
 
-        statusTextLabel.setText(status.getDescription());
-        messageArea.setText(safeText(application.getMessage(), "No motivation letter provided."));
         feedbackArea.setText(safeText(application.getStatusMessage(), ""));
-
-        if (application.getScore() == null) {
-            scoreLabel.setText("—");
-            scoreCaptionLabel.setText("Open ATS calculator");
-        } else {
-            scoreLabel.setText(application.getScore() + "/100");
-            scoreCaptionLabel.setText(resolveScoreCaption(application.getScore()));
-        }
-
-        boolean hasCv = application.getCvFileName() != null && !application.getCvFileName().trim().isEmpty();
-        openCvButton.setDisable(!hasCv);
-        openAtsButton.setDisable(false);
-
-        submitDecisionButton.setDisable(false);
         generateFeedbackButton.setDisable(false);
-        feedbackHelperLabel.setText("Choose a decision, then generate a message. You can submit again later to update it.");
+        submitDecisionButton.setDisable(false);
+        feedbackHelperLabel.setText("Pick a status, generate AI feedback if needed, then submit.");
     }
 
-    private void renderApplicationsForSelectionSilently() {
-        for (int i = 0; i < applicationsList.getChildren().size(); i++) {
-            if (applicationsList.getChildren().get(i) instanceof VBox) {
-                // Rebuild the list only when selection styling changes.
-                renderApplicationsForSelection();
-                return;
-            }
+    private void showStep(int step) {
+        currentStep = step;
+
+        setStepState(stepOnePane, step == 1);
+        setStepState(stepTwoPane, step == 2);
+        setStepState(stepThreePane, step == 3);
+        setStepState(stepFourPane, step == 4);
+        setStepState(donePane, step == 5);
+        setStepState(fixedStepOneActions, step == 1);
+        setStepState(fixedStepTwoActions, step == 2);
+        setStepState(fixedStepThreeActions, step == 3);
+        setStepState(fixedStepFourActions, step == 4);
+
+        updateStepBadge(stepOneBadge, 1, step);
+        updateStepBadge(stepTwoBadge, 2, step);
+        updateStepBadge(stepThreeBadge, 3, step);
+        updateStepBadge(stepFourBadge, 4, step);
+    }
+
+    private void setStepState(Region pane, boolean active) {
+        pane.setManaged(active);
+        pane.setVisible(active);
+    }
+
+    private void updateStepBadge(Label badge, int badgeStep, int activeStep) {
+        badge.getStyleClass().removeAll("job-offer-step-badge-active", "job-offer-step-badge-complete");
+        if (activeStep > 4 && badgeStep == 4) {
+            badge.getStyleClass().add("job-offer-step-badge-complete");
+            return;
+        }
+        if (badgeStep < activeStep) {
+            badge.getStyleClass().add("job-offer-step-badge-complete");
+        } else if (badgeStep == activeStep) {
+            badge.getStyleClass().add("job-offer-step-badge-active");
         }
     }
 
-    private void resetReviewPanel() {
-        reviewTitleLabel.setText("Candidate Review");
-        reviewSubtitleLabel.setText("Choose an application to open the full review workspace.");
-        reviewStatusChip.getStyleClass().clear();
-        reviewStatusChip.getStyleClass().addAll("job-offer-status-chip", "job-offer-status-closed");
-        reviewStatusChip.setText("No selection");
-        candidateNameLabel.setText("Select an application");
-        candidateEmailLabel.setText("Candidate details will appear here.");
-        scoreLabel.setText("Not scored");
-        scoreCaptionLabel.setText("Run ATS when you are ready.");
-        appliedDateLabel.setText("Waiting for a selection");
-        statusTextLabel.setText("Pick a candidate to inspect their review status.");
-        messageArea.setText("Select an application to read the candidate's motivation message.");
-        feedbackArea.setText("");
-        feedbackDecisionCombo.setValue(JobApplicationStatus.REVIEWED.name());
-        generateFeedbackButton.setDisable(true);
-        feedbackHelperLabel.setText("Choose a decision, then generate a message when a candidate is selected.");
-        openCvButton.setDisable(true);
-        openAtsButton.setDisable(true);
-        submitDecisionButton.setDisable(true);
-    }
-
-    private void enrichApplicationReferences(JobApplication application,
-                                             Map<Integer, JobOffer> offersById,
-                                             Map<Integer, User> usersById) {
-        if (application == null) {
+    private void updateStepOneSelection() {
+        if (selectedOffer == null) {
+            resetStepOneSelection();
             return;
         }
 
-        if (application.getJobOffer() != null) {
-            JobOffer fullOffer = offersById.get(application.getJobOffer().getId());
-            if (fullOffer != null) {
-                application.setJobOffer(fullOffer);
-            }
-        }
-
-        if (application.getUser() != null && application.getUser().getId() != null) {
-            User fullUser = usersById.get(application.getUser().getId());
-            if (fullUser != null) {
-                application.setUser(fullUser);
-            }
-        }
+        int count = applicationsByOfferId.getOrDefault(selectedOffer.getId(), List.of()).size();
+        selectedOfferHeroLabel.setText(safeText(selectedOffer.getTitle(), "Untitled offer"));
+        selectedOfferHeroMetaLabel.setText(count + (count == 1 ? " candidate" : " candidates")
+                + " • " + safeText(selectedOffer.getLocation(), "Location not specified"));
+        nextFromOfferButton.setDisable(false);
     }
 
-    private boolean isOwnedOffer(JobOffer offer) {
-        if (offer == null || offer.getUser() == null || currentUser == null) {
-            return false;
-        }
-
-        return RoleGuard.isAdmin(currentUser)
-                || (offer.getUser().getId() != null && offer.getUser().getId().equals(currentUser.getId()));
+    private void resetStepOneSelection() {
+        selectedOfferHeroLabel.setText("No offer selected yet");
+        selectedOfferHeroMetaLabel.setText("Click any offer card to select it, then continue.");
+        nextFromOfferButton.setDisable(true);
     }
 
-    private boolean isApplicationForOwnedOffer(JobApplication application, List<Integer> ownedOfferIds) {
-        if (application == null || application.getJobOffer() == null || application.getJobOffer().getId() <= 0) {
-            return false;
+    private void updateStepTwoSelection() {
+        if (selectedOffer == null) {
+            selectedOfferLabel.setText("Select a job offer first");
+            selectedOfferMetaLabel.setText("Candidates will appear here.");
+            scoreAllCandidatesButton.setDisable(true);
+            nextFromCandidateButton.setDisable(true);
+            return;
         }
 
-        return RoleGuard.isAdmin(currentUser) || ownedOfferIds.contains(application.getJobOffer().getId());
+        int count = getFilteredApplicationsForSelectedOffer().size();
+        selectedOfferLabel.setText(safeText(selectedOffer.getTitle(), "Untitled offer"));
+        selectedOfferMetaLabel.setText(count + (count == 1 ? " visible candidate" : " visible candidates"));
+        scoreAllCandidatesButton.setDisable(count == 0);
+        nextFromCandidateButton.setDisable(selectedApplication == null);
+    }
+
+    private void resetStepTwoSelection() {
+        if (selectedOffer == null) {
+            selectedOfferLabel.setText("Select a job offer first");
+            selectedOfferMetaLabel.setText("Candidates will appear here.");
+            candidatesHelperLabel.setText("Pick an offer first, then you can calculate ATS scores for all of its candidates.");
+        } else {
+            updateStepTwoSelection();
+            candidatesHelperLabel.setText("You can calculate ATS scores for every visible candidate, then review them from highest to lowest.");
+        }
+        scoreAllCandidatesButton.setDisable(selectedOffer == null);
+        nextFromCandidateButton.setDisable(true);
+    }
+
+    private void resetReviewPanel() {
+        reviewTitleLabel.setText("Review & score");
+        reviewSubtitleLabel.setText("Select a candidate in step 2 to load the full ATS breakdown, profile, and cover letter.");
+        reviewStatusChip.getStyleClass().clear();
+        reviewStatusChip.getStyleClass().addAll("job-offer-status-chip", "job-offer-status-closed");
+        reviewStatusChip.setText("Waiting");
+        candidateNameLabel.setText("No candidate selected");
+        candidateEmailLabel.setText("Candidate details will appear here.");
+        scoreLabel.setText("Not scored");
+        scoreCaptionLabel.setText("ATS details will appear here.");
+        appliedDateLabel.setText("—");
+        statusTextLabel.setText("—");
+        messageArea.setText("No cover letter loaded.");
+        scoreBreakdownList.getChildren().setAll(new Label("No ATS breakdown available."));
+        profileSkillsLabel.setText("—");
+        profileExperienceLabel.setText("—");
+        profileEducationLabel.setText("—");
+        profileLanguagesLabel.setText("—");
+        profilePortfolioLabel.setText("—");
+        profileExtractionNoteLabel.setText("No extracted profile is available for this candidate yet.");
+        profileExtractionNoteLabel.setVisible(true);
+        profileExtractionNoteLabel.setManaged(true);
+        openCvButton.setDisable(true);
+        openAtsButton.setDisable(true);
+    }
+
+    private void resetDecisionPanel() {
+        decisionCandidateLabel.setText("No candidate selected");
+        decisionOfferLabel.setText("Pick a candidate in step 2 first.");
+        feedbackDecisionCombo.setValue(JobApplicationStatus.REVIEWED.name());
+        feedbackArea.setText("");
+        generateFeedbackButton.setDisable(true);
+        submitDecisionButton.setDisable(true);
+        feedbackHelperLabel.setText("Step 4 unlocks after you review a selected candidate.");
     }
 
     @FXML
@@ -670,8 +888,96 @@ public class PartnerApplicationsController implements Initializable {
     }
 
     @FXML
-    private void onOpenAtsPipelineBoard() {
-        AppNavigator.showAtsPipelineBoard();
+    private void onContinueToCandidates() {
+        if (selectedOffer == null) {
+            showError("Offer required", "Pick an offer before continuing.");
+            return;
+        }
+        showStep(2);
+    }
+
+    @FXML
+    private void onBackToOffers() {
+        showStep(1);
+    }
+
+    @FXML
+    private void onScoreAllCandidates() {
+        if (selectedOffer == null) {
+            showError("Offer required", "Pick an offer before calculating ATS scores.");
+            return;
+        }
+
+        List<JobApplication> candidatesToScore = getFilteredApplicationsForSelectedOffer();
+        if (candidatesToScore.isEmpty()) {
+            showError("No candidates", "There are no visible candidates to score for this offer.");
+            return;
+        }
+
+        scoreAllCandidatesButton.setDisable(true);
+        candidatesHelperLabel.setText("Calculating ATS scores for visible candidates...");
+
+        Thread thread = new Thread(() -> {
+            int successCount = 0;
+            int failedCount = 0;
+
+            for (JobApplication application : candidatesToScore) {
+                try {
+                    atsApplicationScoringService.extractAndScore(application);
+                    application.setUpdatedAt(Timestamp.from(Instant.now()));
+                    serviceJobApplication.update(application);
+                    successCount++;
+                } catch (Exception exception) {
+                    failedCount++;
+                }
+            }
+
+            final int scored = successCount;
+            final int failed = failedCount;
+            Platform.runLater(() -> {
+                scoreAllCandidatesButton.setDisable(false);
+                loadApplications();
+                if (failed == 0) {
+                    candidatesHelperLabel.setText("Scored " + scored + " candidate" + (scored == 1 ? "" : "s") + ". List sorted highest to lowest.");
+                } else {
+                    candidatesHelperLabel.setText("Scored " + scored + " candidate" + (scored == 1 ? "" : "s")
+                            + ", " + failed + " failed. List sorted by available ATS scores.");
+                }
+            });
+        });
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    @FXML
+    private void onContinueToReview() {
+        if (selectedApplication == null) {
+            showError("Candidate required", "Pick a candidate before continuing.");
+            return;
+        }
+        populateReviewPanel(selectedApplication);
+        populateDecisionPanel(selectedApplication);
+        showStep(3);
+    }
+
+    @FXML
+    private void onBackToCandidates() {
+        showStep(2);
+    }
+
+    @FXML
+    private void onContinueToDecision() {
+        if (selectedApplication == null) {
+            showError("Candidate required", "Pick a candidate before continuing.");
+            return;
+        }
+        populateDecisionPanel(selectedApplication);
+        showStep(4);
+    }
+
+    @FXML
+    private void onBackToReview() {
+        showStep(3);
     }
 
     @FXML
@@ -686,6 +992,49 @@ public class PartnerApplicationsController implements Initializable {
         if (selectedApplication != null) {
             AppNavigator.showAtsApplicationDetail(selectedApplication);
         }
+    }
+
+    @FXML
+    private void onGenerateFeedback() {
+        if (selectedApplication == null) {
+            showError("No application selected", "Select an application before generating AI feedback.");
+            return;
+        }
+
+        String selectedDecision = feedbackDecisionCombo.getValue();
+        if (selectedDecision == null || selectedDecision.isBlank()) {
+            showError("Decision required", "Choose the decision type first.");
+            return;
+        }
+
+        if (!aiFeedbackService.isEnabled()) {
+            showError("AI unavailable", "AI feedback generation is not configured in this environment.");
+            return;
+        }
+
+        JobApplicationStatus decision = JobApplicationStatus.fromString(selectedDecision);
+        generateFeedbackButton.setDisable(true);
+        feedbackHelperLabel.setText("Generating message with AI...");
+
+        Thread thread = new Thread(() -> {
+            try {
+                String guidance = feedbackArea.getText() == null ? null : feedbackArea.getText().trim();
+                String generatedMessage = aiFeedbackService.generateFeedback(selectedApplication, decision, guidance);
+                Platform.runLater(() -> {
+                    feedbackArea.setText(generatedMessage);
+                    feedbackHelperLabel.setText("AI message generated. You can edit it before submission.");
+                    generateFeedbackButton.setDisable(false);
+                });
+            } catch (Exception exception) {
+                Platform.runLater(() -> {
+                    feedbackHelperLabel.setText("AI generation failed.");
+                    generateFeedbackButton.setDisable(false);
+                    showError("AI generation failed", exception.getMessage());
+                });
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
     }
 
     @FXML
@@ -719,7 +1068,6 @@ public class PartnerApplicationsController implements Initializable {
                     }
 
                     selectedApplication.setScore(scoreValue);
-                    scoreCaptionLabel.setText(resolveScoreCaption(scoreValue));
                     updateSelectedStatus(targetStatus, true);
                 } catch (NumberFormatException exception) {
                     showError("Validation", "Please enter a valid numeric score.");
@@ -732,46 +1080,17 @@ public class PartnerApplicationsController implements Initializable {
     }
 
     @FXML
-    private void onGenerateFeedback() {
-        if (selectedApplication == null) {
-            showError("No application selected", "Select an application before generating AI feedback.");
-            return;
-        }
+    private void onReviewAnother() {
+        selectedApplication = null;
+        renderApplicationsForSelection();
+        resetReviewPanel();
+        resetDecisionPanel();
+        showStep(selectedOffer == null ? 1 : 2);
+    }
 
-        String selectedDecision = feedbackDecisionCombo.getValue();
-        if (selectedDecision == null || selectedDecision.isBlank()) {
-            showError("Decision required", "Choose the decision type first.");
-            return;
-        }
-
-        if (!aiFeedbackService.isEnabled()) {
-            showError("AI unavailable", "AI feedback generation is not configured in this environment.");
-            return;
-        }
-
-        JobApplicationStatus decision = JobApplicationStatus.fromString(selectedDecision);
-        generateFeedbackButton.setDisable(true);
-        feedbackHelperLabel.setText("Generating message with AI...");
-
-        Thread thread = new Thread(() -> {
-            try {
-                String guidance = feedbackArea.getText() == null ? null : feedbackArea.getText().trim();
-                String generatedMessage = aiFeedbackService.generateFeedback(selectedApplication, decision, guidance);
-                Platform.runLater(() -> {
-                    feedbackArea.setText(generatedMessage);
-                    feedbackHelperLabel.setText("AI message generated. You can edit it before sending.");
-                    generateFeedbackButton.setDisable(false);
-                });
-            } catch (Exception exception) {
-                Platform.runLater(() -> {
-                    feedbackHelperLabel.setText("AI generation failed.");
-                    generateFeedbackButton.setDisable(false);
-                    showError("AI generation failed", exception.getMessage());
-                });
-            }
-        });
-        thread.setDaemon(true);
-        thread.start();
+    @FXML
+    private void onDoneBackToOffers() {
+        showStep(1);
     }
 
     private void updateSelectedStatus(JobApplicationStatus targetStatus, boolean notifyCandidate) {
@@ -787,11 +1106,6 @@ public class PartnerApplicationsController implements Initializable {
 
             selectedApplication.setStatus(targetStatus.name());
             selectedApplication.setUpdatedAt(Timestamp.from(Instant.now()));
-            reviewStatusChip.setText(targetStatus.getLabel());
-            reviewStatusChip.getStyleClass().clear();
-            reviewStatusChip.getStyleClass().add("job-offer-status-chip");
-            applyStatusStyle(reviewStatusChip, targetStatus.name());
-            statusTextLabel.setText(targetStatus.getDescription());
             selectedApplication.setStatusMessage(feedback.isEmpty() ? null : feedback);
 
             if (notifyCandidate) {
@@ -800,8 +1114,15 @@ public class PartnerApplicationsController implements Initializable {
             }
 
             serviceJobApplication.update(selectedApplication);
+
+            doneTitleLabel.setText("Decision submitted");
+            doneSummaryLabel.setText("Candidate: " + resolveCandidateName(selectedApplication)
+                    + "\nOffer: " + safeText(selectedApplication.getJobOffer() != null ? selectedApplication.getJobOffer().getTitle() : null, "Unknown offer")
+                    + "\nStatus: " + targetStatus.getLabel());
+
             feedbackHelperLabel.setText("Submitted status: " + targetStatus.getLabel());
             loadApplications();
+            showStep(5);
         } catch (Exception exception) {
             showError("Update failed", exception.getMessage());
         }
@@ -931,6 +1252,45 @@ public class PartnerApplicationsController implements Initializable {
         return null;
     }
 
+    private void enrichApplicationReferences(JobApplication application,
+                                             Map<Integer, JobOffer> offersById,
+                                             Map<Integer, User> usersById) {
+        if (application == null) {
+            return;
+        }
+
+        if (application.getJobOffer() != null) {
+            JobOffer fullOffer = offersById.get(application.getJobOffer().getId());
+            if (fullOffer != null) {
+                application.setJobOffer(fullOffer);
+            }
+        }
+
+        if (application.getUser() != null && application.getUser().getId() != null) {
+            User fullUser = usersById.get(application.getUser().getId());
+            if (fullUser != null) {
+                application.setUser(fullUser);
+            }
+        }
+    }
+
+    private boolean isOwnedOffer(JobOffer offer) {
+        if (offer == null || offer.getUser() == null || currentUser == null) {
+            return false;
+        }
+
+        return RoleGuard.isAdmin(currentUser)
+                || (offer.getUser().getId() != null && offer.getUser().getId().equals(currentUser.getId()));
+    }
+
+    private boolean isApplicationForOwnedOffer(JobApplication application, List<Integer> ownedOfferIds) {
+        if (application == null || application.getJobOffer() == null || application.getJobOffer().getId() <= 0) {
+            return false;
+        }
+
+        return RoleGuard.isAdmin(currentUser) || ownedOfferIds.contains(application.getJobOffer().getId());
+    }
+
     private JobOffer findOfferById(Integer offerId) {
         if (offerId == null) {
             return null;
@@ -947,15 +1307,6 @@ public class PartnerApplicationsController implements Initializable {
         }
         return allApplications.stream()
                 .filter(application -> application != null && application.getId() == applicationId)
-                .findFirst()
-                .orElse(null);
-    }
-
-    private JobOffer findBestDefaultOffer() {
-        return ownedOffers.stream()
-                .sorted(Comparator.<JobOffer>comparingInt(offer -> applicationsByOfferId.getOrDefault(offer.getId(), List.of()).size())
-                        .reversed()
-                        .thenComparing(this::offerSortDate, Comparator.nullsLast(Comparator.reverseOrder())))
                 .findFirst()
                 .orElse(null);
     }

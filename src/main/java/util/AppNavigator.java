@@ -149,14 +149,6 @@ public final class AppNavigator {
         }
     }
 
-    // ── ATS Module ──────────────────────────────────────────────────
-
-    public static void showAtsPipelineBoard() {
-        if (appShellController != null) {
-            appShellController.showAtsPipelineBoardView();
-        }
-    }
-
     public static void showAtsApplicationDetail(JobApplication application) {
         if (appShellController != null) {
             appShellController.showAtsApplicationDetailView(application);

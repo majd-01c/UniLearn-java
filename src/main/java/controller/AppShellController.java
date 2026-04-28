@@ -735,25 +735,6 @@ public class AppShellController implements Initializable {
         });
     }
 
-    // ========================
-    // ATS MODULE NAVIGATION
-    // ========================
-
-    public void showAtsPipelineBoardView() {
-        if (!ensureAuthenticated()) return;
-        if (RoleGuard.isStudent(currentUser)) {
-            showWarning("Access Denied", "Only partners and administrators can access the ATS Pipeline Board.");
-            showJobOffersView();
-            return;
-        }
-        setHeader("ATS Pipeline Board", "Review, score and advance candidates through the hiring pipeline");
-        loadCenter("/view/job_offer/ats-pipeline-board.fxml", controller -> {
-            if (controller instanceof AtsPipelineBoardController c) {
-                c.setCurrentUser(currentUser);
-            }
-        });
-    }
-
     public void showAtsApplicationDetailView(JobApplication application) {
         if (!ensureAuthenticated()) return;
         if (application == null || application.getId() <= 0) {

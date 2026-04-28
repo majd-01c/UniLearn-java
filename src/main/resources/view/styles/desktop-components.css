@@ -555,12 +555,119 @@
     -fx-effect: dropshadow(gaussian, -ul-shadow, 14, 0.16, 0, 4);
 }
 
+.job-offer-review-offer-actions {
+    -fx-padding: 8 0 0 0;
+    -fx-alignment: center-left;
+}
+
+.job-offer-review-offer-action-button {
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-padding: 7 12;
+}
+
+.job-offer-review-offer-count {
+    -fx-font-size: 15px;
+    -fx-font-weight: 900;
+    -fx-padding: 6 12;
+    -fx-background-radius: 10;
+    -fx-text-fill: #8fe1ff;
+    -fx-background-color: rgba(21, 167, 222, 0.28);
+}
+
 .job-offer-review-offer-card-selected,
 .job-offer-review-application-card-selected {
     -fx-border-color: derive(-ul-front-primary, 16%);
     -fx-border-width: 2;
     -fx-background-color: linear-gradient(to bottom right, derive(-ul-info-bg, 10%), derive(-ul-card-bg, 3%));
     -fx-effect: dropshadow(gaussian, derive(-ul-front-primary, 78%), 16, 0.1, 0, 3);
+}
+
+.job-offer-review-candidate-score-panel {
+    -fx-min-width: 110;
+    -fx-pref-width: 110;
+    -fx-alignment: center;
+    -fx-border-width: 1;
+    -fx-border-radius: 18;
+    -fx-background-radius: 18;
+    -fx-padding: 14 10;
+}
+
+.job-offer-review-candidate-score-value {
+    -fx-font-size: 30px;
+    -fx-font-weight: 900;
+}
+
+.job-offer-review-candidate-score-unit {
+    -fx-font-size: 10px;
+    -fx-font-weight: 800;
+    -fx-text-alignment: center;
+    -fx-alignment: center;
+}
+
+.job-offer-review-candidate-score-high {
+    -fx-background-color: rgba(0, 184, 148, 0.18);
+    -fx-border-color: rgba(0, 184, 148, 0.46);
+}
+
+.job-offer-review-candidate-score-high .job-offer-review-candidate-score-value {
+    -fx-text-fill: #2ce0b8;
+}
+
+.job-offer-review-candidate-score-high .job-offer-review-candidate-score-unit {
+    -fx-text-fill: #a5f6df;
+}
+
+.job-offer-review-candidate-score-good {
+    -fx-background-color: rgba(21, 167, 222, 0.18);
+    -fx-border-color: rgba(21, 167, 222, 0.46);
+}
+
+.job-offer-review-candidate-score-good .job-offer-review-candidate-score-value {
+    -fx-text-fill: #58cbff;
+}
+
+.job-offer-review-candidate-score-good .job-offer-review-candidate-score-unit {
+    -fx-text-fill: #bfeeff;
+}
+
+.job-offer-review-candidate-score-mid {
+    -fx-background-color: rgba(243, 156, 18, 0.18);
+    -fx-border-color: rgba(243, 156, 18, 0.48);
+}
+
+.job-offer-review-candidate-score-mid .job-offer-review-candidate-score-value {
+    -fx-text-fill: #ffbe55;
+}
+
+.job-offer-review-candidate-score-mid .job-offer-review-candidate-score-unit {
+    -fx-text-fill: #ffe0a6;
+}
+
+.job-offer-review-candidate-score-low {
+    -fx-background-color: rgba(255, 79, 94, 0.16);
+    -fx-border-color: rgba(255, 79, 94, 0.48);
+}
+
+.job-offer-review-candidate-score-low .job-offer-review-candidate-score-value {
+    -fx-text-fill: #ff7f88;
+}
+
+.job-offer-review-candidate-score-low .job-offer-review-candidate-score-unit {
+    -fx-text-fill: #ffc0c5;
+}
+
+.job-offer-review-candidate-score-none {
+    -fx-background-color: rgba(111, 122, 137, 0.18);
+    -fx-border-color: rgba(111, 122, 137, 0.38);
+}
+
+.job-offer-review-candidate-score-none .job-offer-review-candidate-score-value {
+    -fx-text-fill: #c7d0dc;
+}
+
+.job-offer-review-candidate-score-none .job-offer-review-candidate-score-unit {
+    -fx-text-fill: #9ea9b7;
 }
 
 .job-offer-review-hero-card,
@@ -612,6 +719,67 @@
 
 .job-offer-review-actions .ghost-button:hover {
     -fx-background-color: derive(-ul-surface-1, 8%);
+}
+
+.job-offer-review-steps {
+    -fx-padding: 16 18;
+}
+
+.job-offer-review-step {
+    -fx-min-width: 0;
+}
+
+.job-offer-review-step .job-offer-card-meta {
+    -fx-font-size: 12px;
+    -fx-line-spacing: 1px;
+}
+
+.job-offer-step-badge {
+    -fx-background-color: #eef4fc;
+    -fx-border-color: #cad8ea;
+    -fx-border-width: 1.2;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+    -fx-padding: 9 14;
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #38506f;
+    -fx-alignment: center-left;
+}
+
+.job-offer-step-badge-active {
+    -fx-background-color: #dcebff;
+    -fx-border-color: #2f71f0;
+    -fx-text-fill: #123b76;
+    -fx-effect: dropshadow(gaussian, rgba(47, 113, 240, 0.18), 10, 0.1, 0, 2);
+}
+
+.job-offer-step-badge-complete {
+    -fx-background-color: #ddf8ee;
+    -fx-border-color: #00b894;
+    -fx-text-fill: #0d5c48;
+}
+
+.job-offer-review-breakdown-row {
+    -fx-background-color: derive(-ul-surface-1, 4%);
+    -fx-border-color: derive(-ul-outline, 18%);
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 12 14;
+}
+
+.job-offer-review-sticky-actions {
+    -fx-padding: 14 0 0 0;
+    -fx-border-color: derive(-ul-outline, 14%) transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+}
+
+.job-offer-review-fixed-actions {
+    -fx-padding: 12 18;
+    -fx-border-color: derive(-ul-outline, 14%);
 }
 
 .job-offer-form-shell {

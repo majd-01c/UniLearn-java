@@ -13,7 +13,7 @@
 
     <!-- ── Toolbar ─────────────────────────────────────────────────────────── -->
     <HBox spacing="10" alignment="CENTER_LEFT">
-        <Button fx:id="backButton" text="← Back to Board" styleClass="ghost-button" onAction="#onBack"/>
+        <Button fx:id="backButton" text="← Back to Applications" styleClass="ghost-button" onAction="#onBack"/>
         <Label fx:id="pageTitleLabel" text="Application Detail"
                styleClass="job-offer-page-title"/>
         <Region HBox.hgrow="ALWAYS"/>
