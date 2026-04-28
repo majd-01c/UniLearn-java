@@ -12,8 +12,6 @@ public class ScoreBreakdown {
 
     private List<ScoreCriteria> criteria = new ArrayList<>();
     private int totalScore;
-    private boolean disqualified;
-    private String disqualifyReason;
     private Instant computedAt;
 
     public ScoreBreakdown() {}
@@ -31,9 +29,6 @@ public class ScoreBreakdown {
         }
         StringBuilder sb = new StringBuilder();
         sb.append("ATS Score: ").append(totalScore).append("/100\n");
-        if (disqualified) {
-            sb.append("⚠ DISQUALIFIED: ").append(disqualifyReason).append("\n");
-        }
         sb.append("─".repeat(40)).append("\n");
         for (ScoreCriteria c : criteria) {
             sb.append(c.toString()).append("\n");
@@ -48,12 +43,6 @@ public class ScoreBreakdown {
 
     public int getTotalScore() { return totalScore; }
     public void setTotalScore(int totalScore) { this.totalScore = totalScore; }
-
-    public boolean isDisqualified() { return disqualified; }
-    public void setDisqualified(boolean disqualified) { this.disqualified = disqualified; }
-
-    public String getDisqualifyReason() { return disqualifyReason; }
-    public void setDisqualifyReason(String disqualifyReason) { this.disqualifyReason = disqualifyReason; }
 
     public Instant getComputedAt() { return computedAt; }
     public void setComputedAt(Instant computedAt) { this.computedAt = computedAt; }

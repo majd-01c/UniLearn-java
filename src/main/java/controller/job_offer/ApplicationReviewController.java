@@ -2,11 +2,13 @@ package controller.job_offer;
 
 import entities.User;
 import entities.job_offer.JobApplication;
+import entities.job_offer.JobApplicationStatus;
 import entities.job_offer.JobOffer;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
+import service.job_offer.GeminiApplicationFeedbackService;
 import services.job_offer.ServiceJobApplication;
 import services.job_offer.ServiceJobOffer;
 import util.AppNavigator;
@@ -56,11 +58,13 @@ public class ApplicationReviewController implements Initializable {
     private User currentUser;
     private ServiceJobApplication serviceJobApplication;
     private ServiceJobOffer serviceJobOffer;
+    private GeminiApplicationFeedbackService aiFeedbackService;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         serviceJobApplication = new ServiceJobApplication();
         serviceJobOffer = new ServiceJobOffer();
+        aiFeedbackService = new GeminiApplicationFeedbackService();
 
         // Ensure reject button keeps themed style even if FXML class parsing is inconsistent.
         if (rejectButton != null) {
@@ -158,12 +162,21 @@ public class ApplicationReviewController implements Initializable {
                 application.setStatus("ACCEPTED");
                 application.setScore(scoreValue);
                 application.setUpdatedAt(new Timestamp(Instant.now().toEpochMilli()));
-                
+                application.setStatusNotified((byte) 0);
+                application.setStatusNotifiedAt(null);
+                String feedback = promptForDecisionFeedback(JobApplicationStatus.ACCEPTED, application.getStatusMessage());
+                if (feedback == null) {
+                    return;
+                }
+                application.setStatusMessage(feedback);
+
                 serviceJobApplication.update(application);
                 showInfo("Success", "Application approved successfully");
-                AppNavigator.showMyJobApplications();
+                AppNavigator.showPartnerApplications();
             } catch (NumberFormatException e) {
                 showError("Validation", "Please enter a valid number");
+            } catch (Exception e) {
+                showError("Error", "Failed to approve application: " + e.getMessage());
             }
         });
     }
@@ -175,26 +188,23 @@ public class ApplicationReviewController implements Initializable {
             return;
         }
 
-        TextInputDialog feedbackDialog = new TextInputDialog();
-        feedbackDialog.setTitle("Reject Application");
-        feedbackDialog.setHeaderText("Provide feedback (optional)");
-        feedbackDialog.setContentText("Feedback:");
-
-        feedbackDialog.showAndWait().ifPresent(feedback -> {
-            try {
-                application.setStatus("REJECTED");
-                application.setUpdatedAt(new Timestamp(Instant.now().toEpochMilli()));
-                if (!feedback.isEmpty()) {
-                    application.setStatusMessage(feedback);
-                }
-                
-                serviceJobApplication.update(application);
-                showInfo("Success", "Application rejected");
-                AppNavigator.showMyJobApplications();
-            } catch (Exception e) {
-                showError("Error", "Failed to reject application: " + e.getMessage());
+        try {
+            application.setStatus("REJECTED");
+            application.setUpdatedAt(new Timestamp(Instant.now().toEpochMilli()));
+            application.setStatusNotified((byte) 0);
+            application.setStatusNotifiedAt(null);
+            String feedback = promptForDecisionFeedback(JobApplicationStatus.REJECTED, application.getStatusMessage());
+            if (feedback == null) {
+                return;
             }
-        });
+            application.setStatusMessage(feedback);
+
+            serviceJobApplication.update(application);
+            showInfo("Success", "Application rejected");
+            AppNavigator.showPartnerApplications();
+        } catch (Exception e) {
+            showError("Error", "Failed to reject application: " + e.getMessage());
+        }
     }
 
     @FXML
@@ -239,5 +249,38 @@ public class ApplicationReviewController implements Initializable {
         alert.setTitle(title);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private String promptForDecisionFeedback(JobApplicationStatus decision, String existingMessage) {
+        String draftMessage = resolveDecisionFeedback(decision, existingMessage);
+
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle(decision == JobApplicationStatus.ACCEPTED ? "Approval Feedback" : "Rejection Feedback");
+        dialog.setHeaderText("Review the message that will be sent to the student.");
+
+        ButtonType saveButtonType = new ButtonType("Save Message", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+
+        TextArea feedbackArea = new TextArea(draftMessage);
+        feedbackArea.setWrapText(true);
+        feedbackArea.setPrefRowCount(10);
+        feedbackArea.setPrefColumnCount(60);
+        dialog.getDialogPane().setContent(feedbackArea);
+
+        dialog.setResultConverter(buttonType -> buttonType == saveButtonType ? feedbackArea.getText() : null);
+
+        return dialog.showAndWait()
+                .map(String::trim)
+                .filter(text -> !text.isEmpty())
+                .orElse(null);
+    }
+
+    private String resolveDecisionFeedback(JobApplicationStatus decision, String existingMessage) {
+        String trimmedExisting = existingMessage == null ? "" : existingMessage.trim();
+        if (!trimmedExisting.isEmpty()) {
+            return trimmedExisting;
+        }
+
+        return aiFeedbackService.generateFeedback(application, decision);
     }
 }

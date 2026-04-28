@@ -47,9 +47,6 @@
                     <HBox spacing="8" alignment="CENTER_LEFT">
                         <Label fx:id="stageChipLabel" text="SUBMITTED"
                                styleClass="job-offer-status-chip"/>
-                        <Label fx:id="disqualifiedLabel" text="⚠ DISQUALIFIED"
-                               style="-fx-text-fill: #ff4f5e; -fx-font-weight: 800; -fx-font-size: 11px;"
-                               visible="false" managed="false"/>
                     </HBox>
                 </VBox>
 
@@ -88,9 +85,6 @@
                             </placeholder>
                         </TableView>
 
-                        <Label fx:id="disqualifyReasonLabel" text=""
-                               style="-fx-text-fill: #ff7f88; -fx-font-size: 11px; -fx-font-weight: 700;"
-                               wrapText="true" visible="false" managed="false"/>
                     </VBox>
 
                     <!-- Notes / Cover Letter -->
@@ -140,8 +134,11 @@
                         <Label text="Languages" styleClass="job-offer-admin-label"/>
                         <Label fx:id="langsLabel" text="—" styleClass="job-offer-card-meta" wrapText="true"/>
 
-                        <Label text="Current Title" styleClass="job-offer-admin-label"/>
-                        <Label fx:id="titleLabel" text="—" styleClass="job-offer-card-meta"/>
+                        <Label text="Education Field" styleClass="job-offer-admin-label"/>
+                        <Label fx:id="educationFieldLabel" text="—" styleClass="job-offer-card-meta" wrapText="true"/>
+
+                        <Label text="Portfolio URLs" styleClass="job-offer-admin-label"/>
+                        <Label fx:id="portfolioUrlsLabel" text="—" styleClass="job-offer-card-meta" wrapText="true"/>
 
                         <Label fx:id="extractionNoteLabel"
                                text="ⓘ Click 'Extract CV (AI)' to populate this panel"

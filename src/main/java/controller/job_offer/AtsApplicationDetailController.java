@@ -50,7 +50,6 @@ public class AtsApplicationDetailController implements Initializable {
     @FXML private Label                  candidateNameLabel;
     @FXML private Label                  candidateEmailLabel;
     @FXML private Label                  stageChipLabel;
-    @FXML private Label                  disqualifiedLabel;
     @FXML private ComboBox<String>       moveStageCombo;
 
     @FXML private TableView<ScoreCriteria>          breakdownTable;
@@ -58,7 +57,6 @@ public class AtsApplicationDetailController implements Initializable {
     @FXML private TableColumn<ScoreCriteria, Integer> colWeight;
     @FXML private TableColumn<ScoreCriteria, Integer> colScore;
     @FXML private TableColumn<ScoreCriteria, String>  colExplanation;
-    @FXML private Label                              disqualifyReasonLabel;
 
     @FXML private TextArea  coverLetterArea;
     @FXML private TextField noteField;
@@ -70,7 +68,8 @@ public class AtsApplicationDetailController implements Initializable {
     @FXML private Label     expLabel;
     @FXML private Label     eduLabel;
     @FXML private Label     langsLabel;
-    @FXML private Label     titleLabel;
+    @FXML private Label     educationFieldLabel;
+    @FXML private Label     portfolioUrlsLabel;
     @FXML private Label     extractionNoteLabel;
 
     @FXML private VBox      auditList;
@@ -81,6 +80,7 @@ public class AtsApplicationDetailController implements Initializable {
     private ServiceJobApplication serviceJobApplication;
     private AtsScoringEngine    scoringEngine;
     private GeminiCvExtractorService geminiService;
+    private AtsApplicationScoringService applicationScoringService;
     private AtsAuditService     auditService;
     private final ObjectMapper  objectMapper = new ObjectMapper();
 
@@ -91,6 +91,7 @@ public class AtsApplicationDetailController implements Initializable {
         serviceJobApplication = new ServiceJobApplication();
         scoringEngine         = new AtsScoringEngine();
         geminiService         = new GeminiCvExtractorService();
+        applicationScoringService = new AtsApplicationScoringService();
         auditService          = new AtsAuditService();
         setupBreakdownTable();
     }
@@ -136,7 +137,7 @@ public class AtsApplicationDetailController implements Initializable {
         if (application.getScore() != null) {
             int s = application.getScore();
             scoreBigLabel.setText(String.valueOf(s));
-            String color = s >= 70 ? "#00b894" : s >= 40 ? "#f39c12" : "#ff4f5e";
+            String color = s >= 75 ? "#00b894" : s >= 50 ? "#f39c12" : "#ff4f5e";
             scoreBigLabel.setStyle("-fx-text-fill: " + color +
                 "; -fx-font-size: 30px; -fx-font-weight: 900; -fx-alignment: center;");
         } else {
@@ -154,25 +155,10 @@ public class AtsApplicationDetailController implements Initializable {
 
         if (breakdown.getCriteria().isEmpty()) {
             breakdownTable.setItems(FXCollections.emptyObservableList());
-            disqualifyReasonLabel.setVisible(false);
-            disqualifyReasonLabel.setManaged(false);
             return;
         }
 
         breakdownTable.setItems(FXCollections.observableArrayList(breakdown.getCriteria()));
-
-        if (breakdown.isDisqualified() && breakdown.getDisqualifyReason() != null) {
-            disqualifiedLabel.setVisible(true);
-            disqualifiedLabel.setManaged(true);
-            disqualifyReasonLabel.setText("Reason: " + breakdown.getDisqualifyReason());
-            disqualifyReasonLabel.setVisible(true);
-            disqualifyReasonLabel.setManaged(true);
-        } else {
-            disqualifyReasonLabel.setVisible(false);
-            disqualifyReasonLabel.setManaged(false);
-            disqualifiedLabel.setVisible(false);
-            disqualifiedLabel.setManaged(false);
-        }
     }
 
     private void populateCoverLetter() {
@@ -195,7 +181,8 @@ public class AtsApplicationDetailController implements Initializable {
             expLabel.setText("—");
             eduLabel.setText("—");
             langsLabel.setText("—");
-            titleLabel.setText("—");
+            educationFieldLabel.setText("—");
+            portfolioUrlsLabel.setText("—");
             extractionNoteLabel.setVisible(true);
             extractionNoteLabel.setManaged(true);
             return;
@@ -203,10 +190,11 @@ public class AtsApplicationDetailController implements Initializable {
         try {
             CandidateProfile profile = objectMapper.readValue(json, CandidateProfile.class);
             skillsLabel.setText(profile.getSkills().isEmpty() ? "—" : String.join(", ", profile.getSkills()));
-            expLabel.setText(profile.getYearsOfExperience() + " years");
+            expLabel.setText(profile.getExperienceYears() + " years");
             eduLabel.setText(profile.getEducationLevel() != null ? profile.getEducationLevel() : "—");
             langsLabel.setText(profile.getLanguages().isEmpty() ? "—" : String.join(", ", profile.getLanguages()));
-            titleLabel.setText(profile.getCurrentTitle() != null ? profile.getCurrentTitle() : "—");
+            educationFieldLabel.setText(profile.getEducationField() != null ? profile.getEducationField() : "—");
+            portfolioUrlsLabel.setText(profile.getPortfolioUrls().isEmpty() ? "—" : String.join(", ", profile.getPortfolioUrls()));
             extractionNoteLabel.setVisible(false);
             extractionNoteLabel.setManaged(false);
         } catch (Exception e) {
@@ -292,7 +280,7 @@ public class AtsApplicationDetailController implements Initializable {
                 TableRow<?> row = getTableRow();
                 if (row != null && row.getItem() instanceof ScoreCriteria sc) {
                     double ratio = sc.getWeight() > 0 ? (double) sc.getPointsAwarded() / sc.getWeight() : 0;
-                    String color = ratio >= 0.7 ? "#00b894" : ratio >= 0.4 ? "#f39c12" : "#ff4f5e";
+                    String color = ratio >= 0.75 ? "#00b894" : ratio >= 0.5 ? "#f39c12" : "#ff4f5e";
                     setText(pts + "/" + sc.getWeight());
                     setStyle("-fx-text-fill: " + color + "; -fx-font-weight: 800;");
                 } else {
@@ -353,7 +341,7 @@ public class AtsApplicationDetailController implements Initializable {
         }
         Thread t = new Thread(() -> {
             try {
-                scoringEngine.score(application);
+                applicationScoringService.extractAndScore(application);
                 serviceJobApplication.update(application);
                 Integer actorId = currentUser != null ? currentUser.getId() : null;
                 auditService.logScoreCalculated(application.getId(), actorId, application.getScore());
@@ -385,7 +373,7 @@ public class AtsApplicationDetailController implements Initializable {
         }
         Thread t = new Thread(() -> {
             try {
-                CandidateProfile profile = geminiService.extractFromFile(new File(cvPath));
+                CandidateProfile profile = applicationScoringService.ensureExtractedData(application);
                 String json = objectMapper.writeValueAsString(profile);
                 application.setExtractedData(json);
                 application.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
@@ -430,9 +418,8 @@ public class AtsApplicationDetailController implements Initializable {
     private void onOpenCv() {
         String cvPath = application.getCvFileName();
         if (cvPath == null || cvPath.isBlank()) return;
-        File f = new File(cvPath);
-        if (!f.exists()) { showError("File not found", "CV file not found at: " + cvPath); return; }
         try {
+            File f = geminiService.resolveCvFile(cvPath);
             if (Desktop.isDesktopSupported()) { Desktop.getDesktop().open(f); }
         } catch (Exception e) {
             showError("Open failed", e.getMessage());

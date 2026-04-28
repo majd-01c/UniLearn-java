@@ -1,5 +1,6 @@
 package service.job_offer;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -16,43 +17,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 /**
- * Rule-based ATS Scoring Engine.
- *
- * Computes a 0-100 score for a {@link JobApplication} against its {@link JobOffer}.
- * Scoring is deterministic and explainable — no ML models involved.
- *
- * <h3>Weight breakdown (sums to 100)</h3>
- * <pre>
- *   Required skills match    35 pts
- *   Preferred skills match   15 pts
- *   Years of experience      20 pts
- *   Education level          15 pts
- *   Language match           10 pts
- *   Keyword presence          5 pts
- * </pre>
- *
- * <h3>Disqualification hard filters</h3>
- * <ul>
- *   <li>Total score &lt; 30 after calculation</li>
- *   <li>Zero required skills matched when the offer has required skills</li>
- * </ul>
+ * Desktop ATS scoring engine aligned with the web implementation.
  */
 public class AtsScoringEngine {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AtsScoringEngine.class);
 
-    // Default weights — can be overridden via ScoringConfig stored in the job offer's requirements JSON
-    private static final int WEIGHT_REQUIRED_SKILLS   = 35;
-    private static final int WEIGHT_PREFERRED_SKILLS  = 15;
-    private static final int WEIGHT_EXPERIENCE        = 20;
-    private static final int WEIGHT_EDUCATION         = 15;
-    private static final int WEIGHT_LANGUAGES         = 10;
-    private static final int WEIGHT_KEYWORDS          =  5;
-
-    private static final int DISQUALIFY_THRESHOLD = 30;
+    public static final int REQUIRED_SKILLS_WEIGHT = 40;
+    public static final int PREFERRED_SKILLS_WEIGHT = 15;
+    public static final int EDUCATION_WEIGHT = 20;
+    public static final int EXPERIENCE_WEIGHT = 15;
+    public static final int LANGUAGES_WEIGHT = 10;
 
     private final ObjectMapper objectMapper;
 
@@ -62,15 +41,6 @@ public class AtsScoringEngine {
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
-    // ── Public API ────────────────────────────────────────────────────────────
-
-    /**
-     * Score an application and return the full breakdown.
-     * The result is also serialized and stored back on the application object.
-     *
-     * @param application the application to evaluate (mutated: score + scoreBreakdown set)
-     * @return the computed breakdown
-     */
     public ScoreBreakdown score(JobApplication application) {
         if (application == null) {
             throw new IllegalArgumentException("Application must not be null");
@@ -79,320 +49,251 @@ public class AtsScoringEngine {
             throw new IllegalArgumentException("Application must have an associated job offer");
         }
 
-        JobOffer offer = application.getJobOffer();
         CandidateProfile profile = extractProfile(application);
+        JobOffer offer = application.getJobOffer();
 
         ScoreBreakdown breakdown = new ScoreBreakdown();
         breakdown.setComputedAt(Instant.now());
 
-        int total = 0;
+        ScoreCriteria requiredSkills = calculateSkillsScore(
+                "Required Skills",
+                profile.getSkills(),
+                parseList(offer.getRequiredSkills()),
+                REQUIRED_SKILLS_WEIGHT
+        );
+        ScoreCriteria preferredSkills = calculateSkillsScore(
+                "Preferred Skills",
+                profile.getSkills(),
+                parseList(offer.getPreferredSkills()),
+                PREFERRED_SKILLS_WEIGHT
+        );
+        ScoreCriteria education = calculateEducationScore(
+                profile.getEducationLevel(),
+                offer.getMinEducation()
+        );
+        ScoreCriteria experience = calculateExperienceScore(
+                profile.getExperienceYears(),
+                offer.getMinExperienceYears()
+        );
+        ScoreCriteria languages = calculateSkillsScore(
+                "Languages",
+                profile.getLanguages(),
+                parseList(offer.getRequiredLanguages()),
+                LANGUAGES_WEIGHT
+        );
 
-        // 1) Required skills
-        ScoreCriteria reqSkills = scoreRequiredSkills(offer, profile);
-        breakdown.addCriteria(reqSkills);
-        total += reqSkills.getPointsAwarded();
+        breakdown.addCriteria(requiredSkills);
+        breakdown.addCriteria(preferredSkills);
+        breakdown.addCriteria(education);
+        breakdown.addCriteria(experience);
+        breakdown.addCriteria(languages);
 
-        // 2) Preferred skills
-        ScoreCriteria prefSkills = scorePreferredSkills(offer, profile);
-        breakdown.addCriteria(prefSkills);
-        total += prefSkills.getPointsAwarded();
+        int total = requiredSkills.getPointsAwarded()
+                + preferredSkills.getPointsAwarded()
+                + education.getPointsAwarded()
+                + experience.getPointsAwarded()
+                + languages.getPointsAwarded();
+        total = Math.min(100, Math.max(0, Math.round(total)));
 
-        // 3) Experience
-        ScoreCriteria exp = scoreExperience(offer, profile);
-        breakdown.addCriteria(exp);
-        total += exp.getPointsAwarded();
-
-        // 4) Education
-        ScoreCriteria edu = scoreEducation(offer, profile);
-        breakdown.addCriteria(edu);
-        total += edu.getPointsAwarded();
-
-        // 5) Languages
-        ScoreCriteria lang = scoreLanguages(offer, profile);
-        breakdown.addCriteria(lang);
-        total += lang.getPointsAwarded();
-
-        // 6) Keywords
-        ScoreCriteria kw = scoreKeywords(offer, application, profile);
-        breakdown.addCriteria(kw);
-        total += kw.getPointsAwarded();
-
-        // Clamp to 0-100
-        total = Math.min(100, Math.max(0, total));
         breakdown.setTotalScore(total);
 
-        // Disqualification checks
-        applyDisqualificationRules(breakdown, offer, profile, reqSkills);
-
-        // Mutate the application
         application.setScore(total);
         application.setScoredAt(java.sql.Timestamp.from(Instant.now()));
         try {
             application.setScoreBreakdown(objectMapper.writeValueAsString(breakdown));
-        } catch (Exception e) {
-            LOGGER.warn("Failed to serialize score breakdown for application {}", application.getId(), e);
+        } catch (Exception exception) {
+            LOGGER.warn("Failed to serialize score breakdown for application {}", application.getId(), exception);
             application.setScoreBreakdown(breakdown.toDisplayText());
         }
-
-        LOGGER.info("Scored application {} for offer {}: {}/100 (disqualified={})",
-                application.getId(), offer.getId(), total, breakdown.isDisqualified());
 
         return breakdown;
     }
 
-    /**
-     * Parse a previously stored breakdown JSON back into an object.
-     * Returns an empty breakdown if parsing fails.
-     */
     public ScoreBreakdown parseBreakdown(String json) {
         if (json == null || json.isBlank()) {
             return new ScoreBreakdown();
         }
         try {
             return objectMapper.readValue(json, ScoreBreakdown.class);
-        } catch (Exception e) {
-            LOGGER.warn("Could not parse stored score breakdown JSON", e);
+        } catch (Exception exception) {
+            LOGGER.warn("Could not parse stored score breakdown JSON", exception);
             return new ScoreBreakdown();
         }
     }
 
-    // ── Scoring criteria ──────────────────────────────────────────────────────
-
-    private ScoreCriteria scoreRequiredSkills(JobOffer offer, CandidateProfile profile) {
-        List<String> required = parseCommaSeparated(offer.getRequiredSkills());
-        if (required.isEmpty()) {
-            return new ScoreCriteria("Required Skills", WEIGHT_REQUIRED_SKILLS, 1.0,
-                    WEIGHT_REQUIRED_SKILLS, "No required skills specified — full points awarded");
+    private ScoreCriteria calculateSkillsScore(String name, List<String> candidateValues, List<String> requiredValues, int maxPoints) {
+        if (requiredValues.isEmpty()) {
+            ScoreCriteria criteria = new ScoreCriteria(name, maxPoints, 1.0, maxPoints);
+            criteria.setTotal(0);
+            return criteria;
         }
 
-        List<String> candidateSkills = normalizeList(profile.getSkills());
-        List<String> matched = required.stream()
-                .filter(s -> containsIgnoreCase(candidateSkills, s))
-                .collect(Collectors.toList());
-        List<String> missing = required.stream()
-                .filter(s -> !containsIgnoreCase(candidateSkills, s))
-                .collect(Collectors.toList());
+        List<String> normalizedCandidates = normalizeList(candidateValues);
+        List<String> matched = new ArrayList<>();
+        List<String> missing = new ArrayList<>();
 
-        double ratio = (double) matched.size() / required.size();
-        int points = (int) Math.round(ratio * WEIGHT_REQUIRED_SKILLS);
-
-        String explanation = String.format(
-                "Matched %d/%d required: [%s]. Missing: [%s]",
-                matched.size(), required.size(),
-                String.join(", ", matched),
-                String.join(", ", missing));
-
-        return new ScoreCriteria("Required Skills", WEIGHT_REQUIRED_SKILLS, ratio, points, explanation);
-    }
-
-    private ScoreCriteria scorePreferredSkills(JobOffer offer, CandidateProfile profile) {
-        List<String> preferred = parseCommaSeparated(offer.getPreferredSkills());
-        if (preferred.isEmpty()) {
-            return new ScoreCriteria("Preferred Skills", WEIGHT_PREFERRED_SKILLS, 1.0,
-                    WEIGHT_PREFERRED_SKILLS, "No preferred skills specified — full points awarded");
-        }
-
-        List<String> candidateSkills = normalizeList(profile.getSkills());
-        List<String> matched = preferred.stream()
-                .filter(s -> containsIgnoreCase(candidateSkills, s))
-                .collect(Collectors.toList());
-
-        double ratio = (double) matched.size() / preferred.size();
-        int points = (int) Math.round(ratio * WEIGHT_PREFERRED_SKILLS);
-
-        String explanation = String.format(
-                "Matched %d/%d preferred: [%s]",
-                matched.size(), preferred.size(),
-                String.join(", ", matched));
-
-        return new ScoreCriteria("Preferred Skills", WEIGHT_PREFERRED_SKILLS, ratio, points, explanation);
-    }
-
-    private ScoreCriteria scoreExperience(JobOffer offer, CandidateProfile profile) {
-        int required = offer.getMinExperienceYears() != null ? offer.getMinExperienceYears() : 0;
-        int candidate = profile.getYearsOfExperience();
-
-        if (required <= 0) {
-            return new ScoreCriteria("Experience", WEIGHT_EXPERIENCE, 1.0,
-                    WEIGHT_EXPERIENCE, "No experience requirement — full points awarded");
-        }
-
-        double ratio;
-        String explanation;
-        if (candidate >= required) {
-            ratio = 1.0;
-            explanation = String.format("Candidate has %d years (required: %d) ✓", candidate, required);
-        } else if (candidate <= 0) {
-            ratio = 0.0;
-            explanation = String.format("No experience declared (required: %d years)", required);
-        } else {
-            // Partial credit: scale ratio with slight bonus for being close
-            ratio = Math.min(1.0, (double) candidate / required);
-            explanation = String.format("Candidate has %d years (required: %d) — partial credit", candidate, required);
-        }
-
-        int points = (int) Math.round(ratio * WEIGHT_EXPERIENCE);
-        return new ScoreCriteria("Experience", WEIGHT_EXPERIENCE, ratio, points, explanation);
-    }
-
-    private ScoreCriteria scoreEducation(JobOffer offer, CandidateProfile profile) {
-        String requiredEdu = offer.getMinEducation();
-        String candidateEdu = profile.getEducationLevel();
-
-        if (requiredEdu == null || requiredEdu.isBlank()) {
-            return new ScoreCriteria("Education", WEIGHT_EDUCATION, 1.0,
-                    WEIGHT_EDUCATION, "No education requirement — full points awarded");
-        }
-
-        int requiredRank  = CandidateProfile.educationRank(requiredEdu);
-        int candidateRank = CandidateProfile.educationRank(candidateEdu);
-
-        double ratio;
-        String explanation;
-        if (candidateRank >= requiredRank) {
-            ratio = 1.0;
-            explanation = String.format("Education met: %s (required: %s) ✓", candidateEdu, requiredEdu);
-        } else if (candidateRank <= 0) {
-            ratio = 0.0;
-            explanation = String.format("Education not declared (required: %s)", requiredEdu);
-        } else {
-            // One level below: 50% credit; two or more: 0%
-            ratio = candidateRank == requiredRank - 1 ? 0.5 : 0.0;
-            explanation = String.format("Education below requirement: %s (required: %s)", candidateEdu, requiredEdu);
-        }
-
-        int points = (int) Math.round(ratio * WEIGHT_EDUCATION);
-        return new ScoreCriteria("Education", WEIGHT_EDUCATION, ratio, points, explanation);
-    }
-
-    private ScoreCriteria scoreLanguages(JobOffer offer, CandidateProfile profile) {
-        List<String> required = parseCommaSeparated(offer.getRequiredLanguages());
-        if (required.isEmpty()) {
-            return new ScoreCriteria("Languages", WEIGHT_LANGUAGES, 1.0,
-                    WEIGHT_LANGUAGES, "No language requirement — full points awarded");
-        }
-
-        List<String> candidateLangs = normalizeList(profile.getLanguages());
-        List<String> matched = required.stream()
-                .filter(l -> containsIgnoreCase(candidateLangs, l))
-                .collect(Collectors.toList());
-        List<String> missing = required.stream()
-                .filter(l -> !containsIgnoreCase(candidateLangs, l))
-                .collect(Collectors.toList());
-
-        double ratio = (double) matched.size() / required.size();
-        int points = (int) Math.round(ratio * WEIGHT_LANGUAGES);
-
-        String explanation = String.format("Matched %d/%d languages: [%s]. Missing: [%s]",
-                matched.size(), required.size(),
-                String.join(", ", matched), String.join(", ", missing));
-
-        return new ScoreCriteria("Languages", WEIGHT_LANGUAGES, ratio, points, explanation);
-    }
-
-    private ScoreCriteria scoreKeywords(JobOffer offer, JobApplication application, CandidateProfile profile) {
-        // Keywords come from: offer description/requirements, matched against cover letter + extracted keywords
-        List<String> offerKeywords = new ArrayList<>();
-        if (offer.getRequirements() != null) {
-            // Extract simple words of length > 4 from requirements as approximate keywords
-            String[] words = offer.getRequirements().toLowerCase().split("[\\s,;.]+");
-            for (String w : words) {
-                if (w.length() > 4) offerKeywords.add(w.trim());
+        for (String required : requiredValues) {
+            if (matchesAny(normalizedCandidates, required)) {
+                matched.add(required);
+            } else {
+                missing.add(required);
             }
         }
 
-        if (offerKeywords.isEmpty()) {
-            return new ScoreCriteria("Keywords", WEIGHT_KEYWORDS, 1.0,
-                    WEIGHT_KEYWORDS, "No keyword requirement — full points awarded");
-        }
+        double matchPercentage = (double) matched.size() / requiredValues.size();
+        int score = (int) Math.round(matchPercentage * maxPoints);
 
-        // Build candidate keyword corpus: cover letter + extracted keywords
-        StringBuilder corpus = new StringBuilder();
-        if (application.getMessage() != null) corpus.append(application.getMessage().toLowerCase()).append(" ");
-        for (String kw : profile.getKeywords()) corpus.append(kw.toLowerCase()).append(" ");
-        String corpusText = corpus.toString();
-
-        long matchCount = offerKeywords.stream()
-                .distinct()
-                .filter(kw -> corpusText.contains(kw.toLowerCase()))
-                .count();
-
-        // Use top 10 offer keywords for scoring (to avoid massive dilution)
-        int sampleSize = Math.min(offerKeywords.size(), 10);
-        double ratio = (double) matchCount / sampleSize;
-        ratio = Math.min(1.0, ratio);
-        int points = (int) Math.round(ratio * WEIGHT_KEYWORDS);
-
-        String explanation = String.format("Found %d relevant keywords in cover letter / profile", matchCount);
-        return new ScoreCriteria("Keywords", WEIGHT_KEYWORDS, ratio, points, explanation);
+        ScoreCriteria criteria = new ScoreCriteria(name, maxPoints, matchPercentage, score);
+        criteria.setMatched(matched);
+        criteria.setMissing(missing);
+        criteria.setTotal(requiredValues.size());
+        return criteria;
     }
 
-    // ── Disqualification ─────────────────────────────────────────────────────
+    private ScoreCriteria calculateEducationScore(String candidateLevel, String requiredLevel) {
+        String normalizedCandidate = normalizeEducationLevel(candidateLevel);
+        String normalizedRequired = normalizeEducationLevel(requiredLevel);
 
-    private void applyDisqualificationRules(ScoreBreakdown breakdown, JobOffer offer,
-                                            CandidateProfile profile, ScoreCriteria reqSkillsCriteria) {
-        // Hard filter 1: zero required skills matched
-        List<String> required = parseCommaSeparated(offer.getRequiredSkills());
-        if (!required.isEmpty() && reqSkillsCriteria.getPointsAwarded() == 0) {
-            breakdown.setDisqualified(true);
-            breakdown.setDisqualifyReason("Candidate matched none of the required skills: " +
-                    String.join(", ", required));
-            return;
+        if (normalizedRequired == null) {
+            ScoreCriteria criteria = new ScoreCriteria("Education", EDUCATION_WEIGHT, 1.0, EDUCATION_WEIGHT);
+            criteria.setCandidateLevel(normalizedCandidate);
+            criteria.setRequiredLevel(null);
+            criteria.setMeetsRequirement(true);
+            return criteria;
         }
 
-        // Hard filter 2: score below threshold
-        if (breakdown.getTotalScore() < DISQUALIFY_THRESHOLD) {
-            breakdown.setDisqualified(true);
-            breakdown.setDisqualifyReason(String.format(
-                    "Total score (%d) is below the minimum threshold (%d)",
-                    breakdown.getTotalScore(), DISQUALIFY_THRESHOLD));
+        if (normalizedCandidate == null) {
+            ScoreCriteria criteria = new ScoreCriteria("Education", EDUCATION_WEIGHT, 0.0, 0);
+            criteria.setCandidateLevel(null);
+            criteria.setRequiredLevel(normalizedRequired);
+            criteria.setMeetsRequirement(false);
+            return criteria;
         }
+
+        int candidateWeight = CandidateProfile.educationRank(normalizedCandidate);
+        int requiredWeight = CandidateProfile.educationRank(normalizedRequired);
+        double ratio = requiredWeight <= 0 ? 1.0 : Math.min(1.0, (double) candidateWeight / requiredWeight);
+        int score = candidateWeight >= requiredWeight
+                ? EDUCATION_WEIGHT
+                : (int) Math.round(ratio * EDUCATION_WEIGHT);
+
+        ScoreCriteria criteria = new ScoreCriteria("Education", EDUCATION_WEIGHT, ratio, score);
+        criteria.setCandidateLevel(normalizedCandidate);
+        criteria.setRequiredLevel(normalizedRequired);
+        criteria.setMeetsRequirement(candidateWeight >= requiredWeight);
+        return criteria;
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
+    private ScoreCriteria calculateExperienceScore(int candidateYears, Integer requiredYears) {
+        int normalizedRequired = requiredYears == null ? 0 : Math.max(0, requiredYears);
+        if (normalizedRequired <= 0) {
+            ScoreCriteria criteria = new ScoreCriteria("Experience", EXPERIENCE_WEIGHT, 1.0, EXPERIENCE_WEIGHT);
+            criteria.setCandidateYears(Math.max(0, candidateYears));
+            criteria.setRequiredYears(normalizedRequired);
+            criteria.setMeetsRequirement(true);
+            return criteria;
+        }
 
-    /**
-     * Extract a CandidateProfile from the application's extractedData JSON field.
-     * Falls back to an empty profile if parsing fails (e.g., data not yet extracted).
-     */
+        int normalizedCandidate = Math.max(0, candidateYears);
+        double ratio = Math.min(1.0, (double) normalizedCandidate / normalizedRequired);
+        int score = normalizedCandidate >= normalizedRequired
+                ? EXPERIENCE_WEIGHT
+                : (int) Math.round(ratio * EXPERIENCE_WEIGHT);
+
+        ScoreCriteria criteria = new ScoreCriteria("Experience", EXPERIENCE_WEIGHT, ratio, score);
+        criteria.setCandidateYears(normalizedCandidate);
+        criteria.setRequiredYears(normalizedRequired);
+        criteria.setMeetsRequirement(normalizedCandidate >= normalizedRequired);
+        return criteria;
+    }
+
     private CandidateProfile extractProfile(JobApplication application) {
         String json = application.getExtractedData();
         if (json == null || json.isBlank()) {
-            LOGGER.debug("No extracted data for application {} — scoring with empty profile", application.getId());
             return new CandidateProfile();
         }
         try {
             return objectMapper.readValue(json, CandidateProfile.class);
-        } catch (Exception e) {
-            LOGGER.warn("Failed to parse extracted_data for application {}: {}", application.getId(), e.getMessage());
+        } catch (Exception exception) {
+            LOGGER.warn("Failed to parse extracted_data for application {}: {}", application.getId(), exception.getMessage());
             return new CandidateProfile();
         }
     }
 
-    /** Parse a comma-separated string into a normalized lowercase list. */
-    private List<String> parseCommaSeparated(String value) {
-        if (value == null || value.isBlank()) return Collections.emptyList();
-        return Arrays.stream(value.split("[,;\\n]+"))
-                .map(String::trim)
-                .map(String::toLowerCase)
-                .filter(s -> !s.isEmpty())
+    private List<String> parseList(String value) {
+        if (value == null || value.isBlank()) {
+            return Collections.emptyList();
+        }
+
+        String trimmed = value.trim();
+        if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+            try {
+                List<String> raw = objectMapper.readValue(trimmed, new TypeReference<List<String>>() {});
+                return raw.stream()
+                        .map(this::normalizeToken)
+                        .filter(item -> item != null && !item.isBlank())
+                        .collect(Collectors.toList());
+            } catch (Exception ignored) {
+                // Fall through to delimiter-based parsing.
+            }
+        }
+
+        return Arrays.stream(trimmed.split("[,;\\n]+"))
+                .map(this::normalizeToken)
+                .filter(item -> item != null && !item.isBlank())
                 .collect(Collectors.toList());
     }
 
-    /** Normalize a list to lowercase trimmed strings. */
-    private List<String> normalizeList(List<String> list) {
-        if (list == null) return Collections.emptyList();
-        return list.stream()
-                .filter(s -> s != null && !s.isBlank())
-                .map(s -> s.trim().toLowerCase())
+    private List<String> normalizeList(List<String> values) {
+        if (values == null) {
+            return Collections.emptyList();
+        }
+        return values.stream()
+                .map(this::normalizeToken)
+                .filter(item -> item != null && !item.isBlank())
                 .collect(Collectors.toList());
     }
 
-    /** Case-insensitive containment check with partial match support. */
-    private boolean containsIgnoreCase(List<String> haystack, String needle) {
-        if (needle == null || needle.isBlank()) return false;
-        String normalizedNeedle = needle.trim().toLowerCase();
-        return haystack.stream().anyMatch(item ->
-                item.contains(normalizedNeedle) || normalizedNeedle.contains(item));
+    private boolean matchesAny(List<String> candidates, String required) {
+        String normalizedRequired = normalizeToken(required);
+        if (normalizedRequired == null) {
+            return false;
+        }
+        return candidates.stream().anyMatch(candidate ->
+                candidate.equals(normalizedRequired)
+                        || candidate.contains(normalizedRequired)
+                        || normalizedRequired.contains(candidate)
+        );
+    }
+
+    private String normalizeToken(String value) {
+        if (value == null) {
+            return null;
+        }
+        String normalized = value.trim().toLowerCase(Locale.ROOT);
+        return normalized.isBlank() ? null : normalized;
+    }
+
+    private String normalizeEducationLevel(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        String normalized = value.trim().toLowerCase(Locale.ROOT)
+                .replace("é", "e")
+                .replace("è", "e")
+                .replace("ê", "e")
+                .replace("à", "a");
+
+        return switch (normalized) {
+            case "bac", "high_school", "high school", "baccalaureat", "baccalaureate" -> "bac";
+            case "bac+2", "bac +2", "bac + 2", "associate", "deust", "dut", "bts" -> "bac+2";
+            case "licence", "license", "licence professionnelle", "bachelor" -> "licence";
+            case "master", "mastère", "msc", "maitrise" -> "master";
+            case "ingenieur", "ingénieur", "engineering", "engineer" -> "ingenieur";
+            case "doctorat", "doctorate", "phd", "ph.d" -> "doctorat";
+            case "not_required", "not required", "none" -> null;
+            default -> normalized;
+        };
     }
 }

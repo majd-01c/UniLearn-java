@@ -1,334 +1,170 @@
 package service.job_offer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import entities.job_offer.*;
+import entities.job_offer.CandidateProfile;
+import entities.job_offer.JobApplication;
+import entities.job_offer.JobOffer;
+import entities.job_offer.ScoreBreakdown;
+import entities.job_offer.ScoreCriteria;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * Unit tests for {@link AtsScoringEngine}.
- *
- * Tests are fully deterministic and self-contained — no database, no Gemini API calls.
- * Each test builds a {@link JobOffer} + {@link JobApplication} pair with a pre-set
- * {@link CandidateProfile} stored as JSON in {@code extractedData}, then
- * calls {@code score()} and asserts on the breakdown values.
- */
-@DisplayName("AtsScoringEngine — rule-based scoring unit tests")
+@DisplayName("AtsScoringEngine")
 class AtsScoringEngineTest {
 
     private AtsScoringEngine engine;
-    private ObjectMapper     objectMapper;
+    private ObjectMapper objectMapper;
 
     @BeforeEach
-    void setup() {
-        engine       = new AtsScoringEngine();
+    void setUp() {
+        engine = new AtsScoringEngine();
         objectMapper = new ObjectMapper();
     }
 
-    // ── Helpers ────────────────────────────────────────────────────────────────
+    @Test
+    void perfectMatchScores100() throws Exception {
+        JobOffer offer = offer("java, spring, sql", "docker, kubernetes", 3, "licence", "english, french");
+        CandidateProfile profile = profile(
+                List.of("Java", "Spring", "SQL", "Docker", "Kubernetes"),
+                5,
+                "master",
+                List.of("English", "French")
+        );
 
-    /** Build a minimal JobOffer with the given skill requirements. */
-    private JobOffer offer(String requiredSkills, String preferredSkills,
-                           int minExp, String minEdu, String requiredLanguages) {
-        JobOffer o = new JobOffer();
-        o.setId(1);
-        o.setTitle("Test Offer");
-        o.setRequiredSkills(requiredSkills);
-        o.setPreferredSkills(preferredSkills);
-        o.setMinExperienceYears(minExp);
-        o.setMinEducation(minEdu);
-        o.setRequiredLanguages(requiredLanguages);
-        o.setRequirements("java spring agile testing microservices");
-        return o;
+        JobApplication application = application(offer, profile);
+        ScoreBreakdown breakdown = engine.score(application);
+
+        assertEquals(100, breakdown.getTotalScore());
+        assertEquals(100, application.getScore());
+        assertEquals(5, breakdown.getCriteria().size());
     }
 
-    /** Build a JobApplication with a given CandidateProfile as its extractedData JSON. */
+    @Test
+    void requiredSkillsUse40PointWeight() throws Exception {
+        JobOffer offer = offer("java, python, sql", null, 0, null, null);
+        JobApplication application = application(offer, profile(List.of("Java"), 0, null, List.of()));
+
+        ScoreBreakdown breakdown = engine.score(application);
+        ScoreCriteria requiredSkills = criterion(breakdown, "Required Skills");
+
+        assertEquals(13, requiredSkills.getPointsAwarded());
+        assertEquals(List.of("java"), requiredSkills.getMatched());
+        assertEquals(List.of("python", "sql"), requiredSkills.getMissing());
+        assertEquals(3, requiredSkills.getTotal());
+    }
+
+    @Test
+    void educationUsesRatioAgainstRequiredLevel() throws Exception {
+        JobOffer offer = offer(null, null, 0, "master", null);
+        JobApplication application = application(offer, profile(List.of(), 0, "licence", List.of()));
+
+        ScoreBreakdown breakdown = engine.score(application);
+        ScoreCriteria education = criterion(breakdown, "Education");
+
+        assertEquals(15, education.getPointsAwarded());
+        assertEquals("licence", education.getCandidateLevel());
+        assertEquals("master", education.getRequiredLevel());
+        assertFalse(Boolean.TRUE.equals(education.getMeetsRequirement()));
+    }
+
+    @Test
+    void experienceUses15PointWeight() throws Exception {
+        JobOffer offer = offer(null, null, 4, null, null);
+        JobApplication application = application(offer, profile(List.of(), 2, null, List.of()));
+
+        ScoreBreakdown breakdown = engine.score(application);
+        ScoreCriteria experience = criterion(breakdown, "Experience");
+
+        assertEquals(8, experience.getPointsAwarded());
+        assertEquals(2, experience.getCandidateYears());
+        assertEquals(4, experience.getRequiredYears());
+        assertFalse(Boolean.TRUE.equals(experience.getMeetsRequirement()));
+    }
+
+    @Test
+    void emptyOfferCriteriaAwardFullCategoryPoints() throws Exception {
+        JobOffer offer = offer(null, null, 0, null, null);
+        JobApplication application = application(offer, profile(List.of(), 0, null, List.of()));
+
+        ScoreBreakdown breakdown = engine.score(application);
+
+        assertEquals(100, breakdown.getTotalScore());
+        assertEquals(40, criterion(breakdown, "Required Skills").getPointsAwarded());
+        assertEquals(15, criterion(breakdown, "Preferred Skills").getPointsAwarded());
+        assertEquals(20, criterion(breakdown, "Education").getPointsAwarded());
+        assertEquals(15, criterion(breakdown, "Experience").getPointsAwarded());
+        assertEquals(10, criterion(breakdown, "Languages").getPointsAwarded());
+    }
+
+    @Test
+    void parseBreakdownRoundTripsJson() throws Exception {
+        JobOffer offer = offer("java", "docker", 2, "bac+2", "english");
+        JobApplication application = application(offer, profile(List.of("Java", "Docker"), 3, "licence", List.of("English")));
+
+        engine.score(application);
+        ScoreBreakdown parsed = engine.parseBreakdown(application.getScoreBreakdown());
+
+        assertEquals(application.getScore(), parsed.getTotalScore());
+        assertFalse(parsed.getCriteria().isEmpty());
+    }
+
+    @Test
+    void scoringWithoutExtractedDataDoesNotThrow() {
+        JobApplication application = new JobApplication();
+        application.setId(1);
+        application.setJobOffer(offer("java", "docker", 3, "licence", "english"));
+        application.setStatus("SUBMITTED");
+
+        assertDoesNotThrow(() -> {
+            ScoreBreakdown breakdown = engine.score(application);
+            assertNotNull(breakdown);
+            assertTrue(breakdown.getTotalScore() >= 0);
+        });
+    }
+
+    private JobOffer offer(String requiredSkills, String preferredSkills, int minExperienceYears, String minEducation, String requiredLanguages) {
+        JobOffer offer = new JobOffer();
+        offer.setId(1);
+        offer.setTitle("Test Offer");
+        offer.setRequiredSkills(requiredSkills);
+        offer.setPreferredSkills(preferredSkills);
+        offer.setMinExperienceYears(minExperienceYears);
+        offer.setMinEducation(minEducation);
+        offer.setRequiredLanguages(requiredLanguages);
+        return offer;
+    }
+
+    private CandidateProfile profile(List<String> skills, int experienceYears, String educationLevel, List<String> languages) {
+        CandidateProfile profile = new CandidateProfile();
+        profile.setSkills(skills);
+        profile.setExperienceYears(experienceYears);
+        profile.setEducationLevel(educationLevel);
+        profile.setLanguages(languages);
+        return profile;
+    }
+
     private JobApplication application(JobOffer offer, CandidateProfile profile) throws Exception {
-        JobApplication app = new JobApplication();
-        app.setId(99);
-        app.setJobOffer(offer);
-        app.setStatus("SUBMITTED");
-        app.setMessage("I am very interested in this role.");
-        String json = objectMapper.writeValueAsString(profile);
-        app.setExtractedData(json);
-        return app;
+        JobApplication application = new JobApplication();
+        application.setId(99);
+        application.setJobOffer(offer);
+        application.setStatus("SUBMITTED");
+        application.setExtractedData(objectMapper.writeValueAsString(profile));
+        return application;
     }
 
-    /** Build a CandidateProfile with all fields. */
-    private CandidateProfile profile(List<String> skills, int exp, String edu,
-                                     List<String> languages, List<String> keywords) {
-        CandidateProfile p = new CandidateProfile();
-        p.setSkills(skills);
-        p.setYearsOfExperience(exp);
-        p.setEducationLevel(edu);
-        p.setLanguages(languages);
-        p.setKeywords(keywords);
-        return p;
-    }
-
-    // ── Test Cases ─────────────────────────────────────────────────────────────
-
-    @Nested
-    @DisplayName("Perfect match candidate")
-    class PerfectMatch {
-
-        @Test
-        @DisplayName("Should score 100/100 when candidate matches all criteria")
-        void perfectScore() throws Exception {
-            JobOffer offer = offer("java, spring, sql", "docker, kubernetes",
-                    3, "BACHELOR", "English, French");
-
-            CandidateProfile p = profile(
-                    List.of("Java", "Spring", "SQL", "Docker", "Kubernetes"),
-                    5, "MASTER",
-                    List.of("English", "French"),
-                    List.of("java", "spring", "agile", "testing", "microservices")
-            );
-
-            JobApplication app = application(offer, p);
-            ScoreBreakdown breakdown = engine.score(app);
-
-            assertEquals(100, breakdown.getTotalScore(),
-                "Perfect match should score 100/100");
-            assertFalse(breakdown.isDisqualified(),
-                "Perfect match should NOT be disqualified");
-            assertNotNull(app.getScore(), "Application score must be set");
-            assertNotNull(app.getScoreBreakdown(), "Score breakdown JSON must be set");
-        }
-
-        @Test
-        @DisplayName("Application score field should match breakdown total")
-        void applicationScoreMatchesBreakdown() throws Exception {
-            JobOffer offer = offer("java", null, 0, null, null);
-            CandidateProfile p = profile(List.of("Java"), 5, "BACHELOR",
-                    List.of("English"), List.of("java"));
-            JobApplication app = application(offer, p);
-
-            engine.score(app);
-            ScoreBreakdown breakdown = engine.parseBreakdown(app.getScoreBreakdown());
-
-            assertEquals(app.getScore(), breakdown.getTotalScore(),
-                "Application.score must equal breakdown.totalScore");
-        }
-    }
-
-    @Nested
-    @DisplayName("Disqualification rules")
-    class Disqualification {
-
-        @Test
-        @DisplayName("Should disqualify when zero required skills matched")
-        void zeroRequiredSkillsMatchDisqualifies() throws Exception {
-            JobOffer offer = offer("python, machine-learning", null, 0, null, null);
-            CandidateProfile p = profile(List.of("Java", "Spring"), 5, "MASTER",
-                    List.of("English"), List.of());
-            JobApplication app = application(offer, p);
-
-            ScoreBreakdown breakdown = engine.score(app);
-
-            assertTrue(breakdown.isDisqualified(), "Should be disqualified — no required skills matched");
-            assertNotNull(breakdown.getDisqualifyReason(), "Disqualify reason must be set");
-            assertTrue(breakdown.getDisqualifyReason().contains("required skills"),
-                "Reason should mention required skills");
-        }
-
-        @Test
-        @DisplayName("Should disqualify when overall score is below threshold (30)")
-        void lowScoreDisqualifies() throws Exception {
-            JobOffer offer = offer("python, tensorflow, pytorch, keras, nlp",
-                    "spark, hadoop", 10, "PHD", "Japanese, Korean");
-            CandidateProfile p = profile(List.of("Java"),
-                    0, "HIGH_SCHOOL", List.of("English"), List.of());
-            JobApplication app = application(offer, p);
-
-            ScoreBreakdown breakdown = engine.score(app);
-
-            assertTrue(breakdown.isDisqualified(),
-                "Very poor match should be disqualified");
-        }
-
-        @Test
-        @DisplayName("Full-point offer with no requirements should NOT disqualify")
-        void noRequirementsDoesNotDisqualify() throws Exception {
-            JobOffer offer = offer(null, null, 0, null, null);
-            CandidateProfile p = profile(List.of(), 0, null, List.of(), List.of());
-            JobApplication app = application(offer, p);
-
-            ScoreBreakdown breakdown = engine.score(app);
-
-            assertFalse(breakdown.isDisqualified(),
-                "Offer with no requirements should never disqualify");
-        }
-    }
-
-    @Nested
-    @DisplayName("Partial matching")
-    class PartialMatch {
-
-        @Test
-        @DisplayName("Partial required skill match produces partial required-skills score")
-        void partialSkillMatchPartialPoints() throws Exception {
-            JobOffer offer = offer("java, python, sql", null, 0, null, null);
-            // Candidate only knows Java (1/3 skills)
-            CandidateProfile p = profile(List.of("Java"), 0, null, List.of(), List.of());
-            JobApplication app = application(offer, p);
-
-            ScoreBreakdown breakdown = engine.score(app);
-
-            ScoreCriteria reqSkills = breakdown.getCriteria().stream()
-                    .filter(c -> "Required Skills".equals(c.getName()))
-                    .findFirst().orElseThrow();
-
-            // 1/3 of weight=35 → ~12 pts
-            assertEquals(12, reqSkills.getPointsAwarded(),
-                "1/3 skill match should award ~12 pts out of 35");
-        }
-
-        @Test
-        @DisplayName("Partial experience gives partial points")
-        void partialExperiencePartialPoints() throws Exception {
-            JobOffer offer = offer(null, null, 4, null, null);
-            CandidateProfile p = profile(List.of(), 2, null, List.of(), List.of());
-            JobApplication app = application(offer, p);
-
-            ScoreBreakdown breakdown = engine.score(app);
-
-            ScoreCriteria exp = breakdown.getCriteria().stream()
-                    .filter(c -> "Experience".equals(c.getName()))
-                    .findFirst().orElseThrow();
-
-            // 2/4 = 0.5 → 50% of 20 = 10 pts
-            assertEquals(10, exp.getPointsAwarded(),
-                "2 yrs experience with 4 required should yield 10/20 pts");
-        }
-
-        @Test
-        @DisplayName("Exceeding experience requirement gives full experience points")
-        void exceedingExperienceFullPoints() throws Exception {
-            JobOffer offer = offer(null, null, 3, null, null);
-            CandidateProfile p = profile(List.of(), 10, null, List.of(), List.of());
-            JobApplication app = application(offer, p);
-
-            ScoreBreakdown breakdown = engine.score(app);
-
-            ScoreCriteria exp = breakdown.getCriteria().stream()
-                    .filter(c -> "Experience".equals(c.getName()))
-                    .findFirst().orElseThrow();
-
-            assertEquals(20, exp.getPointsAwarded(), "Exceeding exp should award full 20 pts");
-        }
-    }
-
-    @Nested
-    @DisplayName("Education scoring")
-    class EducationScoring {
-
-        @Test
-        @DisplayName("Candidate education above requirement gets full education points")
-        void higherEducationFullPoints() throws Exception {
-            JobOffer offer = offer(null, null, 0, "BACHELOR", null);
-            CandidateProfile p = profile(List.of(), 0, "MASTER", List.of(), List.of());
-            JobApplication app = application(offer, p);
-
-            ScoreBreakdown breakdown = engine.score(app);
-            ScoreCriteria edu = breakdown.getCriteria().stream()
-                    .filter(c -> "Education".equals(c.getName())).findFirst().orElseThrow();
-
-            assertEquals(15, edu.getPointsAwarded(), "MASTER ≥ BACHELOR should give 15/15 pts");
-        }
-
-        @Test
-        @DisplayName("Education one level below gives 50% education points")
-        void oneLevelBelowHalfPoints() throws Exception {
-            JobOffer offer = offer(null, null, 0, "MASTER", null);
-            CandidateProfile p = profile(List.of(), 0, "BACHELOR", List.of(), List.of());
-            JobApplication app = application(offer, p);
-
-            ScoreBreakdown breakdown = engine.score(app);
-            ScoreCriteria edu = breakdown.getCriteria().stream()
-                    .filter(c -> "Education".equals(c.getName())).findFirst().orElseThrow();
-
-            assertEquals(7, edu.getPointsAwarded(), "One level below should give ~7/15 pts");
-        }
-
-        @Test
-        @DisplayName("Education two or more levels below gives zero education points")
-        void twoLevelsBelowZeroPoints() throws Exception {
-            JobOffer offer = offer(null, null, 0, "PHD", null);
-            CandidateProfile p = profile(List.of(), 0, "BACHELOR", List.of(), List.of());
-            JobApplication app = application(offer, p);
-
-            ScoreBreakdown breakdown = engine.score(app);
-            ScoreCriteria edu = breakdown.getCriteria().stream()
-                    .filter(c -> "Education".equals(c.getName())).findFirst().orElseThrow();
-
-            assertEquals(0, edu.getPointsAwarded(), "Two levels below should give 0 education pts");
-        }
-    }
-
-    @Nested
-    @DisplayName("Breakdown JSON round-trip")
-    class BreakdownSerialization {
-
-        @Test
-        @DisplayName("Stored breakdown JSON should round-trip correctly")
-        void jsonRoundTrip() throws Exception {
-            JobOffer offer = offer("java", null, 2, "BACHELOR", "English");
-            CandidateProfile p = profile(List.of("Java", "Spring"), 3, "MASTER",
-                    List.of("English", "French"), List.of("java", "spring"));
-            JobApplication app = application(offer, p);
-
-            engine.score(app);
-
-            String json = app.getScoreBreakdown();
-            assertNotNull(json, "Breakdown JSON must not be null");
-
-            ScoreBreakdown parsed = engine.parseBreakdown(json);
-            assertNotNull(parsed, "Parsed breakdown must not be null");
-            assertFalse(parsed.getCriteria().isEmpty(), "Parsed breakdown must have criteria");
-            assertEquals(app.getScore(), parsed.getTotalScore(),
-                "Parsed score must match application score");
-        }
-
-        @Test
-        @DisplayName("Parsing null/empty JSON returns empty breakdown, not exception")
-        void parsingNullReturnsEmptyBreakdown() {
-            ScoreBreakdown empty1 = engine.parseBreakdown(null);
-            ScoreBreakdown empty2 = engine.parseBreakdown("");
-            ScoreBreakdown empty3 = engine.parseBreakdown("not-valid-json");
-
-            assertNotNull(empty1);
-            assertNotNull(empty2);
-            assertNotNull(empty3);
-            // None should throw
-        }
-    }
-
-    @Nested
-    @DisplayName("Empty extracted data")
-    class EmptyProfile {
-
-        @Test
-        @DisplayName("Application with no extractedData scores without throwing")
-        void noExtractedDataDoesNotThrow() {
-            JobOffer offer = offer("java", "python", 3, "BACHELOR", "English");
-            JobApplication app = new JobApplication();
-            app.setId(1);
-            app.setJobOffer(offer);
-            app.setStatus("SUBMITTED");
-            // No extractedData set
-
-            assertDoesNotThrow(() -> {
-                ScoreBreakdown breakdown = engine.score(app);
-                assertNotNull(breakdown);
-                assertTrue(breakdown.getTotalScore() >= 0);
-            }, "Scoring with no extracted data must not throw");
-        }
+    private ScoreCriteria criterion(ScoreBreakdown breakdown, String name) {
+        return breakdown.getCriteria().stream()
+                .filter(criteria -> name.equals(criteria.getName()))
+                .findFirst()
+                .orElseThrow();
     }
 }

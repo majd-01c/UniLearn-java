@@ -3,123 +3,300 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.web.WebView?>
-<ScrollPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.job_offer.JobOfferFormController" fitToWidth="true" styleClass="job-offer-form-scroll lms-scroll">
-    <VBox alignment="CENTER" spacing="18" styleClass="job-offer-form-shell">
-        <VBox fx:id="rootContainer" maxWidth="980.0" spacing="18" styleClass="job-offer-form-panel">
+<ScrollPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controller.job_offer.JobOfferFormController"
+            fitToWidth="true" styleClass="job-offer-form-scroll lms-scroll">
+
+    <VBox alignment="TOP_CENTER" spacing="18" styleClass="job-offer-form-shell">
+        <VBox fx:id="rootContainer" maxWidth="960.0" spacing="16" styleClass="job-offer-form-panel">
+
+            <!-- ══ Hero Header ═══════════════════════════════════════════════════ -->
             <HBox spacing="14" alignment="CENTER_LEFT" styleClass="job-offer-form-hero">
-                <VBox spacing="2" HBox.hgrow="ALWAYS">
-                    <Label fx:id="formTitleLabel" text="Create Job Offer" styleClass="job-offer-form-title"/>
-                    <Label fx:id="formSubtitleLabel" text="Design an attractive offer that matches the partner dashboard style." wrapText="true" styleClass="job-offer-form-subtitle"/>
+                <VBox spacing="3" HBox.hgrow="ALWAYS">
+                    <Label fx:id="formTitleLabel"    text="Create Job Offer"  styleClass="job-offer-form-title"/>
+                    <Label fx:id="formSubtitleLabel" text="Design an attractive offer and tune the ATS scoring weights."
+                           wrapText="true" styleClass="job-offer-form-subtitle"/>
                 </VBox>
                 <Label fx:id="modeBadgeLabel" text="NEW OFFER" styleClass="job-offer-mode-badge"/>
             </HBox>
 
-            <VBox fx:id="partnerSelectionSection" spacing="14" styleClass="job-offer-section" managed="false" visible="false">
-                <Label text="Assign to Partner *" styleClass="job-offer-section-title"/>
-                <VBox spacing="6">
-                    <Label text="Select Partner Account" styleClass="form-label"/>
-                    <ComboBox fx:id="partnerCombo" promptText="Choose a partner..." styleClass="lms-input job-offer-input" maxWidth="Infinity"/>
-                    <Label text="The offer will be linked to this partner's account. The partner will manage it and see all applications." styleClass="job-offer-form-note" wrapText="true"/>
+            <!-- ══ Partner assignment (admin only) ═══════════════════════════════ -->
+            <VBox fx:id="partnerSelectionSection" spacing="10" styleClass="job-offer-section"
+                  managed="false" visible="false">
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="🏢" styleClass="job-offer-section-icon"/>
+                    <Label text="Assign to Partner" styleClass="job-offer-section-title"/>
+                </HBox>
+                <VBox spacing="5">
+                    <Label text="Partner Account *" styleClass="form-label"/>
+                    <ComboBox fx:id="partnerCombo" promptText="Choose a partner…"
+                              styleClass="lms-input job-offer-input" maxWidth="Infinity"/>
+                    <Label text="The offer will be linked to this partner's account."
+                           styleClass="job-offer-form-note" wrapText="true"/>
                 </VBox>
             </VBox>
 
-            <VBox spacing="14" styleClass="job-offer-section">
-                <Label text="Basic Information" styleClass="job-offer-section-title"/>
-                <VBox spacing="6">
-                    <Label text="Job Title *" styleClass="form-label"/>
-                    <TextField fx:id="titleField" promptText="e.g., Senior Software Engineer" styleClass="lms-input job-offer-input"/>
-                </VBox>
+            <!-- ══ Basic Information ══════════════════════════════════════════════ -->
+            <VBox spacing="12" styleClass="job-offer-section">
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="📋" styleClass="job-offer-section-icon"/>
+                    <Label text="Basic Information" styleClass="job-offer-section-title"/>
+                </HBox>
 
-                <VBox spacing="6">
-                    <Label text="Job Type *" styleClass="form-label"/>
-                    <ComboBox fx:id="typeCombo" styleClass="lms-input job-offer-input"/>
-                </VBox>
+                <HBox spacing="14">
+                    <VBox spacing="5" HBox.hgrow="ALWAYS">
+                        <Label text="Job Title *" styleClass="form-label"/>
+                        <TextField fx:id="titleField" promptText="e.g., Senior Software Engineer"
+                                   styleClass="lms-input job-offer-input"/>
+                    </VBox>
+                    <VBox spacing="5" prefWidth="200">
+                        <Label text="Job Type *" styleClass="form-label"/>
+                        <ComboBox fx:id="typeCombo" styleClass="lms-input job-offer-input" maxWidth="Infinity"/>
+                    </VBox>
+                </HBox>
             </VBox>
 
-            <!-- ══ Location + Map ══════════════════════════════════════════════ -->
-            <VBox spacing="14" styleClass="job-offer-section">
-                <Label text="Location" styleClass="job-offer-section-title"/>
-                <Label text="Click on the map or drag the pin to tag the exact location of the job." styleClass="job-offer-form-note" wrapText="true"/>
+            <!-- ══ Location + Map ═════════════════════════════════════════════════ -->
+            <VBox spacing="12" styleClass="job-offer-section">
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="📍" styleClass="job-offer-section-icon"/>
+                    <Label text="Location" styleClass="job-offer-section-title"/>
+                </HBox>
+                <Label text="Click the map or drag the pin to tag the exact job location."
+                       styleClass="job-offer-form-note" wrapText="true"/>
 
-                <!-- Map WebView -->
-                <VBox fx:id="mapContainer" styleClass="job-offer-map-container">
-                    <WebView fx:id="locationMapView" prefHeight="320.0" minHeight="280.0"/>
+                <Button fx:id="toggleMapButton" text="Open map picker"
+                        styleClass="ghost-button job-offer-map-toggle"
+                        onAction="#onToggleMap"/>
+
+                <VBox fx:id="mapContainer" styleClass="job-offer-map-container"
+                      managed="false" visible="false">
+                    <WebView fx:id="locationMapView" prefHeight="300.0" minHeight="260.0"/>
                 </VBox>
 
-                <!-- Synced text field (auto-filled by map, user can also type to search) -->
-                <VBox spacing="6">
+                <VBox spacing="5">
                     <Label text="Selected Location" styleClass="form-label"/>
-                    <TextField fx:id="locationField" promptText="e.g., Remote, Tunis, etc. — or click the map above" styleClass="lms-input job-offer-input"/>
-                    <Label text="Type an address and press Enter, or click directly on the map." styleClass="job-offer-form-note" wrapText="true"/>
+                    <TextField fx:id="locationField"
+                               promptText="e.g., Remote, Tunis — or click the map above"
+                               styleClass="lms-input job-offer-input"/>
+                    <Label text="Type an address and press Enter, or click directly on the map."
+                           styleClass="job-offer-form-note" wrapText="true"/>
                 </VBox>
             </VBox>
 
-            <VBox spacing="14" styleClass="job-offer-section">
-                <Label text="Description &amp; Requirements" styleClass="job-offer-section-title"/>
-                <VBox spacing="6">
+            <!-- ══ Description & Requirements ════════════════════════════════════ -->
+            <VBox spacing="12" styleClass="job-offer-section">
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="📝" styleClass="job-offer-section-icon"/>
+                    <Label text="Description &amp; Requirements" styleClass="job-offer-section-title"/>
+                </HBox>
+
+                <VBox spacing="5">
                     <Label text="Description *" styleClass="form-label"/>
-                    <TextArea fx:id="descriptionArea" promptText="Describe the job opportunity and responsibilities" wrapText="true" prefRowCount="7" styleClass="lms-input job-offer-text-area"/>
+                    <TextArea fx:id="descriptionArea"
+                              promptText="Describe the role, responsibilities and what makes this opportunity great…"
+                              wrapText="true" prefRowCount="6" styleClass="lms-input job-offer-text-area"/>
                 </VBox>
-                <VBox spacing="6">
+                <VBox spacing="5">
                     <Label text="Requirements" styleClass="form-label"/>
-                    <TextArea fx:id="requirementsArea" promptText="List specific requirements for candidates" wrapText="true" prefRowCount="5" styleClass="lms-input job-offer-text-area"/>
+                    <TextArea fx:id="requirementsArea"
+                              promptText="List specific candidate requirements…"
+                              wrapText="true" prefRowCount="4" styleClass="lms-input job-offer-text-area"/>
                 </VBox>
             </VBox>
 
+            <!-- ══ Skills &amp; Profile ═══════════════════════════════════════════ -->
             <VBox spacing="14" styleClass="job-offer-section">
-                <Label text="Skills &amp; Profile" styleClass="job-offer-section-title"/>
-                <HBox spacing="14">
-                    <VBox spacing="6" HBox.hgrow="ALWAYS">
-                        <Label text="Required Skills" styleClass="form-label"/>
-                        <TextField fx:id="skillsField" promptText="e.g., Java, Spring, SQL" styleClass="lms-input job-offer-input"/>
-                    </VBox>
-                    <VBox spacing="6" HBox.hgrow="ALWAYS">
-                        <Label text="Preferred Skills" styleClass="form-label"/>
-                        <TextField fx:id="preferredSkillsField" promptText="e.g., Docker, Kubernetes" styleClass="lms-input job-offer-input"/>
-                    </VBox>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="🏷️" styleClass="job-offer-section-icon"/>
+                    <Label text="Skills &amp; Profile" styleClass="job-offer-section-title"/>
                 </HBox>
 
+                <!-- Required Skills picker -->
+                <VBox spacing="8" styleClass="skill-picker-panel">
+                    <HBox spacing="6" alignment="CENTER_LEFT">
+                        <Label text="Required Skills" styleClass="form-label skill-picker-heading"/>
+                        <Label text="(mandatory — affect ATS score)" styleClass="job-offer-form-note"/>
+                    </HBox>
+
+                    <!-- Source chips row (saved skills from DB) -->
+                    <Label text="Your saved skills — click to add:" styleClass="skill-source-label"/>
+                    <ScrollPane fitToWidth="true" styleClass="skill-source-scroll" prefHeight="66" minHeight="50">
+                        <FlowPane fx:id="reqSourcePane" hgap="6" vgap="6"
+                                  styleClass="skill-source-flow"/>
+                    </ScrollPane>
+
+                    <!-- Search + manual add -->
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <TextField fx:id="reqSearchField"
+                                   promptText="🔍  Search or type a skill name, then press Enter…"
+                                   styleClass="lms-input skill-search-field" HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="reqAddSkillButton" text="+ Add"
+                                styleClass="ghost-button skill-add-button"
+                                onAction="#onAddRequiredSkill"/>
+                    </HBox>
+
+                    <!-- Selected chips -->
+                    <Label text="Selected:" styleClass="skill-source-label"/>
+                    <FlowPane fx:id="reqSelectedPane" hgap="6" vgap="6"
+                              styleClass="skill-selected-flow" minHeight="38"/>
+                </VBox>
+
+                <!-- Preferred Skills picker -->
+                <VBox spacing="8" styleClass="skill-picker-panel">
+                    <HBox spacing="6" alignment="CENTER_LEFT">
+                        <Label text="Preferred Skills" styleClass="form-label skill-picker-heading preferred"/>
+                        <Label text="(bonus — give extra ATS points)" styleClass="job-offer-form-note"/>
+                    </HBox>
+
+                    <Label text="Your saved skills — click to add:" styleClass="skill-source-label"/>
+                    <ScrollPane fitToWidth="true" styleClass="skill-source-scroll" prefHeight="66" minHeight="50">
+                        <FlowPane fx:id="prefSourcePane" hgap="6" vgap="6"
+                                  styleClass="skill-source-flow"/>
+                    </ScrollPane>
+
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <TextField fx:id="prefSearchField"
+                                   promptText="🔍  Search or type a skill name, then press Enter…"
+                                   styleClass="lms-input skill-search-field" HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="prefAddSkillButton" text="+ Add"
+                                styleClass="ghost-button skill-add-button"
+                                onAction="#onAddPreferredSkill"/>
+                    </HBox>
+
+                    <Label text="Selected:" styleClass="skill-source-label"/>
+                    <FlowPane fx:id="prefSelectedPane" hgap="6" vgap="6"
+                              styleClass="skill-selected-flow" minHeight="38"/>
+                </VBox>
+
+                <!-- Education + Experience row -->
                 <HBox spacing="14">
-                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <VBox spacing="5" HBox.hgrow="ALWAYS">
                         <Label text="Minimum Education" styleClass="form-label"/>
-                        <ComboBox fx:id="educationCombo" styleClass="lms-input job-offer-input"/>
+                        <ComboBox fx:id="educationCombo" styleClass="lms-input job-offer-input" maxWidth="Infinity"/>
                     </VBox>
-                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <VBox spacing="5" HBox.hgrow="ALWAYS">
                         <Label text="Experience (years)" styleClass="form-label"/>
-                        <Spinner fx:id="experienceSpinner" styleClass="lms-input job-offer-input job-offer-spinner"/>
+                        <Spinner fx:id="experienceSpinner"
+                                 styleClass="lms-input job-offer-input job-offer-spinner"/>
                     </VBox>
                 </HBox>
 
-                <VBox spacing="6">
+                <!-- Languages -->
+                <VBox spacing="5">
                     <Label text="Required Languages" styleClass="form-label"/>
-                    <TextField fx:id="languagesField" promptText="e.g., English, French, Arabic" styleClass="lms-input job-offer-input"/>
+                    <TextField fx:id="languagesField"
+                               promptText="e.g., English, French, Arabic"
+                               styleClass="lms-input job-offer-input"/>
                 </VBox>
             </VBox>
 
-            <VBox spacing="14" styleClass="job-offer-section">
-                <Label text="Publication" styleClass="job-offer-section-title"/>
-                <HBox spacing="14">
-                    <VBox spacing="6" HBox.hgrow="ALWAYS">
-                        <Label text="Date de publication" styleClass="form-label"/>
-                        <DatePicker fx:id="publishedDatePicker" promptText="mm/dd/yyyy" styleClass="lms-input job-offer-input job-offer-date-picker"/>
-                        <Label fx:id="publishedDateError" text="" styleClass="job-offer-date-error" wrapText="true" managed="false" visible="false"/>
-                        <Label text="Laisser vide pour publier immédiatement" styleClass="job-offer-form-note" wrapText="true"/>
+            <!-- ══ ATS Scoring Weights ════════════════════════════════════════════ -->
+            <VBox spacing="14" styleClass="job-offer-section ats-weights-section">
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="⚙️" styleClass="job-offer-section-icon"/>
+                    <Label text="ATS Scoring Weights" styleClass="job-offer-section-title"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="weightTotalLabel" text="Total: 100 pts"
+                           styleClass="ats-weight-total-label"/>
+                </HBox>
+                <Label text="Tune how each criterion contributes to a candidate's ATS score for this offer."
+                       styleClass="job-offer-form-note" wrapText="true"/>
+
+                <Button fx:id="toggleWeightsButton" text="Open ATS scoring weights"
+                        styleClass="ghost-button job-offer-map-toggle"
+                        onAction="#onToggleWeights"/>
+
+                <VBox fx:id="weightsContainer" spacing="14" managed="false" visible="false">
+                    <!-- Experience weight -->
+                    <VBox spacing="4">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label text="🎯 Experience match" styleClass="ats-weight-name" HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="expWeightVal" text="30" styleClass="ats-weight-val"/>
+                            <Label text="pts" styleClass="ats-weight-unit"/>
+                        </HBox>
+                        <Slider fx:id="expWeightSlider" min="0" max="50" value="30" blockIncrement="5"
+                                majorTickUnit="10" showTickMarks="false" styleClass="ats-weight-slider"/>
                     </VBox>
-                    <VBox spacing="6" HBox.hgrow="ALWAYS">
-                        <Label text="Date d'expiration" styleClass="form-label"/>
-                        <DatePicker fx:id="expiresDatePicker" promptText="mm/dd/yyyy" styleClass="lms-input job-offer-input job-offer-date-picker"/>
-                        <Label fx:id="expiresDateError" text="" styleClass="job-offer-date-error" wrapText="true" managed="false" visible="false"/>
-                        <Label text="Optionnel: date de fin de l'offre" styleClass="job-offer-form-note" wrapText="true"/>
+
+                    <!-- Education weight -->
+                    <VBox spacing="4">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label text="🎓 Education level" styleClass="ats-weight-name" HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="eduWeightVal" text="20" styleClass="ats-weight-val"/>
+                            <Label text="pts" styleClass="ats-weight-unit"/>
+                        </HBox>
+                        <Slider fx:id="eduWeightSlider" min="0" max="50" value="20" blockIncrement="5"
+                                majorTickUnit="10" showTickMarks="false" styleClass="ats-weight-slider"/>
+                    </VBox>
+
+                    <!-- Skills weight -->
+                    <VBox spacing="4">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label text="🏷️ Skills match" styleClass="ats-weight-name" HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="skillsWeightVal" text="35" styleClass="ats-weight-val"/>
+                            <Label text="pts" styleClass="ats-weight-unit"/>
+                        </HBox>
+                        <Slider fx:id="skillsWeightSlider" min="0" max="50" value="35" blockIncrement="5"
+                                majorTickUnit="10" showTickMarks="false" styleClass="ats-weight-slider"/>
+                    </VBox>
+
+                    <!-- Languages weight -->
+                    <VBox spacing="4">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label text="🌐 Languages" styleClass="ats-weight-name" HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="langWeightVal" text="15" styleClass="ats-weight-val"/>
+                            <Label text="pts" styleClass="ats-weight-unit"/>
+                        </HBox>
+                        <Slider fx:id="langWeightSlider" min="0" max="50" value="15" blockIncrement="5"
+                                majorTickUnit="10" showTickMarks="false" styleClass="ats-weight-slider"/>
+                    </VBox>
+
+                    <!-- Weight bar visualiser -->
+                    <HBox fx:id="weightBarRow" spacing="2" prefHeight="10" styleClass="ats-weight-bar-row"/>
+                </VBox>
+            </VBox>
+
+            <!-- ══ Publication ════════════════════════════════════════════════════ -->
+            <VBox spacing="12" styleClass="job-offer-section">
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="📅" styleClass="job-offer-section-icon"/>
+                    <Label text="Publication" styleClass="job-offer-section-title"/>
+                </HBox>
+
+                <HBox spacing="14">
+                    <VBox spacing="5" HBox.hgrow="ALWAYS">
+                        <Label text="Publish Date" styleClass="form-label"/>
+                        <DatePicker fx:id="publishedDatePicker" promptText="mm/dd/yyyy"
+                                    styleClass="lms-input job-offer-input job-offer-date-picker"
+                                    maxWidth="Infinity"/>
+                        <Label fx:id="publishedDateError" text="" styleClass="job-offer-date-error"
+                               wrapText="true" managed="false" visible="false"/>
+                        <Label text="Leave blank to publish immediately."
+                               styleClass="job-offer-form-note" wrapText="true"/>
+                    </VBox>
+                    <VBox spacing="5" HBox.hgrow="ALWAYS">
+                        <Label text="Expiry Date" styleClass="form-label"/>
+                        <DatePicker fx:id="expiresDatePicker" promptText="mm/dd/yyyy"
+                                    styleClass="lms-input job-offer-input job-offer-date-picker"
+                                    maxWidth="Infinity"/>
+                        <Label fx:id="expiresDateError" text="" styleClass="job-offer-date-error"
+                               wrapText="true" managed="false" visible="false"/>
+                        <Label text="Optional: when the offer closes." styleClass="job-offer-form-note" wrapText="true"/>
                     </VBox>
                 </HBox>
             </VBox>
 
+            <!-- ══ Footer ════════════════════════════════════════════════════════ -->
             <HBox spacing="12" alignment="CENTER_RIGHT" styleClass="job-offer-form-footer">
-                <Label text="All fields marked * are required." styleClass="job-offer-form-note"/>
+                <Label text="Fields marked * are required." styleClass="job-offer-form-note"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button fx:id="cancelButton" text="Cancel" styleClass="ghost-button" onAction="#onCancel"/>
-                <Button fx:id="saveButton" text="Create Offer" styleClass="primary-button job-offer-submit-button" onAction="#onSave"/>
+                <Button fx:id="cancelButton" text="Cancel"
+                        styleClass="ghost-button" onAction="#onCancel"/>
+                <Button fx:id="saveButton" text="Create Offer"
+                        styleClass="primary-button job-offer-submit-button" onAction="#onSave"/>
             </HBox>
+
         </VBox>
     </VBox>
 </ScrollPane>

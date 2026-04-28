@@ -16,8 +16,8 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
 import service.job_offer.AtsScoringEngine;
+import service.job_offer.AtsApplicationScoringService;
 import service.job_offer.AtsAuditService;
 import services.job_offer.ServiceJobApplication;
 import services.job_offer.ServiceJobOffer;
@@ -74,6 +74,7 @@ public class AtsPipelineBoardController implements Initializable {
     private ServiceJobOffer serviceJobOffer;
     private ServiceJobApplication serviceJobApplication;
     private AtsScoringEngine scoringEngine;
+    private AtsApplicationScoringService applicationScoringService;
     private AtsAuditService auditService;
 
     private ObservableList<JobApplication> allApplications = FXCollections.observableArrayList();
@@ -87,6 +88,7 @@ public class AtsPipelineBoardController implements Initializable {
         serviceJobOffer      = new ServiceJobOffer();
         serviceJobApplication = new ServiceJobApplication();
         scoringEngine        = new AtsScoringEngine();
+        applicationScoringService = new AtsApplicationScoringService();
         auditService         = new AtsAuditService();
 
         filteredApplications = new FilteredList<>(allApplications, p -> true);
@@ -162,7 +164,7 @@ public class AtsPipelineBoardController implements Initializable {
                     setStyle("");
                 } else {
                     setText(score + "/100");
-                    String color = score >= 70 ? "#00b894" : score >= 40 ? "#f39c12" : "#ff4f5e";
+                    String color = score >= 75 ? "#00b894" : score >= 50 ? "#f39c12" : "#ff4f5e";
                     setStyle("-fx-text-fill: " + color + "; -fx-font-weight: 800;");
                 }
             }
@@ -325,7 +327,7 @@ public class AtsPipelineBoardController implements Initializable {
         if (app.getJobOffer() == null) { showError("Error", "No job offer linked."); return; }
         Thread t = new Thread(() -> {
             try {
-                scoringEngine.score(app);
+                applicationScoringService.extractAndScore(app);
                 serviceJobApplication.update(app);
                 Integer actorId = currentUser != null ? currentUser.getId() : null;
                 auditService.logScoreCalculated(app.getId(), actorId, app.getScore());
