@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Location Picker</title>
+
+    <!-- Leaflet CSS — NO integrity/crossorigin (JavaFX WebKit SRI bug) -->
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #0f1117;
+            color: #e2e8f0;
+        }
+
+        #search-bar {
+            display: flex;
+            gap: 8px;
+            padding: 9px 12px;
+            background: #1a1d27;
+            border-bottom: 1px solid #2d3748;
+            box-sizing: border-box;
+            height: 46px;
+        }
+
+        #search-input {
+            flex: 1;
+            padding: 6px 12px;
+            border: 1px solid #3a4258;
+            border-radius: 8px;
+            background: #252a3b;
+            color: #e2e8f0;
+            font-size: 13px;
+            outline: none;
+        }
+        #search-input:focus { border-color: #667eea; }
+        #search-input::placeholder { color: #6b7280; }
+
+        #search-btn {
+            padding: 6px 16px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        #search-btn:hover { opacity: 0.85; }
+
+        #locate-btn {
+            padding: 6px 12px;
+            background: #252a3b;
+            border: 1px solid #3a4258;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+        #locate-btn:hover { background: #2d3748; }
+
+        /* CRITICAL FIX: use px height, NOT calc(100vh - …) */
+        #map {
+            width: 100%;
+            height: 264px;   /* fixed px height — 100vh = 0 inside JavaFX WebView */
+            background: #1a1f2e;
+        }
+
+        /* Leaflet dark-mode overlay */
+        .leaflet-tile { filter: brightness(0.82) saturate(1.1); }
+
+        .leaflet-popup-content-wrapper {
+            background: #1a1d27;
+            color: #e2e8f0;
+            border: 1px solid #3a4258;
+            border-radius: 10px;
+        }
+        .leaflet-popup-tip { background: #1a1d27; }
+        .leaflet-popup-content { font-size: 13px; line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+<div id="search-bar">
+    <input id="search-input" type="text" placeholder="Search a city or address…"/>
+    <button id="locate-btn" title="Use my location">📍</button>
+    <button id="search-btn">Search</button>
+</div>
+
+<div id="map"></div>
+
+<!-- Leaflet JS — NO integrity/crossorigin -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+// ── Map init ──────────────────────────────────────────────────────────
+var map = L.map('map', { zoomControl: true }).setView([36.8189, 10.1658], 6);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 19
+}).addTo(map);
+
+// Force Leaflet to re-measure the container after the page is fully painted
+setTimeout(function() { map.invalidateSize(); }, 200);
+
+// ── Marker ───────────────────────────────────────────────────────────
+var marker = null;
+
+function placePin(lat, lng, label) {
+    if (marker) { map.removeLayer(marker); }
+    marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+    marker.bindPopup('<b>' + (label || 'Selected location') + '</b><br>'
+        + lat.toFixed(5) + ', ' + lng.toFixed(5)).openPopup();
+
+    marker.on('dragend', function(e) {
+        var pos = e.target.getLatLng();
+        reverseGeocode(pos.lat, pos.lng);
+    });
+
+    notifyJava(lat, lng, label || '');
+}
+
+function notifyJava(lat, lng, address) {
+    try {
+        if (window.javaConnector) {
+            window.javaConnector.onLocationSelected(lat, lng, address);
+        }
+    } catch(e) { /* bridge not ready */ }
+}
+
+// ── Click → drop pin ──────────────────────────────────────────────────
+map.on('click', function(e) {
+    reverseGeocode(e.latlng.lat, e.latlng.lng);
+});
+
+// ── Reverse geocode via XMLHttpRequest (fetch() not supported in WebKit/JavaFX) ──
+function reverseGeocode(lat, lng) {
+    var url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2'
+            + '&lat=' + lat + '&lon=' + lng + '&zoom=14&addressdetails=1';
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.setRequestHeader('Accept-Language', 'en');
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                try {
+                    var data = JSON.parse(xhr.responseText);
+                    var label = data.display_name || (lat.toFixed(4) + ', ' + lng.toFixed(4));
+                    placePin(lat, lng, label);
+                } catch(e) {
+                    placePin(lat, lng, lat.toFixed(4) + ', ' + lng.toFixed(4));
+                }
+            } else {
+                placePin(lat, lng, lat.toFixed(4) + ', ' + lng.toFixed(4));
+            }
+        }
+    };
+    xhr.send();
+}
+
+// ── Forward geocode (search bar) via XMLHttpRequest ───────────────────
+function searchLocation() {
+    var query = document.getElementById('search-input').value.trim();
+    if (!query) return;
+    var url = 'https://nominatim.openstreetmap.org/search?format=json&q='
+            + encodeURIComponent(query) + '&limit=1';
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.setRequestHeader('Accept-Language', 'en');
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                try {
+                    var data = JSON.parse(xhr.responseText);
+                    if (data && data.length > 0) {
+                        var lat = parseFloat(data[0].lat);
+                        var lng = parseFloat(data[0].lon);
+                        map.setView([lat, lng], 13);
+                        placePin(lat, lng, data[0].display_name);
+                    } else {
+                        alert('Location not found.');
+                    }
+                } catch(e) { alert('Search failed.'); }
+            } else {
+                alert('Search failed. Check your internet connection.');
+            }
+        }
+    };
+    xhr.send();
+}
+
+document.getElementById('search-btn').addEventListener('click', searchLocation);
+document.getElementById('search-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') searchLocation();
+});
+
+// ── Geolocation button ────────────────────────────────────────────────
+document.getElementById('locate-btn').addEventListener('click', function() {
+    if (!navigator.geolocation) { alert('Geolocation not supported.'); return; }
+    navigator.geolocation.getCurrentPosition(function(pos) {
+        var lat = pos.coords.latitude;
+        var lng = pos.coords.longitude;
+        map.setView([lat, lng], 13);
+        reverseGeocode(lat, lng);
+    }, function() { alert('Could not get your location.'); });
+});
+
+// ── Called from Java to pre-fill an existing location ─────────────────
+function setLocationFromJava(lat, lng, address) {
+    map.setView([lat, lng], 13);
+    placePin(lat, lng, address);
+    if (address) { document.getElementById('search-input').value = address; }
+    map.invalidateSize();
+}
+
+// ── Called from Java to geocode a plain text address ──────────────────
+function geocodeFromJava(address) {
+    document.getElementById('search-input').value = address;
+    searchLocation();
+}
+</script>
+</body>
+</html>

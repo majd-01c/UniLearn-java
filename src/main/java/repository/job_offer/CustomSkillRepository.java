@@ -54,8 +54,15 @@ public class CustomSkillRepository implements ICustomSkillRepository {
         Transaction transaction = null;
         try {
             transaction = session.beginTransaction();
-            CustomSkill merged = session.merge(skill);
-            session.flush();
+            CustomSkill merged;
+            if (skill.getId() <= 0) {
+                session.persist(skill);
+                session.flush();
+                merged = skill;
+            } else {
+                merged = session.merge(skill);
+                session.flush();
+            }
             transaction.commit();
             return merged;
         } catch (Exception exception) {

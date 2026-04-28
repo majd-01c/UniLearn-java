@@ -1,24 +1,26 @@
 package controller.job_offer;
 
 import entities.User;
-import entities.job_offer.JobOffer;
 import entities.job_offer.JobApplication;
+import entities.job_offer.JobOffer;
 import javafx.application.Platform;
+import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.layout.GridPane;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import services.job_offer.ServiceJobOffer;
+import service.job_offer.GeminiApplicationFeedbackService;
 import services.job_offer.ServiceJobApplication;
+import services.job_offer.ServiceJobOffer;
 import util.AppNavigator;
 import util.RoleGuard;
 
@@ -30,14 +32,20 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 public class JobOfferDetailController implements Initializable {
 
+    private static final DateTimeFormatter DATE_TIME_FORMATTER =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm", Locale.ENGLISH);
+
     @FXML
-    private VBox rootContainer;
+    private VBox applicationSection;
 
     @FXML
     private Label titleLabel;
@@ -61,19 +69,49 @@ public class JobOfferDetailController implements Initializable {
     private Label requirementsLabel;
 
     @FXML
-    private Label requiredSkillsLabel;
-
-    @FXML
-    private Label preferredSkillsLabel;
-
-    @FXML
     private Label educationLabel;
 
     @FXML
     private Label experienceLabel;
 
     @FXML
-    private Label languagesLabel;
+    private Label mapStatusLabel;
+
+    @FXML
+    private Label mapUnavailableLabel;
+
+    @FXML
+    private Label createdAtLabel;
+
+    @FXML
+    private Label publishedAtLabel;
+
+    @FXML
+    private Label expiresAtLabel;
+
+    @FXML
+    private Label applicationStatusLabel;
+
+    @FXML
+    private FlowPane requiredSkillsPane;
+
+    @FXML
+    private FlowPane preferredSkillsPane;
+
+    @FXML
+    private FlowPane languagesPane;
+
+    @FXML
+    private TextArea motivationLetterArea;
+
+    @FXML
+    private TextField cvPathField;
+
+    @FXML
+    private Button browseCvButton;
+
+    @FXML
+    private Button generateMotivationButton;
 
     @FXML
     private Button applyButton;
@@ -85,24 +123,30 @@ public class JobOfferDetailController implements Initializable {
     private Button deleteButton;
 
     @FXML
-    private Button backButton;
+    private WebView locationMapView;
 
     private JobOffer jobOffer;
     private User currentUser;
     private ServiceJobOffer serviceJobOffer;
     private ServiceJobApplication serviceJobApplication;
+    private GeminiApplicationFeedbackService aiFeedbackService;
+    private boolean mapLoaded;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         serviceJobOffer = new ServiceJobOffer();
         serviceJobApplication = new ServiceJobApplication();
+        aiFeedbackService = new GeminiApplicationFeedbackService();
+        setupMap();
     }
 
     public void setJobOffer(JobOffer offer) {
         this.jobOffer = offer;
         if (offer != null) {
             displayOfferDetails();
+            refreshMap();
         }
+        setupUI();
     }
 
     public void setCurrentUser(User user) {
@@ -111,50 +155,121 @@ public class JobOfferDetailController implements Initializable {
     }
 
     private void displayOfferDetails() {
-        titleLabel.setText(jobOffer.getTitle() != null ? jobOffer.getTitle() : "Untitled");
-        typeLabel.setText(jobOffer.getType() != null ? jobOffer.getType() : "N/A");
-        statusLabel.setText(jobOffer.getStatus() != null ? jobOffer.getStatus() : "N/A");
-        locationLabel.setText(jobOffer.getLocation() != null ? "📍 " + jobOffer.getLocation() : "Location not specified");
-        
-        String postedBy = jobOffer.getUser() != null && jobOffer.getUser().getEmail() != null 
-            ? jobOffer.getUser().getEmail() 
-            : "Unknown";
-        postedByLabel.setText("Posted by: " + postedBy);
+        titleLabel.setText(safe(jobOffer.getTitle(), "Untitled"));
+        typeLabel.setText(safe(jobOffer.getType(), "N/A"));
+        statusLabel.setText(safe(jobOffer.getStatus(), "N/A"));
+        applyStatusStyle(statusLabel, jobOffer.getStatus());
 
-        descriptionLabel.setText(jobOffer.getDescription() != null ? jobOffer.getDescription() : "No description provided");
-        requirementsLabel.setText(jobOffer.getRequirements() != null ? jobOffer.getRequirements() : "No requirements provided");
+        String rawLocation = trimToNull(jobOffer.getLocation());
+        locationLabel.setText(rawLocation != null ? rawLocation : "Location not specified");
 
-        requiredSkillsLabel.setText(jobOffer.getRequiredSkills() != null ? jobOffer.getRequiredSkills() : "Not specified");
-        preferredSkillsLabel.setText(jobOffer.getPreferredSkills() != null ? jobOffer.getPreferredSkills() : "Not specified");
-        educationLabel.setText(jobOffer.getMinEducation() != null ? jobOffer.getMinEducation() : "Not specified");
-        experienceLabel.setText(jobOffer.getMinExperienceYears() != null 
-            ? jobOffer.getMinExperienceYears() + " years" 
-            : "Not specified");
-        languagesLabel.setText(jobOffer.getRequiredLanguages() != null ? jobOffer.getRequiredLanguages() : "Not specified");
+        String postedBy = jobOffer.getUser() != null && jobOffer.getUser().getEmail() != null
+                ? jobOffer.getUser().getEmail()
+                : "Unknown";
+        postedByLabel.setText(postedBy);
+
+        descriptionLabel.setText(safe(jobOffer.getDescription(), "No description provided"));
+        requirementsLabel.setText(safe(jobOffer.getRequirements(), "No requirements provided"));
+        educationLabel.setText(safe(jobOffer.getMinEducation(), "Not specified"));
+        experienceLabel.setText(jobOffer.getMinExperienceYears() != null
+                ? jobOffer.getMinExperienceYears() + " years"
+                : "Not specified");
+
+        populateChips(requiredSkillsPane, splitItems(jobOffer.getRequiredSkills()), "job-offer-detail-tag");
+        populateChips(preferredSkillsPane, splitItems(jobOffer.getPreferredSkills()), "job-offer-detail-tag", "job-offer-detail-tag-alt");
+        populateChips(languagesPane, splitItems(jobOffer.getRequiredLanguages()), "job-offer-detail-tag", "job-offer-detail-language-tag");
+
+        createdAtLabel.setText("Created: " + formatTimestamp(jobOffer.getCreatedAt()));
+        publishedAtLabel.setText("Published: " + formatTimestamp(jobOffer.getPublishedAt()));
+        expiresAtLabel.setText("Expires: " + formatTimestamp(jobOffer.getExpiresAt()));
     }
 
     private void setupUI() {
-        if (currentUser == null || jobOffer == null) {
+        if (applyButton == null || editButton == null || deleteButton == null || applicationSection == null) {
             return;
         }
 
-        boolean isOwner = jobOffer.getUser().getId().equals(currentUser.getId());
-        boolean isAdmin = RoleGuard.isAdmin(currentUser);
-        boolean isStudent = RoleGuard.isStudent(currentUser);
-        boolean isActive = "ACTIVE".equals(jobOffer.getStatus());
+        boolean hasOffer = jobOffer != null;
+        boolean hasUser = currentUser != null;
+        boolean isOwner = hasOffer && hasUser && jobOffer.getUser() != null
+                && jobOffer.getUser().getId() != null
+                && jobOffer.getUser().getId().equals(currentUser.getId());
+        boolean isAdmin = hasUser && RoleGuard.isAdmin(currentUser);
+        boolean isStudent = hasUser && RoleGuard.isStudent(currentUser);
+        boolean isActive = hasOffer && "ACTIVE".equalsIgnoreCase(jobOffer.getStatus());
+        boolean alreadyApplied = hasOffer && hasUser && hasApplied();
 
-        // Student can apply if offer is ACTIVE and hasn't already applied
-        boolean canApply = isStudent && isActive && !hasApplied();
+        boolean showApplication = isStudent;
+        applicationSection.setVisible(showApplication);
+        applicationSection.setManaged(showApplication);
+
+        editButton.setDisable(!(isOwner || isAdmin));
+        editButton.setVisible(isOwner || isAdmin);
+        editButton.setManaged(isOwner || isAdmin);
+
+        deleteButton.setDisable(!(isOwner || isAdmin));
+        deleteButton.setVisible(isOwner || isAdmin);
+        deleteButton.setManaged(isOwner || isAdmin);
+
+        boolean canApply = showApplication && isActive && !alreadyApplied;
         applyButton.setDisable(!canApply);
+        browseCvButton.setDisable(!canApply);
+        if (generateMotivationButton != null) {
+            generateMotivationButton.setDisable(!canApply);
+        }
+        motivationLetterArea.setDisable(!canApply);
+        cvPathField.setDisable(!canApply);
 
-        // Hide edit/delete buttons in detail view
-        editButton.setDisable(true);
-        editButton.setVisible(false);
-        editButton.setManaged(false);
+        if (!showApplication) {
+            return;
+        }
 
-        deleteButton.setDisable(true);
-        deleteButton.setVisible(false);
-        deleteButton.setManaged(false);
+        if (!isActive) {
+            applicationStatusLabel.setText("This offer is not active, so applications are currently closed.");
+        } else if (alreadyApplied) {
+            applicationStatusLabel.setText("You already applied to this offer. Your application has been recorded.");
+        } else {
+            applicationStatusLabel.setText("Tell the employer why this opportunity matches your profile.");
+        }
+    }
+
+    @FXML
+    private void onGenerateMotivationLetter() {
+        if (currentUser == null || jobOffer == null) {
+            showError("AI generation unavailable", "Student or job offer data is missing.");
+            return;
+        }
+
+        if (generateMotivationButton != null) {
+            generateMotivationButton.setDisable(true);
+            generateMotivationButton.setText("Generating...");
+        }
+        applicationStatusLabel.setText("Generating a motivation letter based on the job offer and your profile...");
+
+        Thread thread = new Thread(() -> {
+            try {
+                String generatedLetter = aiFeedbackService.generateMotivationLetter(jobOffer, currentUser);
+                Platform.runLater(() -> {
+                    motivationLetterArea.setText(generatedLetter);
+                    applicationStatusLabel.setText("AI generated a motivation letter. Review it and edit anything you want before applying.");
+                    if (generateMotivationButton != null) {
+                        generateMotivationButton.setDisable(false);
+                        generateMotivationButton.setText("Generate with AI");
+                    }
+                });
+            } catch (Exception exception) {
+                Platform.runLater(() -> {
+                    applicationStatusLabel.setText("AI generation failed. You can still write your own message.");
+                    if (generateMotivationButton != null) {
+                        generateMotivationButton.setDisable(false);
+                        generateMotivationButton.setText("Generate with AI");
+                    }
+                    showError("AI generation failed", exception.getMessage());
+                });
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
     }
 
     private boolean hasApplied() {
@@ -167,10 +282,34 @@ public class JobOfferDetailController implements Initializable {
             return applications.stream().anyMatch(application ->
                     application.getUser() != null
                             && application.getJobOffer() != null
-                            && application.getUser().getId() == currentUser.getId()
-                            && application.getJobOffer().getId() == jobOffer.getId());
+                            && application.getUser().getId() != null
+                            && application.getJobOffer().getId() == jobOffer.getId()
+                            && application.getUser().getId().equals(currentUser.getId()));
         } catch (Exception exception) {
             return false;
+        }
+    }
+
+    @FXML
+    private void onBrowseCv() {
+        try {
+            FileChooser chooser = new FileChooser();
+            chooser.setTitle("Select CV File");
+            chooser.getExtensionFilters().addAll(
+                    new FileChooser.ExtensionFilter("CV Files (*.pdf, *.doc, *.docx)", "*.pdf", "*.doc", "*.docx"),
+                    new FileChooser.ExtensionFilter("All Files", "*.*")
+            );
+
+            Stage owner = cvPathField != null && cvPathField.getScene() != null
+                    ? (Stage) cvPathField.getScene().getWindow()
+                    : null;
+
+            File selected = chooser.showOpenDialog(owner);
+            if (selected != null) {
+                cvPathField.setText(selected.getAbsolutePath());
+            }
+        } catch (Exception exception) {
+            showError("File Picker Error", "Unable to open file browser: " + exception.getMessage());
         }
     }
 
@@ -187,19 +326,25 @@ public class JobOfferDetailController implements Initializable {
             return;
         }
 
-        Optional<ApplicationFormData> formData = showApplicationDialog();
-        if (formData.isEmpty()) {
+        String sourcePath = trimToNull(cvPathField.getText());
+        String motivationLetter = trimToNull(motivationLetterArea.getText());
+
+        if (sourcePath == null) {
+            showError("Validation Error", "Please choose a CV file before applying.");
+            return;
+        }
+        if (motivationLetter == null) {
+            showError("Validation Error", "Please write a cover letter or message before applying.");
             return;
         }
 
         try {
-            ApplicationFormData data = formData.get();
-            String managedCvPath = persistCvFile(data.cvFileName());
+            String managedCvPath = persistCvFile(sourcePath);
 
             JobApplication application = new JobApplication();
             application.setUser(currentUser);
             application.setJobOffer(jobOffer);
-            application.setMessage(data.motivationLetter());
+            application.setMessage(motivationLetter);
             application.setCvFileName(managedCvPath);
             application.setStatus("SUBMITTED");
             application.setCreatedAt(new Timestamp(Instant.now().toEpochMilli()));
@@ -208,7 +353,9 @@ public class JobOfferDetailController implements Initializable {
 
             serviceJobApplication.add(application);
 
-            showInfo("Success", "Application submitted successfully!");
+            motivationLetterArea.clear();
+            cvPathField.clear();
+            showInfo("Success", "Application submitted successfully.");
             setupUI();
         } catch (Exception exception) {
             String errorMessage = exception.getCause() != null && exception.getCause().getMessage() != null
@@ -221,7 +368,7 @@ public class JobOfferDetailController implements Initializable {
     @FXML
     private void onEdit() {
         if (!canEdit()) {
-            showError("Error", "You don't have permission to edit this offer");
+            showError("Error", "You do not have permission to edit this offer.");
             return;
         }
         AppNavigator.showJobOfferForm(jobOffer);
@@ -230,21 +377,21 @@ public class JobOfferDetailController implements Initializable {
     @FXML
     private void onDelete() {
         if (!canEdit()) {
-            showError("Error", "You don't have permission to delete this offer");
+            showError("Error", "You do not have permission to delete this offer.");
             return;
         }
 
         Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
         confirmDialog.setTitle("Delete Job Offer");
         confirmDialog.setContentText("Are you sure you want to delete this job offer?");
-        
+
         if (confirmDialog.showAndWait().isPresent() && confirmDialog.getResult().getButtonData().isDefaultButton()) {
             try {
                 serviceJobOffer.delete(jobOffer);
-                showInfo("Success", "Job offer deleted successfully");
+                showInfo("Success", "Job offer deleted successfully.");
                 AppNavigator.showJobOffers();
-            } catch (Exception e) {
-                showError("Error", "Failed to delete job offer: " + e.getMessage());
+            } catch (Exception exception) {
+                showError("Error", "Failed to delete job offer: " + exception.getMessage());
             }
         }
     }
@@ -255,90 +402,136 @@ public class JobOfferDetailController implements Initializable {
     }
 
     private boolean canEdit() {
+        if (jobOffer == null || currentUser == null || jobOffer.getUser() == null || jobOffer.getUser().getId() == null) {
+            return false;
+        }
         boolean isOwner = jobOffer.getUser().getId().equals(currentUser.getId());
         boolean isAdmin = RoleGuard.isAdmin(currentUser);
         return isOwner || isAdmin;
     }
 
-    private Optional<ApplicationFormData> showApplicationDialog() {
-        Dialog<ApplicationFormData> dialog = new Dialog<>();
-        dialog.setTitle("Apply to Job Offer");
-        dialog.setHeaderText("Upload your CV and add a motivation letter");
+    private void setupMap() {
+        if (locationMapView == null) {
+            return;
+        }
 
-        ButtonType submitButtonType = new ButtonType("Submit", ButtonType.OK.getButtonData());
-        dialog.getDialogPane().getButtonTypes().addAll(submitButtonType, ButtonType.CANCEL);
+        WebEngine engine = locationMapView.getEngine();
+        engine.setJavaScriptEnabled(true);
 
-        TextField cvPathField = new TextField();
-        cvPathField.setPromptText("Select your CV file (.pdf, .doc, .docx)");
-        cvPathField.setEditable(false);
+        URL mapUrl = getClass().getResource("/view/job_offer/job-offer-detail-map.html");
+        if (mapUrl == null) {
+            if (mapStatusLabel != null) {
+                mapStatusLabel.setText("Map resource missing");
+            }
+            return;
+        }
 
-        Button browseButton = new Button("Browse");
-        browseButton.setOnAction(event -> {
-            try {
-                FileChooser chooser = new FileChooser();
-                chooser.setTitle("Select CV File");
-                chooser.getExtensionFilters().addAll(
-                        new FileChooser.ExtensionFilter("CV Files (*.pdf, *.doc, *.docx)", "*.pdf", "*.doc", "*.docx"),
-                        new FileChooser.ExtensionFilter("All Files", "*.*")
-                );
-
-                Stage owner = dialog.getDialogPane().getScene() != null
-                        ? (Stage) dialog.getDialogPane().getScene().getWindow()
-                        : null;
-
-                File selected = chooser.showOpenDialog(owner);
-                if (selected != null) {
-                    cvPathField.setText(selected.getAbsolutePath());
-                }
-            } catch (Exception exception) {
-                showError("File Picker Error", "Unable to open file browser: " + exception.getMessage());
+        engine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
+            if (newState == Worker.State.SUCCEEDED) {
+                mapLoaded = true;
+                refreshMap();
             }
         });
 
-        TextArea motivationArea = new TextArea();
-        motivationArea.setPromptText("Write your motivation letter...");
-        motivationArea.setWrapText(true);
-        motivationArea.setPrefRowCount(8);
-
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-
-        grid.add(new Label("CV File *"), 0, 0);
-        grid.add(cvPathField, 0, 1);
-        grid.add(browseButton, 1, 1);
-
-        grid.add(new Label("Motivation Letter *"), 0, 2);
-        grid.add(motivationArea, 0, 3, 2, 1);
-
-        dialog.getDialogPane().setContent(grid);
-
-        javafx.scene.Node submitButton = dialog.getDialogPane().lookupButton(submitButtonType);
-        submitButton.setDisable(true);
-
-        Runnable validator = () -> {
-            boolean hasCv = cvPathField.getText() != null && !cvPathField.getText().trim().isEmpty();
-            boolean hasMotivation = motivationArea.getText() != null && !motivationArea.getText().trim().isEmpty();
-            submitButton.setDisable(!(hasCv && hasMotivation));
-        };
-
-        cvPathField.textProperty().addListener((obs, oldVal, newVal) -> validator.run());
-        motivationArea.textProperty().addListener((obs, oldVal, newVal) -> validator.run());
-        validator.run();
-
-        dialog.setResultConverter(buttonType -> {
-            if (buttonType == submitButtonType) {
-                String path = cvPathField.getText().trim();
-                String motivation = motivationArea.getText().trim();
-                return new ApplicationFormData(path, motivation);
-            }
-            return null;
-        });
-
-        return dialog.showAndWait();
+        engine.load(mapUrl.toExternalForm());
     }
 
-    private record ApplicationFormData(String cvFileName, String motivationLetter) {
+    private void refreshMap() {
+        if (!mapLoaded || jobOffer == null || locationMapView == null) {
+            return;
+        }
+
+        String location = trimToNull(jobOffer.getLocation());
+        boolean hasLocation = location != null;
+
+        if (mapUnavailableLabel != null) {
+            mapUnavailableLabel.setVisible(!hasLocation);
+            mapUnavailableLabel.setManaged(!hasLocation);
+        }
+        if (locationMapView != null) {
+            locationMapView.setVisible(hasLocation);
+            locationMapView.setManaged(hasLocation);
+        }
+        if (mapStatusLabel != null) {
+            mapStatusLabel.setText(hasLocation ? "Searching location" : "No location available");
+        }
+
+        if (!hasLocation) {
+            return;
+        }
+
+        WebEngine engine = locationMapView.getEngine();
+        Runnable geocode = () -> {
+            try {
+                engine.executeScript("showLocation('" + escapeForJavascript(location) + "')");
+                if (mapStatusLabel != null) {
+                    mapStatusLabel.setText("Location loaded");
+                }
+            } catch (Exception exception) {
+                if (mapStatusLabel != null) {
+                    mapStatusLabel.setText("Map could not load location");
+                }
+            }
+        };
+
+        if (engine.getLoadWorker().getState() == Worker.State.SUCCEEDED) {
+            Platform.runLater(geocode);
+        }
+    }
+
+    private void populateChips(FlowPane pane, List<String> values, String... styleClasses) {
+        if (pane == null) {
+            return;
+        }
+
+        pane.getChildren().clear();
+        List<String> items = values.isEmpty() ? List.of("Not specified") : values;
+        for (String value : items) {
+            Label chip = new Label(value);
+            chip.getStyleClass().add("job-offer-chip");
+            for (String styleClass : styleClasses) {
+                chip.getStyleClass().add(styleClass);
+            }
+            pane.getChildren().add(chip);
+        }
+    }
+
+    private List<String> splitItems(String rawValue) {
+        if (rawValue == null || rawValue.isBlank()) {
+            return List.of();
+        }
+
+        String[] parts = rawValue.split("[,;\\n]+");
+        List<String> items = new ArrayList<>();
+        for (String part : parts) {
+            String normalized = trimToNull(part);
+            if (normalized != null) {
+                items.add(normalized);
+            }
+        }
+        return items;
+    }
+
+    private void applyStatusStyle(Label label, String status) {
+        if (label == null) {
+            return;
+        }
+        label.getStyleClass().removeAll(
+                "job-offer-status-active",
+                "job-offer-status-pending",
+                "job-offer-status-rejected",
+                "job-offer-status-closed",
+                "job-offer-status-info"
+        );
+
+        String normalized = status == null ? "" : status.trim().toUpperCase(Locale.ENGLISH);
+        switch (normalized) {
+            case "ACTIVE" -> label.getStyleClass().add("job-offer-status-active");
+            case "PENDING" -> label.getStyleClass().add("job-offer-status-pending");
+            case "REJECTED" -> label.getStyleClass().add("job-offer-status-rejected");
+            case "CLOSED" -> label.getStyleClass().add("job-offer-status-closed");
+            default -> label.getStyleClass().add("job-offer-status-info");
+        }
     }
 
     private String persistCvFile(String sourcePath) throws IOException {
@@ -356,6 +549,33 @@ public class JobOfferDetailController implements Initializable {
         Path targetPath = targetDir.resolve(targetName);
         Files.copy(source.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING);
         return targetPath.toAbsolutePath().toString();
+    }
+
+    private String formatTimestamp(Timestamp timestamp) {
+        if (timestamp == null) {
+            return "Not scheduled";
+        }
+        return timestamp.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime()
+                .format(DATE_TIME_FORMATTER);
+    }
+
+    private String safe(String value, String fallback) {
+        String trimmed = trimToNull(value);
+        return trimmed != null ? trimmed : fallback;
+    }
+
+    private String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private String escapeForJavascript(String value) {
+        return value.replace("\\", "\\\\").replace("'", "\\'");
     }
 
     private void showInfo(String title, String message) {

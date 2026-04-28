@@ -155,4 +155,10 @@ public final class AppNavigator {
             appShellController.showJobApplicationReviewView(application);
         }
     }
+
+    public static void showAtsApplicationDetail(JobApplication application) {
+        if (appShellController != null) {
+            appShellController.showAtsApplicationDetailView(application);
+        }
+    }
 }

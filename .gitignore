@@ -50,3 +50,5 @@ src/main/resources/confg/mail.local.properties
 .env
 confg/groq.local.properties
 src/main/resources/confg/groq.local.properties
+### ATS Module — contains Gemini API key, never commit ###
+src/main/resources/config/ats-config.properties

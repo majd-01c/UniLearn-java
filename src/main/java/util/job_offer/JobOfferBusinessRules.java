@@ -84,13 +84,7 @@ public final class JobOfferBusinessRules {
             return true;  // Idempotent
         }
 
-        return switch (currentStatus) {
-            case SUBMITTED -> newStatus == JobApplicationStatus.REVIEWED || 
-                            newStatus == JobApplicationStatus.REJECTED;
-            case REVIEWED -> newStatus == JobApplicationStatus.ACCEPTED || 
-                           newStatus == JobApplicationStatus.REJECTED;
-            case ACCEPTED, REJECTED -> false;  // Terminal, no exit
-        };
+        return currentStatus.canTransitionTo(newStatus);
     }
 
     /**

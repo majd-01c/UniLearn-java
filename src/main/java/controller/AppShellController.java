@@ -785,6 +785,21 @@ public class AppShellController implements Initializable {
         });
     }
 
+    public void showAtsApplicationDetailView(JobApplication application) {
+        if (!ensureAuthenticated()) return;
+        if (application == null || application.getId() <= 0) {
+            showWarning("Application unavailable", "Selected application is not available.");
+            return;
+        }
+        setHeader("ATS · Application Detail", "Score breakdown, pipeline stage, and candidate profile");
+        loadCenter("/view/job_offer/ats-application-detail.fxml", controller -> {
+            if (controller instanceof AtsApplicationDetailController c) {
+                c.setApplication(application);
+                c.setCurrentUser(currentUser);
+            }
+        });
+    }
+
     // ==================== FXML Handlers ====================
     @FXML
     private void onNavHome() {

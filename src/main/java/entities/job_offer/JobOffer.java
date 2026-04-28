@@ -51,6 +51,7 @@ public class JobOffer  implements java.io.Serializable {
      private Integer minExperienceYears;
      private String minEducation;
      private String requiredLanguages;
+     private String scoreConfig;
      private Set<JobApplication> jobApplications = new HashSet<JobApplication>(0);
 
     public JobOffer() {
@@ -67,7 +68,7 @@ public class JobOffer  implements java.io.Serializable {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
-    public JobOffer(int id, User user, String title, String type, String location, String description, String requirements, String status, Timestamp createdAt, Timestamp updatedAt, Timestamp publishedAt, Timestamp expiresAt, String requiredSkills, String preferredSkills, Integer minExperienceYears, String minEducation, String requiredLanguages, Set<JobApplication> jobApplications) {
+    public JobOffer(int id, User user, String title, String type, String location, String description, String requirements, String status, Timestamp createdAt, Timestamp updatedAt, Timestamp publishedAt, Timestamp expiresAt, String requiredSkills, String preferredSkills, Integer minExperienceYears, String minEducation, String requiredLanguages, String scoreConfig, Set<JobApplication> jobApplications) {
        this.id = id;
        this.user = user;
        this.title = title;
@@ -85,6 +86,7 @@ public class JobOffer  implements java.io.Serializable {
        this.minExperienceYears = minExperienceYears;
        this.minEducation = minEducation;
        this.requiredLanguages = requiredLanguages;
+       this.scoreConfig = scoreConfig;
        this.jobApplications = jobApplications;
     }
    
@@ -254,6 +256,15 @@ public class JobOffer  implements java.io.Serializable {
     @Column(name="required_languages", length=1073741824)
     public String getRequiredLanguages() {
         return this.requiredLanguages;
+    }
+
+    @Column(name="score_config", length=500)
+    public String getScoreConfig() {
+        return this.scoreConfig;
+    }
+
+    public void setScoreConfig(String scoreConfig) {
+        this.scoreConfig = scoreConfig;
     }
     
     public void setRequiredLanguages(String requiredLanguages) {
