@@ -4,9 +4,11 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
 <VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
@@ -38,6 +40,18 @@
             <Label text="Content" styleClass="forum-form-label"/>
             <TextArea fx:id="contentArea" promptText="Describe your topic in detail..." prefRowCount="8" styleClass="forum-text-area"/>
             <Label fx:id="contentErrorLabel" text="" styleClass="forum-error-label"/>
+        </VBox>
+
+        <!-- AI Suggestions -->
+        <VBox fx:id="aiSuggestionsBox" spacing="10.0" styleClass="forum-ai-card" visible="false" managed="false">
+            <HBox spacing="8.0" alignment="CENTER_LEFT">
+                <Label text="AI Assistant" styleClass="forum-ai-title"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <ProgressIndicator fx:id="aiLoadingIndicator" prefWidth="18.0" prefHeight="18.0" visible="false" managed="false"/>
+                <Label fx:id="aiStatusLabel" text="" styleClass="forum-ai-muted"/>
+            </HBox>
+            <VBox fx:id="aiResultsBox" spacing="8.0"/>
+            <Label text="AI-generated results may not always be accurate." styleClass="forum-ai-muted" wrapText="true"/>
         </VBox>
 
         <!-- Actions -->

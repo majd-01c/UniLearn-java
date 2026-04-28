@@ -905,6 +905,91 @@
     -fx-effect: dropshadow(gaussian, rgba(10, 34, 56, 0.06), 8, 0.2, 0, 3);
 }
 
+.forum-ai-card {
+    -fx-background-color: #f8fcff;
+    -fx-border-color: #b8d7ee;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 12;
+    -fx-effect: dropshadow(gaussian, rgba(29, 111, 165, 0.08), 8, 0.18, 0, 3);
+}
+
+.forum-ai-title {
+    -fx-text-fill: #164e76;
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+}
+
+.forum-ai-section-title {
+    -fx-text-fill: #10243c;
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+}
+
+.forum-ai-body {
+    -fx-text-fill: #344256;
+    -fx-font-size: 13px;
+    -fx-line-spacing: 4;
+}
+
+.forum-ai-muted {
+    -fx-text-fill: #6b8099;
+    -fx-font-size: 11px;
+}
+
+.forum-ai-answer {
+    -fx-background-color: #edf9f2;
+    -fx-border-color: #bfe8cf;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.forum-ai-advice {
+    -fx-background-color: #eef6ff;
+    -fx-border-color: #c5ddf2;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.forum-ai-topic-row {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e1edf7;
+    -fx-border-width: 1;
+    -fx-border-radius: 9;
+    -fx-background-radius: 9;
+}
+
+.forum-ai-topic-row:hover {
+    -fx-background-color: #f0f6fc;
+}
+
+.forum-toxicity-warning {
+    -fx-background-color: #fff7e6;
+    -fx-border-color: #ffd08a;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 10;
+}
+
+.toxicity-low {
+    -fx-background-color: #fff8dc;
+    -fx-border-color: #e6c05f;
+}
+
+.toxicity-medium {
+    -fx-background-color: #fff1e6;
+    -fx-border-color: #f2aa6b;
+}
+
+.toxicity-high {
+    -fx-background-color: #fdecec;
+    -fx-border-color: #e98b8b;
+}
+
 .forum-card-title {
     -fx-text-fill: #10243c;
     -fx-font-size: 15px;

@@ -44,3 +44,9 @@ build/
 
 ### Local mail credentials ###
 confg/mail.local.properties
+src/main/resources/confg/mail.local.properties
+
+### Local AI credentials ###
+.env
+confg/groq.local.properties
+src/main/resources/confg/groq.local.properties

@@ -9,3 +9,6 @@ INFO:     127.0.0.1:51840 - "GET /bookings HTTP/1.1" 200 OK
 INFO:     127.0.0.1:51054 - "GET /health HTTP/1.1" 200 OK
 INFO:     127.0.0.1:51054 - "POST /scrape/esprit HTTP/1.1" 200 OK
 INFO:     127.0.0.1:51054 - "GET /bookings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55870 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55870 - "POST /scrape/esprit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55870 - "GET /bookings HTTP/1.1" 200 OK
