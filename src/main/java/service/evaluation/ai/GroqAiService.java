@@ -22,7 +22,7 @@ public class GroqAiService {
     private static final String DEFAULT_MODEL = "llama-3.3-70b-versatile";
     
     // Configured API Key
-    private static final String API_KEY = "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";
+    private static final String GROQ_API_KEY_ENV_VAR = "GROQ_API_KEY"; // Using environment variable
 
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
@@ -35,14 +35,14 @@ public class GroqAiService {
     }
 
     /**
-     * Checks if the Groq API key is present.
+     * Checks if the Groq API key is present in the environment variables.
      */
     public boolean isConfigured() {
-        return API_KEY != null && !API_KEY.isBlank();
+        return System.getenv(GROQ_API_KEY_ENV_VAR) != null && !System.getenv(GROQ_API_KEY_ENV_VAR).isBlank();
     }
 
     private String getApiKey() {
-        return API_KEY;
+        return System.getenv(GROQ_API_KEY_ENV_VAR);
     }
 
     /**
@@ -52,7 +52,7 @@ public class GroqAiService {
         String apiKey = getApiKey();
         if (apiKey == null || apiKey.isBlank()) {
             return "### AI UNAVAILABLE ###\n\n" +
-                   "The Groq AI API key is not configured.";
+                   "The Groq AI API key is not configured in environment variable " + GROQ_API_KEY_ENV_VAR + ".";
         }
 
         String apiUrl = envOrDefault("GROQ_API_URL", DEFAULT_API_URL);
@@ -105,12 +105,13 @@ public class GroqAiService {
         root.put("temperature", 0.4);
         root.put("max_tokens", maxTokens);
 
-        ArrayNode messages = root.putArray("messages");
-        ObjectNode system = messages.addObject();
+        ArrayNode messages = root.putArray("messages"); // Correctly initialize messages as an ArrayNode within root
+
+        ObjectNode system = messages.addObject(); // Add a new ObjectNode for the system message
         system.put("role", "system");
         system.put("content", systemPrompt);
 
-        ObjectNode user = messages.addObject();
+        ObjectNode user = messages.addObject(); // Add a new ObjectNode for the user message
         user.put("role", "user");
         user.put("content", userPrompt);
 
