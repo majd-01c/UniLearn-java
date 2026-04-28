@@ -46,6 +46,7 @@
                         <!-- Student Section -->
                         <Label fx:id="studentSectionLabel" text="LEARNING" styleClass="side-section-label"/>
                         <Button fx:id="navMyLearningButton" text="▶  My Learning" onAction="#onNavMyLearning" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
+                        <Button fx:id="navQuizzesButton" text="📝  Quizzes" onAction="#onNavQuizzes" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
 
                         <!-- Evaluation -->
                         <Label text="EVALUATION" styleClass="side-section-label"/>

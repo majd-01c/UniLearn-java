@@ -35,19 +35,21 @@ public class UserAnswer  implements java.io.Serializable {
      private Timestamp startedAt;
      private Timestamp completedAt;
      private byte isPassed;
+     private byte cheatFlag;
      private Set<Answer> answers = new HashSet<Answer>(0);
 
     public UserAnswer() {
     }
 
 	
-    public UserAnswer(int id, User user, Quiz quiz, byte isPassed) {
+    public UserAnswer(int id, User user, Quiz quiz, byte isPassed, byte cheatFlag) {
         this.id = id;
         this.user = user;
         this.quiz = quiz;
         this.isPassed = isPassed;
+        this.cheatFlag = cheatFlag;
     }
-    public UserAnswer(int id, User user, Quiz quiz, Integer score, Integer totalPoints, Timestamp startedAt, Timestamp completedAt, byte isPassed, Set<Answer> answers) {
+    public UserAnswer(int id, User user, Quiz quiz, Integer score, Integer totalPoints, Timestamp startedAt, Timestamp completedAt, byte isPassed, byte cheatFlag, Set<Answer> answers) {
        this.id = id;
        this.user = user;
        this.quiz = quiz;
@@ -56,6 +58,7 @@ public class UserAnswer  implements java.io.Serializable {
        this.startedAt = startedAt;
        this.completedAt = completedAt;
        this.isPassed = isPassed;
+       this.cheatFlag = cheatFlag;
        this.answers = answers;
     }
    
@@ -139,6 +142,15 @@ public class UserAnswer  implements java.io.Serializable {
     
     public void setIsPassed(byte isPassed) {
         this.isPassed = isPassed;
+    }
+
+    @Column(name="cheat_flag", nullable=false)
+    public byte getCheatFlag() {
+        return this.cheatFlag;
+    }
+
+    public void setCheatFlag(byte cheatFlag) {
+        this.cheatFlag = cheatFlag;
     }
 
 @OneToMany(fetch=FetchType.LAZY, mappedBy="userAnswer")

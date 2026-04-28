@@ -1,5 +1,5 @@
 /* ============================================================
-   UniLearn Desktop — Complete Visual System
+   UniLearn Desktop â€” Complete Visual System
    Light & Dark Theme + LMS Module Styles
    ============================================================ */
 
@@ -1284,4 +1284,114 @@
     -fx-text-fill: #10243c;
     -fx-font-weight: 700;
     -fx-font-size: 12px;
+}
+
+/* ========================================
+   QUIZ STYLES
+   ======================================== */
+
+.quiz-card {
+    -fx-cursor: hand;
+}
+
+.quiz-card:hover {
+    -fx-border-color: -ul-primary;
+    -fx-effect: dropshadow(gaussian, -ul-card-shadow, 20, 0.35, 0, 8);
+}
+
+.question-text {
+    -fx-text-fill: -ul-text-heading;
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+    -fx-wrap-text: true;
+}
+
+.points-label {
+    -fx-text-fill: -ul-primary;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-background-color: rgba(29, 111, 165, 0.1);
+    -fx-background-radius: 6;
+    -fx-padding: 3 8;
+}
+
+.answer-textarea {
+    -fx-background-color: -ul-input-bg;
+    -fx-border-color: -ul-input-border;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 8 12;
+    -fx-font-size: 13px;
+    -fx-text-fill: -ul-text-heading;
+}
+
+.answer-textarea:focused {
+    -fx-border-color: -ul-input-focus;
+    -fx-effect: dropshadow(gaussian, rgba(29, 111, 165, 0.15), 6, 0, 0, 0);
+}
+
+.review-question {
+    -fx-text-fill: -ul-text-heading;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+}
+
+.quiz-result-correct {
+    -fx-border-color: #27ae60;
+    -fx-border-width: 2;
+    -fx-border-radius: 8;
+    -fx-background-color: #f0fff4;
+    -fx-background-radius: 8;
+}
+
+.quiz-result-incorrect {
+    -fx-border-color: #e74c3c;
+    -fx-border-width: 2;
+    -fx-border-radius: 8;
+    -fx-background-color: #fff5f5;
+    -fx-background-radius: 8;
+}
+
+.quiz-timer {
+    -fx-text-fill: -ul-text-heading;
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-background-color: rgba(29, 111, 165, 0.08);
+    -fx-background-radius: 8;
+    -fx-padding: 6 14;
+}
+
+.quiz-progress {
+    -fx-text-fill: -ul-text-sub;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+}
+
+.quiz-score-passed {
+    -fx-text-fill: #27ae60;
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+}
+
+.quiz-score-failed {
+    -fx-text-fill: #e74c3c;
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+}
+
+/* Dark theme quiz styles */
+.dark-theme .quiz-result-correct {
+    -fx-background-color: rgba(39, 174, 96, 0.12);
+}
+
+.dark-theme .quiz-result-incorrect {
+    -fx-background-color: rgba(231, 76, 60, 0.12);
+}
+
+.dark-theme .quiz-timer {
+    -fx-background-color: rgba(58, 160, 224, 0.12);
+}
+
+.dark-theme .points-label {
+    -fx-background-color: rgba(58, 160, 224, 0.15);
 }

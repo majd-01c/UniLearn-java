@@ -52,3 +52,7 @@ confg/groq.local.properties
 src/main/resources/confg/groq.local.properties
 ### ATS Module — contains Gemini API key, never commit ###
 src/main/resources/config/ats-config.properties
+
+### Local AI credentials ###
+src/main/resources/confg/ai.local.properties
+confg/ai.local.properties

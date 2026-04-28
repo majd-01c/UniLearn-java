@@ -24,7 +24,13 @@ public class StudentCourseViewController implements Initializable {
         breadcrumb.setText(cc.getTitle());
         courseTitle.setText(cc.getTitle());
 
-        List<ContenuRowDto> visible = cdSvc.getVisibleContenuForClasseCourseDto(cc.getClasseCourseId());
+        List<ContenuRowDto> allVisible = cdSvc.getVisibleContenuForClasseCourseDto(cc.getClasseCourseId());
+        
+        // Filter out quizzes as they have their own dedicated view
+        final List<ContenuRowDto> visible = allVisible.stream()
+                .filter(c -> !"QUIZ".equalsIgnoreCase(c.getType()))
+                .collect(java.util.stream.Collectors.toList());
+
         if (visible.isEmpty()) {
             emptyLabel.setVisible(true);
             emptyLabel.setManaged(true);
