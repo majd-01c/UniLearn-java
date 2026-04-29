@@ -1,549 +1,816 @@
+/* ═══════════════════════════════════════════════════════════════
+   EVAL — MODERN DARK GLASSMORPHISM THEME
+   Deep space aesthetic · Electric blue/cyan · Neon glow accents
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── ROOT & SHELL ─────────────────────────────────────────────── */
 .eval-shell-root,
 .eval-root {
-    background-color: #eff5ff;
-    -fx-background-color: linear-gradient(from 0% 0% to 0% 100%, #f7fbff, #eef4ff, #e9f0ff);
-    font-family: "Segoe UI", "Noto Sans", "Arial";
-    -fx-font-family: "Segoe UI", "Noto Sans", "Arial";
+    -fx-background-color: linear-gradient(from 0% 0% to 0% 100%, #060c18, #080f1f, #0b1428);
+    -fx-font-family: "Segoe UI Variable", "Segoe UI", "Noto Sans", sans-serif;
 }
 
+/* ── HEADER ───────────────────────────────────────────────────── */
 .eval-shell-header {
-    background-color: #1f5da8;
-    -fx-background-color: linear-gradient(to right, #0f3b67 0%, #1a4f8f 45%, #2367b8 100%);
-    border-color: #0c2c4e;
-    -fx-border-color: #0c2c4e;
-    border-width: 0 0 1px 0;
+    -fx-background-color: linear-gradient(to right,
+    #030a16 0%,
+    #071428 40%,
+    #0a1b36 70%,
+    #071020 100%);
+    -fx-border-color: rgba(56, 139, 255, 0.28);
     -fx-border-width: 0 0 1 0;
+    -fx-effect: dropshadow(gaussian, rgba(30, 100, 255, 0.18), 24, 0.3, 0, 4);
 }
 
+/* ── TYPOGRAPHY ───────────────────────────────────────────────── */
 .eval-title {
     -fx-text-fill: #ffffff;
-    font-size: 22px;
-    -fx-font-size: 22px;
-    font-weight: 800;
-    -fx-font-weight: 800;
+    -fx-font-size: 24px;
+    -fx-font-weight: 900;
+    -fx-effect: dropshadow(gaussian, rgba(96, 200, 255, 0.6), 16, 0.4, 0, 0);
 }
 
 .eval-subtitle {
-    -fx-text-fill: #d7e8ff;
-    font-size: 12px;
+    -fx-text-fill: rgba(180, 210, 255, 0.65);
     -fx-font-size: 12px;
 }
 
-.eval-user-chip {
-    background-color: rgba(255,255,255,0.18);
-    -fx-background-color: rgba(255,255,255,0.18);
-    -fx-text-fill: #ffffff;
-    -fx-background-radius: 999;
-    padding: 4px 10px;
-    -fx-padding: 4 10;
-    font-size: 11px;
-    -fx-font-size: 11px;
-    font-weight: 700;
-    -fx-font-weight: 700;
-}
-
 .eval-label {
-    -fx-text-fill: #eff6ff;
+    -fx-text-fill: rgba(200, 225, 255, 0.75);
 }
 
+.eval-card-title {
+    -fx-text-fill: #e8f2ff;
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+}
+
+.eval-page-title {
+    -fx-text-fill: #f0f8ff;
+    -fx-font-size: 20px;
+    -fx-font-weight: 900;
+    -fx-effect: dropshadow(gaussian, rgba(60, 160, 255, 0.35), 10, 0.3, 0, 0);
+}
+
+.eval-page-subtitle {
+    -fx-text-fill: rgba(160, 200, 255, 0.6);
+    -fx-font-size: 12px;
+}
+
+.eval-section-label {
+    -fx-text-fill: rgba(170, 210, 255, 0.7);
+}
+
+/* ── USER CHIP ────────────────────────────────────────────────── */
+.eval-user-chip {
+    -fx-background-color: linear-gradient(to right, rgba(56, 139, 255, 0.25), rgba(0, 210, 255, 0.18));
+    -fx-text-fill: #a8d4ff;
+    -fx-background-radius: 999;
+    -fx-padding: 5 14;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-border-color: rgba(90, 170, 255, 0.35);
+    -fx-border-radius: 999;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(56, 139, 255, 0.22), 8, 0.2, 0, 0);
+}
+
+/* ── SHELL HINT ROW ───────────────────────────────────────────── */
 .eval-shell-hint-row {
-    background-color: rgba(255,255,255,0.12);
-    -fx-background-color: rgba(255,255,255,0.12);
+    -fx-background-color: rgba(56, 139, 255, 0.08);
     -fx-background-radius: 10;
-    border-radius: 10px;
+    -fx-border-color: rgba(56, 139, 255, 0.18);
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
     -fx-padding: 6 10;
-    padding: 6px 10px;
 }
 
+/* ── ROLE HOST ────────────────────────────────────────────────── */
 .eval-role-host {
-    padding: 12px;
-    -fx-padding: 12;
+    -fx-padding: 14;
 }
 
+/* ── STUDENT HERO CARD ────────────────────────────────────────── */
 .eval-student-root {
-    background-color: transparent;
     -fx-background-color: transparent;
 }
 
 .eval-student-hero {
-    background-color: #ffffff;
-    -fx-background-color: linear-gradient(from 0% 0% to 100% 0%, #ffffff, #f4f8ff);
-    -fx-border-color: #d8e5fc;
-    border-width: 1px;
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%,
+    rgba(18, 34, 62, 0.95),
+    rgba(10, 20, 42, 0.92));
+    -fx-border-color: rgba(56, 139, 255, 0.3);
     -fx-border-width: 1;
-    border-radius: 14px;
-    -fx-border-radius: 14;
-    -fx-background-radius: 14;
-    padding: 12px;
-    -fx-padding: 12;
+    -fx-border-radius: 18;
+    -fx-background-radius: 18;
+    -fx-padding: 16;
+    -fx-effect: dropshadow(gaussian, rgba(20, 80, 200, 0.25), 28, 0.2, 0, 8);
 }
 
-.eval-page-title {
-    -fx-text-fill: #0f3b67;
-    font-size: 20px;
-    -fx-font-size: 20px;
-    font-weight: 800;
-    -fx-font-weight: 800;
-}
-
-.eval-page-subtitle {
-    -fx-text-fill: #4b6384;
-    font-size: 12px;
-    -fx-font-size: 12px;
-}
-
+/* ── CONTROL ROW ──────────────────────────────────────────────── */
 .eval-control-row {
-    background-color: #edf4ff;
-    -fx-background-color: #edf4ff;
-    border-radius: 10px;
-    -fx-background-radius: 10;
-    -fx-padding: 8;
-    padding: 8px;
+    -fx-background-color: linear-gradient(to bottom,
+    rgba(25, 50, 90, 0.55),
+    rgba(14, 28, 55, 0.55));
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(56, 139, 255, 0.18);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-padding: 10;
 }
 
+/* ── PILL INPUT ───────────────────────────────────────────────── */
 .eval-pill-input {
-    background-color: #ffffff;
-    -fx-background-color: #ffffff;
-    border-color: #c6d9fb;
-    -fx-border-color: #c6d9fb;
-    border-radius: 999px;
+    -fx-background-color: rgba(10, 20, 40, 0.85);
+    -fx-border-color: rgba(60, 130, 255, 0.35);
     -fx-border-radius: 999;
     -fx-background-radius: 999;
-    -fx-padding: 4 10;
-    padding: 4px 10px;
+    -fx-border-width: 1;
+    -fx-padding: 6 14;
+    -fx-text-fill: #d0e8ff;
+    -fx-prompt-text-fill: rgba(140, 180, 255, 0.45);
 }
 
+/* ══════════════════════════════════════════════════════════════
+   BUTTONS — NEON GLOW SYSTEM
+   ══════════════════════════════════════════════════════════════ */
+
+/* Primary CTA Button */
 .eval-primary-btn {
-    background-color: #1f6ed6;
-    -fx-background-color: linear-gradient(from 0% 0% to 0% 100%, #2a78de, #1e65c7);
-    -fx-text-fill: white;
-    font-weight: 700;
-    -fx-font-weight: 700;
-    -fx-background-radius: 10;
-    padding: 8px 14px;
-    -fx-padding: 8 14;
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%,
+    #2a82ff,
+    #1460ee,
+    #0f4fd8);
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 800;
+    -fx-background-radius: 12;
+    -fx-padding: 10 20;
+    -fx-font-size: 13px;
+    -fx-border-color: rgba(100, 180, 255, 0.45);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(30, 110, 255, 0.55), 18, 0.35, 0, 4);
 }
 
 .eval-primary-btn:hover {
-    background-color: #1d4ed8;
-    -fx-background-color: linear-gradient(to bottom, #1f6ed6, #1b57ae);
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%,
+    #3d96ff,
+    #1f70ff,
+    #1460ee);
+    -fx-effect: dropshadow(gaussian, rgba(50, 140, 255, 0.75), 24, 0.45, 0, 6);
 }
 
+/* Section Buttons — Pill-style with glow */
+.eval-section-btn {
+    -fx-background-color: linear-gradient(to bottom,
+    rgba(30, 65, 120, 0.7),
+    rgba(18, 42, 88, 0.7));
+    -fx-border-color: rgba(80, 150, 255, 0.38);
+    -fx-border-width: 1;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-padding: 7 16;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #9fc8ff;
+    -fx-effect: dropshadow(gaussian, rgba(40, 100, 255, 0.15), 8, 0.2, 0, 2);
+}
+
+.eval-section-btn:hover {
+    -fx-background-color: linear-gradient(to bottom,
+    rgba(48, 100, 190, 0.75),
+    rgba(30, 70, 150, 0.75));
+    -fx-effect: dropshadow(gaussian, rgba(50, 140, 255, 0.38), 14, 0.3, 0, 3);
+    -fx-border-color: rgba(100, 180, 255, 0.55);
+}
+
+/* Link Buttons */
+.eval-link-btn {
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-padding: 7 16;
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-font-family: "Segoe UI Variable", "Segoe UI";
+    -fx-border-width: 1;
+}
+
+.eval-link-youtube {
+    -fx-background-color: linear-gradient(to bottom right, #ff6b6b, #e53935);
+    -fx-border-color: rgba(255, 120, 120, 0.5);
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(gaussian, rgba(229, 57, 53, 0.45), 12, 0.3, 0, 3);
+}
+
+.eval-link-udemy {
+    -fx-background-color: linear-gradient(to bottom right, #ffca28, #fb8c00);
+    -fx-border-color: rgba(255, 180, 50, 0.5);
+    -fx-text-fill: #1a0a00;
+    -fx-effect: dropshadow(gaussian, rgba(251, 140, 0, 0.4), 12, 0.3, 0, 3);
+}
+
+.eval-link-coursera {
+    -fx-background-color: linear-gradient(to bottom right, #40c4ff, #1565c0);
+    -fx-border-color: rgba(64, 196, 255, 0.5);
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(gaussian, rgba(30, 130, 255, 0.45), 12, 0.3, 0, 3);
+}
+
+.eval-link-btn:hover {
+    -fx-opacity: 0.9;
+    -fx-effect: dropshadow(gaussian, rgba(80, 180, 255, 0.5), 18, 0.4, 0, 4);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   NAVIGATION BAR — PREMIUM DARK GLASS
+   ══════════════════════════════════════════════════════════════ */
+.eval-nav-bar {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 0%,
+    rgba(6, 12, 26, 0.96),
+    rgba(8, 18, 38, 0.96),
+    rgba(6, 14, 30, 0.96));
+    -fx-border-color: rgba(56, 139, 255, 0.32);
+    -fx-border-width: 1;
+    -fx-border-radius: 16;
+    -fx-background-radius: 16;
+    -fx-padding: 10 14;
+    -fx-spacing: 6;
+    -fx-effect: dropshadow(gaussian, rgba(10, 50, 180, 0.35), 22, 0.28, 0, 6);
+}
+
+.eval-nav-btn {
+    -fx-background-color: rgba(40, 100, 200, 0.12);
+    -fx-border-color: rgba(80, 150, 255, 0.28);
+    -fx-border-width: 1;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-text-fill: rgba(180, 215, 255, 0.85);
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-padding: 8 18;
+    -fx-effect: none;
+}
+
+.eval-nav-btn:hover {
+    -fx-background-color: rgba(60, 140, 255, 0.22);
+    -fx-border-color: rgba(100, 180, 255, 0.5);
+    -fx-text-fill: #d4eaff;
+    -fx-effect: dropshadow(gaussian, rgba(50, 130, 255, 0.3), 12, 0.25, 0, 2);
+}
+
+/* Active nav button — electric cyan-blue glow */
+.eval-nav-btn-active {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%,
+    #00c6ff,
+    #2575fc,
+    #1a4fd8);
+    -fx-border-color: rgba(0, 210, 255, 0.6);
+    -fx-border-width: 1;
+    -fx-text-fill: #ffffff;
+    -fx-effect: dropshadow(gaussian, rgba(0, 180, 255, 0.65), 20, 0.45, 0, 0);
+}
+
+/* ── KPI CARDS ────────────────────────────────────────────────── */
 .eval-summary-grid {
-    background-color: transparent;
     -fx-background-color: transparent;
 }
 
 .eval-kpi-card {
-    background-color: #ffffff;
-    -fx-background-color: #ffffff;
-    border-color: #d5e3fb;
-    -fx-border-color: #d5e3fb;
-    border-width: 1px;
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%,
+    rgba(18, 38, 75, 0.9),
+    rgba(10, 22, 50, 0.9));
+    -fx-border-color: rgba(56, 139, 255, 0.28);
     -fx-border-width: 1;
-    border-radius: 12px;
-    -fx-border-radius: 12;
-    -fx-background-radius: 12;
-    padding: 8px 12px;
-    -fx-padding: 8 12;
+    -fx-border-radius: 16;
+    -fx-background-radius: 16;
+    -fx-padding: 12 16;
     -fx-pref-width: 220;
+    -fx-effect: dropshadow(gaussian, rgba(15, 60, 180, 0.2), 18, 0.2, 0, 5);
 }
 
 .eval-kpi-label {
-    -fx-text-fill: #5e7494;
-    font-size: 11px;
+    -fx-text-fill: rgba(150, 195, 255, 0.6);
     -fx-font-size: 11px;
 }
 
 .eval-summary-value {
-    font-weight: 800;
-    -fx-font-weight: 800;
-    -fx-text-fill: #154a93;
-    font-size: 17px;
-    -fx-font-size: 17px;
+    -fx-font-weight: 900;
+    -fx-text-fill: #60b8ff;
+    -fx-font-size: 22px;
+    -fx-effect: dropshadow(gaussian, rgba(60, 160, 255, 0.45), 10, 0.3, 0, 0);
 }
 
-/* Success message (Green) */
+/* ── FEEDBACK MESSAGES ────────────────────────────────────────── */
 .eval-feedback {
-    -fx-text-fill: #10b981;
+    -fx-text-fill: #22d3a8;
     -fx-font-weight: bold;
+    -fx-effect: dropshadow(gaussian, rgba(34, 211, 168, 0.3), 8, 0.2, 0, 0);
 }
 
-/* Error message (Red) */
 .eval-feedback-error {
-    -fx-text-fill: #ef4444;
+    -fx-text-fill: #ff5370;
     -fx-font-weight: bold;
+    -fx-effect: dropshadow(gaussian, rgba(255, 83, 112, 0.3), 8, 0.2, 0, 0);
 }
 
+/* ── TABLE VIEWS ──────────────────────────────────────────────── */
 .eval-root .table-view,
 .eval-shell-root .table-view {
-    background-color: #ffffff;
-    -fx-background-color: #ffffff;
-    border-color: #dce6f8;
-    -fx-border-color: #dce6f8;
-    border-width: 1px;
+    -fx-background-color: rgba(8, 18, 38, 0.9);
+    -fx-border-color: rgba(56, 139, 255, 0.25);
     -fx-border-width: 1;
-    border-radius: 10px;
-    -fx-border-radius: 10;
-    -fx-background-radius: 10;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-effect: dropshadow(gaussian, rgba(10, 40, 140, 0.2), 16, 0.2, 0, 4);
 }
 
 .eval-root .table-view .column-header-background,
 .eval-shell-root .table-view .column-header-background {
-    background-color: #e6efff;
-    -fx-background-color: linear-gradient(to bottom, #f2f7ff, #e6efff);
+    -fx-background-color: linear-gradient(to bottom,
+    rgba(18, 40, 80, 0.98),
+    rgba(12, 26, 58, 0.98));
 }
 
 .eval-root .table-view .column-header,
 .eval-root .table-view .filler,
 .eval-shell-root .table-view .column-header,
 .eval-shell-root .table-view .filler {
-    border-color: #d5e3fb;
-    -fx-border-color: #d5e3fb;
+    -fx-border-color: rgba(56, 139, 255, 0.2);
 }
 
 .eval-root .table-view .column-header .label,
 .eval-shell-root .table-view .column-header .label {
-    -fx-text-fill: #163b68;
-    font-weight: 700;
+    -fx-text-fill: #7ec4ff;
     -fx-font-weight: 700;
-}
-
-.eval-root .table-row-cell,
-.eval-shell-root .table-row-cell {
-    background-color: #ffffff;
-    -fx-background-color: #ffffff;
-    border-color: transparent transparent #edf3ff transparent;
-    -fx-border-color: transparent transparent #edf3ff transparent;
-}
-
-.eval-root .table-row-cell:odd,
-.eval-shell-root .table-row-cell:odd {
-    background-color: #f9fbff;
-    -fx-background-color: #f9fbff;
+    -fx-font-size: 12px;
 }
 
 .eval-root .table-row-cell:selected,
 .eval-shell-root .table-row-cell:selected {
-    background-color: #d9e9ff;
-    -fx-background-color: #d9e9ff;
-    -fx-text-fill: #0f3b67;
+    -fx-background-color: rgba(30, 90, 200, 0.35);
+    -fx-text-fill: #d0e8ff;
 }
 
 .eval-root .table-cell,
 .eval-shell-root .table-cell {
-    -fx-text-fill: #16324f;
-    padding: 8px 6px;
-    -fx-padding: 8 6;
+    -fx-text-fill: #c8dff5;
+    -fx-padding: 9 8;
 }
 
+/* ── TABS ─────────────────────────────────────────────────────── */
 .eval-root .tab-pane,
 .eval-shell-root .tab-pane {
-    background-color: transparent;
     -fx-background-color: transparent;
 }
 
 .eval-tabs .tab-content-area,
 .eval-panel {
-    background-color: #ffffff;
-    -fx-background-color: #ffffff;
-    border-color: #dce6f8;
-    -fx-border-color: #dce6f8;
-    border-width: 1px;
+    -fx-background-color: rgba(8, 18, 38, 0.88);
+    -fx-border-color: rgba(56, 139, 255, 0.22);
     -fx-border-width: 1;
-    border-radius: 0 0 12px 12px;
-    -fx-border-radius: 0 0 12 12;
-    -fx-background-radius: 0 0 12 12;
+    -fx-border-radius: 0 0 14 14;
+    -fx-background-radius: 0 0 14 14;
 }
 
+.eval-root .tab-pane .tab-header-area .tab-header-background,
+.eval-shell-root .tab-pane .tab-header-area .tab-header-background {
+    -fx-background-color: rgba(8, 18, 38, 0.75);
+}
+
+.eval-root .tab-pane .tab,
+.eval-shell-root .tab-pane .tab {
+    -fx-background-radius: 12 12 0 0;
+    -fx-background-color: rgba(16, 36, 72, 0.6);
+    -fx-padding: 8 16;
+    -fx-border-color: rgba(56, 139, 255, 0.18);
+    -fx-border-width: 1 1 0 1;
+    -fx-border-radius: 12 12 0 0;
+}
+
+.eval-root .tab-pane .tab:selected,
+.eval-shell-root .tab-pane .tab:selected {
+    -fx-background-color: linear-gradient(to bottom,
+    rgba(30, 70, 140, 0.95),
+    rgba(14, 38, 85, 0.95));
+    -fx-border-color: rgba(60, 160, 255, 0.45) rgba(60, 160, 255, 0.45) transparent rgba(60, 160, 255, 0.45);
+    -fx-effect: dropshadow(gaussian, rgba(30, 110, 255, 0.3), 10, 0.2, 0, -2);
+}
+
+.eval-root .tab-pane .tab .tab-label,
+.eval-shell-root .tab-pane .tab .tab-label {
+    -fx-text-fill: rgba(150, 195, 255, 0.7);
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+}
+
+.eval-root .tab-pane .tab:selected .tab-label,
+.eval-shell-root .tab-pane .tab:selected .tab-label {
+    -fx-text-fill: #a8d8ff;
+    -fx-effect: dropshadow(gaussian, rgba(60, 160, 255, 0.5), 8, 0.3, 0, 0);
+}
+
+/* ── RECOMMENDATIONS PANEL ────────────────────────────────────── */
 .eval-recommendations-panel {
-    background-color: #08121f;
-    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #08121f 0%, #0e1728 55%, #131d31 100%);
-    border-color: #22314a;
-    -fx-border-color: #22314a;
-    -fx-background-radius: 18;
-    -fx-border-radius: 18;
-    -fx-effect: dropshadow(gaussian, rgba(3, 11, 24, 0.45), 30, 0.25, 0, 10);
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%,
+    #050e1e 0%,
+    #081527 50%,
+    #060d1c 100%);
+    -fx-border-color: rgba(40, 90, 180, 0.4);
+    -fx-border-width: 1;
+    -fx-background-radius: 20;
+    -fx-border-radius: 20;
+    -fx-effect: dropshadow(gaussian, rgba(5, 20, 80, 0.6), 36, 0.3, 0, 12);
 }
 
 .eval-recommendations-hero {
-    background-color: rgba(255, 255, 255, 0.03);
-    -fx-background-color: linear-gradient(from 0% 0% to 100% 0%, rgba(42, 120, 222, 0.22), rgba(24, 166, 215, 0.12));
-    border-color: rgba(111, 198, 255, 0.18);
-    -fx-border-color: rgba(111, 198, 255, 0.18);
-    border-radius: 16px;
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 0%,
+    rgba(30, 100, 255, 0.15),
+    rgba(0, 200, 255, 0.08));
+    -fx-border-color: rgba(60, 160, 255, 0.25);
+    -fx-border-width: 1;
     -fx-border-radius: 16;
     -fx-background-radius: 16;
-    padding: 14px;
-    -fx-padding: 14;
+    -fx-padding: 16;
 }
 
+.eval-recommendations-panel .eval-section-label,
+.eval-recommendations-panel .eval-page-subtitle {
+    -fx-text-fill: rgba(160, 210, 255, 0.65);
+}
+
+.eval-recommendations-panel .eval-card-title,
+.eval-recommendations-panel .eval-section-label {
+    -fx-text-fill: #d4eaff;
+}
+
+/* ── RECO TEXTAREA ────────────────────────────────────────────── */
 .eval-reco-textarea {
-    background-color: rgba(8, 18, 31, 0.88);
-    -fx-background-color: rgba(8, 18, 31, 0.88);
-    border-color: rgba(103, 157, 255, 0.28);
-    -fx-border-color: rgba(103, 157, 255, 0.28);
-    border-radius: 14px;
+    -fx-background-color: rgba(5, 12, 26, 0.92);
+    -fx-border-color: rgba(56, 139, 255, 0.3);
+    -fx-border-width: 1;
     -fx-border-radius: 14;
     -fx-background-radius: 14;
-    -fx-text-fill: #eaf2ff;
-    -fx-prompt-text-fill: #90a8ca;
-    -fx-font-family: "Segoe UI", "system-ui";
+    -fx-text-fill: #c8e0ff;
+    -fx-prompt-text-fill: rgba(100, 155, 220, 0.4);
+    -fx-font-family: "Segoe UI Variable", "Segoe UI", "system-ui";
     -fx-font-size: 13px;
+    -fx-effect: innershadow(gaussian, rgba(0, 0, 0, 0.4), 8, 0.2, 0, 2);
 }
 
 .eval-reco-textarea .content {
     -fx-background-color: transparent;
 }
 
+/* ── RESOURCE CARDS ───────────────────────────────────────────── */
 .eval-resource-card {
-    background-color: rgba(13, 23, 38, 0.95);
-    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, rgba(16, 29, 48, 0.98), rgba(11, 20, 34, 0.98));
-    border-color: rgba(96, 128, 184, 0.26);
-    -fx-border-color: rgba(96, 128, 184, 0.26);
-    border-width: 1px;
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%,
+    rgba(12, 26, 52, 0.98),
+    rgba(7, 16, 36, 0.98));
+    -fx-border-color: rgba(56, 120, 220, 0.28);
     -fx-border-width: 1;
-    border-radius: 16px;
-    -fx-border-radius: 16;
-    -fx-background-radius: 16;
-    padding: 14px;
-    -fx-padding: 14;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.28), 14, 0.2, 0, 5);
+    -fx-border-radius: 18;
+    -fx-background-radius: 18;
+    -fx-padding: 16;
+    -fx-effect: dropshadow(gaussian, rgba(5, 20, 80, 0.4), 20, 0.25, 0, 6);
 }
 
 .eval-resource-title {
-    -fx-text-fill: #f3f7ff;
-    font-size: 15px;
+    -fx-text-fill: #e8f2ff;
     -fx-font-size: 15px;
-    font-weight: 800;
     -fx-font-weight: 800;
 }
 
 .eval-resource-badge {
-    background-color: #19c37d;
-    -fx-background-color: #19c37d;
-    -fx-text-fill: #06121f;
+    -fx-background-color: linear-gradient(to right, #00e5a0, #00bcd4);
+    -fx-text-fill: #03120a;
     -fx-background-radius: 999;
-    padding: 3px 10px;
-    -fx-padding: 3 10;
-    font-size: 11px;
-    -fx-font-size: 11px;
-    font-weight: 800;
-    -fx-font-weight: 800;
+    -fx-padding: 3 12;
+    -fx-font-size: 10px;
+    -fx-font-weight: 900;
+    -fx-effect: dropshadow(gaussian, rgba(0, 220, 160, 0.4), 8, 0.3, 0, 0);
 }
 
 .eval-resource-text {
-    -fx-text-fill: #d0d9ea;
-    font-size: 12px;
+    -fx-text-fill: rgba(170, 205, 255, 0.65);
     -fx-font-size: 12px;
 }
 
 .eval-resource-links {
-    -fx-padding: 2 0 0 0;
+    -fx-padding: 4 0 0 0;
 }
 
-.eval-link-btn {
-    -fx-background-radius: 999;
-    -fx-border-radius: 999;
-    -fx-padding: 7 14;
-    -fx-font-size: 11px;
-    -fx-font-weight: 800;
-    -fx-font-family: "Segoe UI";
-}
-
-.eval-link-youtube {
-    -fx-background-color: linear-gradient(to bottom, #ff5f6d, #f44336);
-    -fx-text-fill: white;
-}
-
-.eval-link-udemy {
-    -fx-background-color: linear-gradient(to bottom, #ffb74d, #fb8c00);
-    -fx-text-fill: white;
-}
-
-.eval-link-coursera {
-    -fx-background-color: linear-gradient(to bottom, #55c2ff, #2f80ed);
-    -fx-text-fill: white;
-}
-
-.eval-link-btn:hover {
-    -fx-opacity: 0.92;
-    -fx-effect: dropshadow(gaussian, rgba(39, 114, 255, 0.22), 12, 0.2, 0, 2);
-}
-
-.eval-recommendations-panel .eval-section-label,
-.eval-recommendations-panel .eval-page-subtitle {
-    -fx-text-fill: #d7e3f8;
-}
-
-.eval-recommendations-panel .eval-card-title,
-.eval-recommendations-panel .eval-section-label {
-    -fx-text-fill: #f4f8ff;
-}
-
+/* ── SECTION MENU ─────────────────────────────────────────────── */
 .eval-section-menu {
-    background-color: #ffffff;
-    -fx-background-color: #ffffff;
-    border-color: #d6e4fc;
-    -fx-border-color: #d6e4fc;
-    border-width: 1px;
+    -fx-background-color: linear-gradient(to bottom,
+    rgba(12, 26, 55, 0.92),
+    rgba(7, 16, 40, 0.92));
+    -fx-border-color: rgba(56, 139, 255, 0.25);
     -fx-border-width: 1;
-    border-radius: 12px;
-    -fx-border-radius: 12;
-    -fx-background-radius: 12;
-    padding: 8px;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
     -fx-padding: 8;
+    -fx-effect: dropshadow(gaussian, rgba(10, 40, 150, 0.22), 14, 0.2, 0, 4);
 }
 
-.eval-section-btn {
-    background-color: #edf4ff;
-    -fx-background-color: linear-gradient(to bottom, #f7faff, #e9f2ff);
-    border-color: #c9dcfb;
-    -fx-border-color: #c9dcfb;
-    border-width: 1px;
-    -fx-border-width: 1;
-    border-radius: 999px;
-    -fx-border-radius: 999;
-    -fx-background-radius: 999;
-    padding: 6px 12px;
-    -fx-padding: 6 12;
-    font-size: 12px;
-    -fx-font-size: 12px;
-    font-weight: 700;
-    -fx-font-weight: 700;
-    -fx-text-fill: #1f4774;
-}
-
-.eval-section-btn:hover {
-    background-color: #dcecff;
-    -fx-background-color: linear-gradient(to bottom, #e8f2ff, #dcecff);
-}
-
+/* ── CONTENT HOST ─────────────────────────────────────────────── */
 .eval-content-host {
-    background-color: transparent;
     -fx-background-color: transparent;
 }
 
-.eval-card-title {
-    -fx-text-fill: #10395f;
-    font-size: 16px;
-    -fx-font-size: 16px;
-    font-weight: 800;
-    -fx-font-weight: 800;
-}
-
+/* ── SCROLL ───────────────────────────────────────────────────── */
 .eval-scroll-clean,
 .eval-scroll-clean .viewport {
-    background-color: transparent;
     -fx-background-color: transparent;
 }
 
+/* ── DATA CARDS ───────────────────────────────────────────────── */
 .eval-data-card {
-    background-color: #ffffff;
-    -fx-background-color: linear-gradient(to bottom, #ffffff 0%, #f6faff 100%);
-    border-color: #d6e5fc;
-    -fx-border-color: #d6e5fc;
-    border-width: 1px;
+    -fx-background-color: linear-gradient(to bottom,
+    rgba(14, 30, 60, 0.9) 0%,
+    rgba(8, 18, 42, 0.9) 100%);
+    -fx-border-color: rgba(56, 139, 255, 0.22);
     -fx-border-width: 1;
-    border-radius: 12px;
-    -fx-border-radius: 12;
-    -fx-background-radius: 12;
-    padding: 10px 12px;
-    -fx-padding: 10 12;
-    -fx-spacing: 3;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-padding: 12 14;
+    -fx-spacing: 4;
+    -fx-effect: dropshadow(gaussian, rgba(10, 40, 140, 0.18), 14, 0.18, 0, 4);
 }
 
 .eval-data-card-title {
-    -fx-text-fill: #163f68;
-    font-size: 14px;
+    -fx-text-fill: #a8d4ff;
     -fx-font-size: 14px;
-    font-weight: 800;
     -fx-font-weight: 800;
 }
 
 .eval-data-card-line {
-    -fx-text-fill: #355678;
-    font-size: 12px;
+    -fx-text-fill: rgba(155, 195, 245, 0.7);
     -fx-font-size: 12px;
 }
 
+/* ── EMPTY STATE CARD ─────────────────────────────────────────── */
 .eval-empty-card {
-    background-color: #f5f9ff;
-    -fx-background-color: #f5f9ff;
-    border-color: #d8e6fc;
-    -fx-border-color: #d8e6fc;
-    border-width: 1px;
+    -fx-background-color: rgba(8, 18, 38, 0.7);
+    -fx-border-color: rgba(56, 139, 255, 0.2);
     -fx-border-width: 1;
-    border-radius: 12px;
-    -fx-border-radius: 12;
-    -fx-background-radius: 12;
-    padding: 12px;
-    -fx-padding: 12;
-}
-
-.eval-root .tab-pane .tab-header-area .tab-header-background,
-.eval-shell-root .tab-pane .tab-header-area .tab-header-background {
-    background-color: #dde8fb;
-    -fx-background-color: #dde8fb;
-}
-
-.eval-root .tab-pane .tab,
-.eval-shell-root .tab-pane .tab {
-    -fx-background-radius: 10 10 0 0;
-    background-color: #edf3ff;
-    -fx-background-color: #edf3ff;
-    padding: 7px 12px;
-    -fx-padding: 7 12;
-}
-
-.eval-root .tab-pane .tab:selected,
-.eval-shell-root .tab-pane .tab:selected {
-    background-color: #ffffff;
-    -fx-background-color: #ffffff;
-}
-
-.eval-root .tab-pane .tab .tab-label,
-.eval-shell-root .tab-pane .tab .tab-label {
-    -fx-text-fill: #1a3657;
-    font-size: 13px;
-    -fx-font-size: 13px;
-    font-weight: 700;
-    -fx-font-weight: 700;
-}
-
-.eval-root .tab-pane .tab:selected .tab-label,
-.eval-shell-root .tab-pane .tab:selected .tab-label {
-    -fx-text-fill: #ffffff;
-}
-
-/* NAVIGATION BAR STYLES */
-.eval-nav-bar {
-    -fx-background-color: linear-gradient(from 0% 0% to 100% 0%, #09172a, #10213a, #0f1e34);
-    -fx-border-color: #244064;
-    -fx-border-width: 1;
+    -fx-border-style: dashed;
     -fx-border-radius: 14;
     -fx-background-radius: 14;
-    -fx-padding: 10 12;
-    -fx-spacing: 8;
+    -fx-padding: 14;
 }
 
-.eval-nav-btn {
-    -fx-background-color: rgba(143, 182, 246, 0.14);
-    -fx-border-color: rgba(120, 167, 240, 0.32);
-    -fx-border-width: 1;
-    -fx-border-radius: 999;
+/* ── DRAG & DROP ZONE ─────────────────────────────────────────── */
+.eval-pdf-dropzone {
+    -fx-border-color: rgba(56, 139, 255, 0.55);
+    -fx-border-width: 2;
+    -fx-border-style: dashed;
+    -fx-border-radius: 16;
+    -fx-background-color: rgba(20, 60, 150, 0.06);
+    -fx-background-radius: 16;
+    -fx-padding: 32;
+    -fx-effect: dropshadow(gaussian, rgba(30, 100, 255, 0.15), 16, 0.2, 0, 0);
+}
+
+.eval-pdf-dropzone:hover {
+    -fx-background-color: rgba(30, 80, 180, 0.13);
+    -fx-border-color: rgba(80, 170, 255, 0.75);
+    -fx-effect: dropshadow(gaussian, rgba(60, 140, 255, 0.35), 22, 0.35, 0, 0);
+}
+
+.eval-pdf-drop-label {
+    -fx-font-size: 16px;
+    -fx-text-fill: #60a5ff;
+    -fx-font-weight: 800;
+    -fx-padding: 10 0 0 0;
+    -fx-effect: dropshadow(gaussian, rgba(60, 140, 255, 0.5), 10, 0.3, 0, 0);
+}
+
+/* ── SCROLLBAR STYLING ────────────────────────────────────────── */
+.scroll-bar:vertical .thumb,
+.scroll-bar:horizontal .thumb {
+    -fx-background-color: rgba(56, 139, 255, 0.3);
     -fx-background-radius: 999;
-    -fx-text-fill: #d7e9ff;
+}
+
+.scroll-bar:vertical .thumb:hover,
+.scroll-bar:horizontal .thumb:hover {
+    -fx-background-color: rgba(80, 170, 255, 0.5);
+}
+
+.scroll-bar {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .track {
+    -fx-background-color: rgba(56, 139, 255, 0.06);
+    -fx-background-radius: 999;
+}
+
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-opacity: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MISSING CLASSES — REQUIRED BY FXML & JAVA CONTROLLERS
+   ══════════════════════════════════════════════════════════════ */
+
+/* Teacher root (mirrors student root) */
+.eval-teacher-root {
+    -fx-background-color: transparent;
+}
+
+/* ── FORM CARD ─────────────────────────────────────────────── */
+.eval-form-card {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%,
+    rgba(16, 32, 64, 0.92),
+    rgba(10, 20, 44, 0.92));
+    -fx-border-color: rgba(56, 139, 255, 0.28);
+    -fx-border-width: 1;
+    -fx-border-radius: 16;
+    -fx-background-radius: 16;
+    -fx-padding: 16;
+    -fx-spacing: 10;
+    -fx-effect: dropshadow(gaussian, rgba(10, 40, 140, 0.18), 16, 0.2, 0, 4);
+}
+
+/* ── GHOST BUTTON ──────────────────────────────────────────── */
+.eval-ghost-btn {
+    -fx-background-color: rgba(56, 139, 255, 0.08);
+    -fx-border-color: rgba(80, 150, 255, 0.4);
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-text-fill: #90c8ff;
     -fx-font-size: 12px;
     -fx-font-weight: 700;
-    -fx-padding: 8 16;
+    -fx-padding: 7 14;
+    -fx-cursor: hand;
+    -fx-effect: none;
 }
 
-.eval-nav-btn:hover {
-    -fx-background-color: rgba(120, 175, 255, 0.24);
+.eval-ghost-btn:hover {
+    -fx-background-color: rgba(56, 139, 255, 0.18);
+    -fx-border-color: rgba(100, 180, 255, 0.6);
+    -fx-text-fill: #c0e0ff;
+    -fx-effect: dropshadow(gaussian, rgba(50, 130, 255, 0.25), 10, 0.2, 0, 2);
 }
 
+/* ── DANGER BUTTON ─────────────────────────────────────────── */
+.eval-danger-btn {
+    -fx-background-color: linear-gradient(to bottom, rgba(180, 30, 50, 0.75), rgba(140, 15, 35, 0.75));
+    -fx-border-color: rgba(255, 80, 100, 0.45);
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-text-fill: #ffb3bc;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-padding: 7 14;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(200, 40, 60, 0.3), 10, 0.25, 0, 2);
+}
+
+.eval-danger-btn:hover {
+    -fx-background-color: linear-gradient(to bottom, rgba(210, 40, 60, 0.88), rgba(170, 20, 40, 0.88));
+    -fx-border-color: rgba(255, 100, 120, 0.65);
+    -fx-text-fill: #ffd0d8;
+    -fx-effect: dropshadow(gaussian, rgba(230, 50, 70, 0.55), 16, 0.35, 0, 3);
+}
+
+/* ── STANDARD TEXTAREA ─────────────────────────────────────── */
+.eval-textarea {
+    -fx-background-color: rgba(8, 18, 40, 0.88);
+    -fx-border-color: rgba(56, 139, 255, 0.28);
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-text-fill: #c8e0ff;
+    -fx-prompt-text-fill: rgba(130, 170, 230, 0.45);
+    -fx-font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+    -fx-font-size: 12px;
+}
+
+.eval-textarea .content {
+    -fx-background-color: transparent;
+}
+
+.eval-textarea:focused {
+    -fx-border-color: rgba(80, 160, 255, 0.55);
+    -fx-effect: dropshadow(gaussian, rgba(50, 130, 255, 0.2), 10, 0.2, 0, 0);
+}
+
+/* ── TAB PANE (Teacher view) ───────────────────────────────── */
+.eval-tabpane {
+    -fx-background-color: transparent;
+    -fx-tab-min-height: 36px;
+}
+
+.eval-tabpane .tab-header-area .tab-header-background {
+    -fx-background-color: rgba(6, 12, 28, 0.85);
+    -fx-border-color: rgba(56, 139, 255, 0.2);
+    -fx-border-width: 0 0 1 0;
+}
+
+.eval-tabpane .tab {
+    -fx-background-radius: 12 12 0 0;
+    -fx-background-color: rgba(14, 28, 60, 0.65);
+    -fx-padding: 8 18;
+    -fx-border-color: rgba(56, 139, 255, 0.18);
+    -fx-border-width: 1 1 0 1;
+    -fx-border-radius: 12 12 0 0;
+    -fx-cursor: hand;
+}
+
+.eval-tabpane .tab:selected {
+    -fx-background-color: linear-gradient(to bottom,
+    rgba(28, 65, 130, 0.98),
+    rgba(16, 40, 90, 0.98));
+    -fx-border-color: rgba(60, 160, 255, 0.5) rgba(60, 160, 255, 0.5) transparent rgba(60, 160, 255, 0.5);
+    -fx-effect: dropshadow(gaussian, rgba(30, 110, 255, 0.35), 12, 0.25, 0, -2);
+}
+
+.eval-tabpane .tab .tab-label {
+    -fx-text-fill: rgba(150, 195, 255, 0.75);
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+}
+
+.eval-tabpane .tab:selected .tab-label {
+    -fx-text-fill: #b8dcff;
+    -fx-effect: dropshadow(gaussian, rgba(60, 160, 255, 0.5), 8, 0.3, 0, 0);
+}
+
+.eval-tabpane .tab-content-area {
+    -fx-background-color: rgba(6, 14, 32, 0.92);
+    -fx-border-color: rgba(56, 139, 255, 0.2);
+    -fx-border-width: 0 1 1 1;
+}
+
+/* ── NAV BTN ACTIVE — must override base class ─────────────── */
+.eval-nav-btn.eval-nav-btn-active,
 .eval-nav-btn-active {
-    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #28c7ea, #2f80ed);
-    -fx-text-fill: white !important;
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%,
+    #00c6ff,
+    #2575fc,
+    #1a4fd8) !important;
+    -fx-border-color: rgba(0, 210, 255, 0.65) !important;
+    -fx-border-width: 1;
+    -fx-text-fill: #ffffff !important;
+    -fx-effect: dropshadow(gaussian, rgba(0, 180, 255, 0.7), 22, 0.5, 0, 0) !important;
 }
+
+/* ── PILL INPUT FOCUS ──────────────────────────────────────── */
+.eval-pill-input:focused {
+    -fx-border-color: rgba(80, 160, 255, 0.65);
+    -fx-effect: dropshadow(gaussian, rgba(50, 130, 255, 0.25), 10, 0.2, 0, 0);
+}
+
+/* ── COMBO BOX DARK THEME ──────────────────────────────────── */
+.eval-root .combo-box,
+.eval-shell-root .combo-box {
+    -fx-background-color: rgba(10, 20, 44, 0.88);
+    -fx-border-color: rgba(60, 130, 255, 0.35);
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-border-width: 1;
+    -fx-text-fill: #c8e0ff;
+    -fx-prompt-text-fill: rgba(140, 180, 255, 0.5);
+}
+
+.eval-root .combo-box .list-cell,
+.eval-shell-root .combo-box .list-cell {
+    -fx-text-fill: #c8e0ff;
+    -fx-background-color: transparent;
+}
+
+.eval-root .combo-box-popup .list-view,
+.eval-shell-root .combo-box-popup .list-view {
+    -fx-background-color: rgba(10, 20, 44, 0.97);
+    -fx-border-color: rgba(60, 130, 255, 0.4);
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(10, 40, 140, 0.4), 20, 0.3, 0, 6);
+}
+
+.eval-root .combo-box-popup .list-view .list-cell:hover,
+.eval-shell-root .combo-box-popup .list-view .list-cell:hover {
+    -fx-background-color: rgba(40, 100, 200, 0.3);
+}
+
+/* ── DATE PICKER DARK THEME ────────────────────────────────── */
+.eval-root .date-picker,
+.eval-shell-root .date-picker {
+    -fx-background-color: rgba(10, 20, 44, 0.88);
+    -fx-border-color: rgba(60, 130, 255, 0.35);
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-border-width: 1;
+}
+
+.eval-root .date-picker .text-field,
+.eval-shell-root .date-picker .text-field {
+    -fx-text-fill: #c8e0ff;
+    -fx-background-color: transparent;
+    -fx-prompt-text-fill: rgba(140, 180, 255, 0.5);
+}

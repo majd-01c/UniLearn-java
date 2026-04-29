@@ -375,28 +375,130 @@ public class EvaluationService {
     }
 
     public void saveTextAsPdf(String text, File outputFile) throws IOException {
+        // Sanitize text: replace ligatures and non-WinAnsiEncoding Unicode chars
+        String sanitized = sanitizeForPdf(text);
+
+        final float margin       = 50f;
+        final float pageWidth    = 595f;   // A4 width in points
+        final float pageHeight   = 842f;   // A4 height in points
+        final float fontSize     = 11f;
+        final float leading      = 15f;
+        final float usableWidth  = pageWidth - 2 * margin;
+        final float startY       = pageHeight - margin;
+
         try (PDDocument document = new PDDocument()) {
-            PDPage page = new PDPage();
-            document.addPage(page);
+            PDType1Font font = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
 
-            try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
-                contentStream.beginText();
-                contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), 12);
-                contentStream.setLeading(14.5f);
-                contentStream.newLineAtOffset(50, 750);
-
-                String[] lines = text.split("\\n");
-                for (String line : lines) {
-                    // Basic character escaping and multi-page logic would go here if text is very long
-                    // For now, we do a basic single-page write
-                    String safeLine = line.replace("\r", "").replace("\t", "    ");
-                    contentStream.showText(safeLine);
-                    contentStream.newLine();
+            // Split into lines, then wrap long lines to fit the page width
+            java.util.List<String> wrappedLines = new java.util.ArrayList<>();
+            for (String rawLine : sanitized.split("\n", -1)) {
+                String line = rawLine.replace("\r", "").replace("\t", "    ");
+                if (line.isEmpty()) {
+                    wrappedLines.add("");
+                    continue;
                 }
-                contentStream.endText();
+                // Word-wrap
+                StringBuilder current = new StringBuilder();
+                for (String word : line.split(" ", -1)) {
+                    String candidate = current.length() == 0 ? word : current + " " + word;
+                    float w = font.getStringWidth(candidate) / 1000f * fontSize;
+                    if (w > usableWidth && current.length() > 0) {
+                        wrappedLines.add(current.toString());
+                        current = new StringBuilder(word);
+                    } else {
+                        current = new StringBuilder(candidate);
+                    }
+                }
+                if (current.length() > 0) {
+                    wrappedLines.add(current.toString());
+                }
             }
+
+            // Render lines across pages
+            PDPage page = new PDPage(new org.apache.pdfbox.pdmodel.common.PDRectangle(pageWidth, pageHeight));
+            document.addPage(page);
+            PDPageContentStream cs = new PDPageContentStream(document, page);
+            cs.beginText();
+            cs.setFont(font, fontSize);
+            cs.setLeading(leading);
+            cs.newLineAtOffset(margin, startY);
+
+            float currentY = startY;
+            for (String wLine : wrappedLines) {
+                if (currentY - leading < margin) {
+                    // Start a new page
+                    cs.endText();
+                    cs.close();
+                    PDPage newPage = new PDPage(
+                        new org.apache.pdfbox.pdmodel.common.PDRectangle(pageWidth, pageHeight));
+                    document.addPage(newPage);
+                    cs = new PDPageContentStream(document, newPage);
+                    cs.beginText();
+                    cs.setFont(font, fontSize);
+                    cs.setLeading(leading);
+                    cs.newLineAtOffset(margin, startY);
+                    currentY = startY;
+                }
+                cs.showText(wLine);
+                cs.newLine();
+                currentY -= leading;
+            }
+            cs.endText();
+            cs.close();
+
             document.save(outputFile);
         }
+    }
+
+    /**
+     * Replaces Unicode characters that WinAnsiEncoding (Helvetica) cannot handle,
+     * including ligatures, smart quotes, em/en dashes, ellipsis, and other common
+     * characters produced by AI-translated text.
+     */
+    private String sanitizeForPdf(String text) {
+        if (text == null) return "";
+        return text
+            // ── Ligatures ──────────────────────────────────────────────
+            .replace("\uFB00", "ff")   // ﬀ
+            .replace("\uFB01", "fi")   // ﬁ
+            .replace("\uFB02", "fl")   // ﬂ
+            .replace("\uFB03", "ffi")  // ﬃ
+            .replace("\uFB04", "ffl")  // ﬄ
+            .replace("\uFB05", "st")   // ﬅ
+            .replace("\uFB06", "st")   // ﬆ
+            // ── Quotes ────────────────────────────────────────────────
+            .replace("\u2018", "'")    // ' left single quotation
+            .replace("\u2019", "'")    // ' right single quotation / apostrophe
+            .replace("\u201A", ",")    // ‚ single low-9 quotation
+            .replace("\u201C", "\"")   // " left double quotation
+            .replace("\u201D", "\"")   // " right double quotation
+            .replace("\u201E", "\"")   // „ double low-9 quotation
+            .replace("\u00AB", "<<")   // «
+            .replace("\u00BB", ">>")   // »
+            // ── Dashes & spaces ───────────────────────────────────────
+            .replace("\u2013", "-")    // – en dash
+            .replace("\u2014", "--")   // — em dash
+            .replace("\u2015", "--")   // ― horizontal bar
+            .replace("\u00AD", "-")    // soft hyphen
+            .replace("\u2011", "-")    // non-breaking hyphen
+            .replace("\u2012", "-")    // figure dash
+            .replace("\u00A0", " ")    // non-breaking space
+            .replace("\u2009", " ")    // thin space
+            .replace("\u200B", "")     // zero-width space
+            // ── Ellipsis & bullets ────────────────────────────────────
+            .replace("\u2026", "...")   // …
+            .replace("\u2022", "*")    // •
+            .replace("\u2023", ">")    // ‣
+            .replace("\u25CF", "*")    // ●
+            // ── Misc symbols ──────────────────────────────────────────
+            .replace("\u2122", "(TM)") // ™
+            .replace("\u00AE", "(R)")  // ®
+            .replace("\u00A9", "(C)")  // ©
+            .replace("\u20AC", "EUR")  // €
+            .replace("\u00A3", "GBP")  // £
+            .replace("\u00A5", "JPY")  // ¥
+            // ── Strip any remaining chars outside WinAnsiEncoding range ──
+            .replaceAll("[^\u0000-\u00FF]", "?");
     }
 
     private String extractPdfText(String documentPath) {

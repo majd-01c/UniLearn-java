@@ -1,0 +1,13 @@
+[33md469439[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mevaluation[m[33m, [m[1;31morigin/evaluation[m[33m)[m HEAD@{0}: commit: fix errors
+[33md3b2a2c[m HEAD@{1}: commit (amend): Initial commit for evaluation module without secrets
+[33mcb3c2d9[m HEAD@{2}: reset: moving to evaluation-new
+[33m2c8168d[m[33m ([m[1;32mevaluation-clean[m[33m)[m HEAD@{3}: checkout: moving from evaluation-new to evaluation
+[33mcb3c2d9[m HEAD@{4}: commit (initial): Initial commit for evaluation module without secrets
+[33m2c8168d[m[33m ([m[1;32mevaluation-clean[m[33m)[m HEAD@{5}: checkout: moving from evaluation to evaluation-clean
+[33m2c8168d[m[33m ([m[1;32mevaluation-clean[m[33m)[m HEAD@{6}: commit: feat: espace etudiant - module evaluation
+[33mc1e358c[m HEAD@{7}: commit: Enhance Teacher Evaluation Module UI and Styles
+[33m3bd5ef6[m HEAD@{8}: commit: feat: Enhance student evaluation module with AI insights and improved UI
+[33m7d0c368[m HEAD@{9}: pull origin user: Fast-forward
+[33m1b53ee5[m HEAD@{10}: commit: Enhance Evaluation Module UI and Styles
+[33md63b2f1[m HEAD@{11}: commit: Refactor Evaluation Module: Enhance EvaluationService with new utility methods, improve sorting logic, and add new services for content, user, and class resolution. Update FXML layouts for admin and teacher modules to utilize card-based UI components, improve styling, and enhance user experience with sorting options. Introduce new CSS styles for evaluation cards and status badges to improve visual hierarchy and interactivity.
+[33m373d90f[m HEAD@{12}: clone: from https://github.com/majd-01c/UniLearn-java.git

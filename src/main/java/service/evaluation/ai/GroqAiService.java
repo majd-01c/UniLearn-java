@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.github.cdimascio.dotenv.Dotenv;
 
 import java.io.IOException;
 import java.net.URI;
@@ -21,28 +22,32 @@ public class GroqAiService {
     private static final String DEFAULT_API_URL = "https://api.groq.com/openai/v1/chat/completions";
     private static final String DEFAULT_MODEL = "llama-3.3-70b-versatile";
     
-    // Configured API Key
-    private static final String GROQ_API_KEY_ENV_VAR = "GROQ_API_KEY"; // Using environment variable
+    // Configured API Key environment variable name
+    private static final String GROQ_API_KEY_ENV_VAR = "GROQ_API_KEY";
 
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
+    private final Dotenv dotenv;
 
     public GroqAiService() {
         this.httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(20))
+                .connectTimeout(Duration.ofSeconds(30))
                 .build();
         this.objectMapper = new ObjectMapper();
+        this.dotenv = Dotenv.configure().ignoreIfMissing().load();
     }
 
     /**
-     * Checks if the Groq API key is present in the environment variables.
+     * Checks if the Groq API key is present.
      */
     public boolean isConfigured() {
-        return System.getenv(GROQ_API_KEY_ENV_VAR) != null && !System.getenv(GROQ_API_KEY_ENV_VAR).isBlank();
+        String key = getApiKey();
+        return key != null && !key.isBlank();
     }
 
     private String getApiKey() {
-        return System.getenv(GROQ_API_KEY_ENV_VAR);
+        String key = dotenv.get(GROQ_API_KEY_ENV_VAR);
+        return (key != null && !key.isBlank()) ? key : System.getenv(GROQ_API_KEY_ENV_VAR);
     }
 
     /**
@@ -51,8 +56,8 @@ public class GroqAiService {
     public String ask(String systemPrompt, String userPrompt, int maxTokens) {
         String apiKey = getApiKey();
         if (apiKey == null || apiKey.isBlank()) {
-            return "### AI UNAVAILABLE ###\n\n" +
-                   "The Groq AI API key is not configured in environment variable " + GROQ_API_KEY_ENV_VAR + ".";
+            return "### AI CONFIGURATION ERROR ###\n\n" +
+                   "The Groq AI API key is not set. Please ensure 'GROQ_API_KEY' is provided via environment variables or .env file.";
         }
 
         String apiUrl = envOrDefault("GROQ_API_URL", DEFAULT_API_URL);
@@ -62,7 +67,7 @@ public class GroqAiService {
             String payload = buildPayload(model, systemPrompt, userPrompt, maxTokens);
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(apiUrl))
-                    .timeout(Duration.ofSeconds(60))
+                    .timeout(Duration.ofSeconds(90))
                     .header("Authorization", "Bearer " + apiKey)
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(payload))
@@ -71,7 +76,7 @@ public class GroqAiService {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             
             if (response.statusCode() == 401) {
-                return "### INVALID API KEY ###\n\nThe provided GROQ_API_KEY is invalid or expired.";
+                return "### AUTHENTICATION ERROR ###\n\nThe provided GROQ_API_KEY is invalid or unauthorized.";
             }
             
             if (response.statusCode() >= 400) {
@@ -81,19 +86,19 @@ public class GroqAiService {
             return parseTextResponse(response.body());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            return "### SYSTEM ERROR ###\n\nOperation was interrupted: " + e.getMessage();
+            return "### SYSTEM ERROR ###\n\nThe AI request was interrupted: " + e.getMessage();
         } catch (IOException e) {
-            return "### NETWORK ERROR ###\n\nCould not connect to Groq AI: " + e.getMessage();
+            return "### NETWORK ERROR ###\n\nCould not connect to the AI service: " + e.getMessage();
         }
     }
 
     /**
-     * AI-powered spelling and grammar correction, including profanity filtering.
+     * AI-powered spelling and grammar correction, including profanity filtering (censorship with ****).
      */
     public String correctSpellingAndGrammar(String text) {
         if (text == null || text.isBlank()) return "";
         return ask(
-            "You are a professional writing assistant. Correct the spelling and grammar of the following text while maintaining its original meaning and tone. Additionally, strictly filter and remove any profanity, bad words, or inappropriate language, in both French and English. Return ONLY the corrected and filtered text, no explanations.",
+            "You are a professional writing assistant. Correct the spelling and grammar of the following text while maintaining its original meaning and tone. Additionally, detect and censor any profanity, bad words, or inappropriate language in both French and English by replacing them with asterisks (****). Return ONLY the corrected and censored text, no explanations.",
             text,
             Math.max(500, text.length() * 2)
         );
@@ -105,13 +110,13 @@ public class GroqAiService {
         root.put("temperature", 0.4);
         root.put("max_tokens", maxTokens);
 
-        ArrayNode messages = root.putArray("messages"); // Correctly initialize messages as an ArrayNode within root
-
-        ObjectNode system = messages.addObject(); // Add a new ObjectNode for the system message
+        ArrayNode messages = root.putArray("messages");
+        
+        ObjectNode system = messages.addObject();
         system.put("role", "system");
         system.put("content", systemPrompt);
 
-        ObjectNode user = messages.addObject(); // Add a new ObjectNode for the user message
+        ObjectNode user = messages.addObject();
         user.put("role", "user");
         user.put("content", userPrompt);
 
@@ -122,22 +127,25 @@ public class GroqAiService {
         JsonNode root = objectMapper.readTree(body);
         JsonNode choices = root.path("choices");
         if (!choices.isArray() || choices.isEmpty()) {
-            return "### EMPTY RESPONSE ###\n\nGroq AI returned no suggestions for this query.";
+            return "### RESPONSE ERROR ###\n\nGroq AI returned an invalid or empty response structure.";
         }
         String content = choices.get(0).path("message").path("content").asText();
         if (content == null || content.isBlank()) {
-            return "### EMPTY CONTENT ###\n\nGroq AI returned an empty response body.";
+            return "### EMPTY RESPONSE ###\n\nGroq AI generated no content.";
         }
         return content.trim();
     }
 
     private String envOrDefault(String key, String fallback) {
-        String value = System.getenv(key);
+        String value = dotenv.get(key);
+        if (value == null || value.isBlank()) {
+            value = System.getenv(key);
+        }
         return (value == null || value.isBlank()) ? fallback : value.trim();
     }
 
     private String safeBody(String body) {
-        if (body == null) return "";
+        if (body == null) return "No details provided.";
         return body.length() > 500 ? body.substring(0, 500) + "..." : body;
     }
 }
