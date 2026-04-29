@@ -5,122 +5,133 @@
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
 <BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-            prefWidth="640.0" prefHeight="470.0"
-            fx:controller="controller.UserFormController">
+            prefWidth="760.0" prefHeight="600.0"
+            fx:controller="controller.UserFormController"
+            styleClass="user-form-root">
 
     <top>
-        <Label text="User Form" style="-fx-font-size: 20px; -fx-font-weight: bold;">
+        <VBox spacing="4.0" styleClass="user-form-header">
             <BorderPane.margin>
-                <Insets top="14.0" right="16.0" bottom="6.0" left="16.0"/>
+                <Insets top="14.0" right="16.0" bottom="8.0" left="16.0"/>
             </BorderPane.margin>
-        </Label>
+            <children>
+                <Label text="User Form" styleClass="user-form-title"/>
+                <Label text="Create or edit user account details and onboarding settings." styleClass="user-form-subtitle"/>
+            </children>
+        </VBox>
     </top>
 
     <center>
-        <VBox spacing="10.0">
-            <BorderPane.margin>
-                <Insets top="8.0" right="16.0" bottom="8.0" left="16.0"/>
-            </BorderPane.margin>
-            <children>
-                <HBox spacing="10.0" alignment="CENTER_LEFT">
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="user-form-scroll">
+            <content>
+                <VBox spacing="12.0" styleClass="user-form-content">
+                    <BorderPane.margin>
+                        <Insets top="8.0" right="16.0" bottom="10.0" left="16.0"/>
+                    </BorderPane.margin>
+                    <padding>
+                        <Insets top="8.0" right="16.0" bottom="10.0" left="16.0"/>
+                    </padding>
                     <children>
-                        <Label text="Email" prefWidth="130.0"/>
-                        <TextField fx:id="emailField" promptText="name@example.com">
-                            <HBox.hgrow>
-                                <Priority fx:constant="ALWAYS"/>
-                            </HBox.hgrow>
-                        </TextField>
-                    </children>
-                </HBox>
+                        <VBox spacing="11.0" styleClass="user-form-card">
+                            <children>
+                                <HBox spacing="10.0" alignment="CENTER_LEFT" styleClass="user-form-row">
+                                    <children>
+                                        <Label text="Email" prefWidth="130.0" styleClass="user-form-field-label"/>
+                                        <TextField fx:id="emailField" promptText="name@example.com" styleClass="user-form-input">
+                                            <HBox.hgrow>
+                                                <Priority fx:constant="ALWAYS"/>
+                                            </HBox.hgrow>
+                                        </TextField>
+                                    </children>
+                                </HBox>
 
-                <HBox spacing="10.0" alignment="CENTER_LEFT">
-                    <children>
-                        <Label text="Role" prefWidth="130.0"/>
-                        <ComboBox fx:id="roleComboBox" prefWidth="220.0"/>
-                    </children>
-                </HBox>
+                                <HBox spacing="10.0" alignment="CENTER_LEFT" styleClass="user-form-row">
+                                    <children>
+                                        <Label text="Role" prefWidth="130.0" styleClass="user-form-field-label"/>
+                                        <ComboBox fx:id="roleComboBox" prefWidth="250.0" styleClass="user-form-input"/>
+                                    </children>
+                                </HBox>
 
-                <HBox spacing="10.0" alignment="CENTER_LEFT">
-                    <children>
-                        <Label text="First Name" prefWidth="130.0"/>
-                        <TextField fx:id="firstNameField" promptText="First name">
-                            <HBox.hgrow>
-                                <Priority fx:constant="ALWAYS"/>
-                            </HBox.hgrow>
-                        </TextField>
-                    </children>
-                </HBox>
+                                <HBox spacing="10.0" alignment="CENTER_LEFT" styleClass="user-form-row">
+                                    <children>
+                                        <Label text="First Name" prefWidth="130.0" styleClass="user-form-field-label"/>
+                                        <TextField fx:id="firstNameField" promptText="First name" styleClass="user-form-input">
+                                            <HBox.hgrow>
+                                                <Priority fx:constant="ALWAYS"/>
+                                            </HBox.hgrow>
+                                        </TextField>
+                                    </children>
+                                </HBox>
 
-                <HBox spacing="10.0" alignment="CENTER_LEFT">
-                    <children>
-                        <Label text="Last Name" prefWidth="130.0"/>
-                        <TextField fx:id="lastNameField" promptText="Last name">
-                            <HBox.hgrow>
-                                <Priority fx:constant="ALWAYS"/>
-                            </HBox.hgrow>
-                        </TextField>
-                    </children>
-                </HBox>
+                                <HBox spacing="10.0" alignment="CENTER_LEFT" styleClass="user-form-row">
+                                    <children>
+                                        <Label text="Last Name" prefWidth="130.0" styleClass="user-form-field-label"/>
+                                        <TextField fx:id="lastNameField" promptText="Last name" styleClass="user-form-input">
+                                            <HBox.hgrow>
+                                                <Priority fx:constant="ALWAYS"/>
+                                            </HBox.hgrow>
+                                        </TextField>
+                                    </children>
+                                </HBox>
 
-                <HBox spacing="10.0" alignment="CENTER_LEFT">
-                    <children>
-                        <Label text="Phone" prefWidth="130.0"/>
-                        <TextField fx:id="phoneField" promptText="+216 12 345 678"/>
-                    </children>
-                </HBox>
+                                <HBox spacing="10.0" alignment="CENTER_LEFT" styleClass="user-form-row">
+                                    <children>
+                                        <Label text="Phone" prefWidth="130.0" styleClass="user-form-field-label"/>
+                                        <TextField fx:id="phoneField" promptText="+216 12 345 678" styleClass="user-form-input" prefWidth="260.0"/>
+                                    </children>
+                                </HBox>
 
-                <HBox spacing="10.0" alignment="TOP_LEFT">
-                    <children>
-                        <Label text="Description" prefWidth="130.0"/>
-                        <TextArea fx:id="descriptionArea" wrapText="true" prefRowCount="4">
-                            <HBox.hgrow>
-                                <Priority fx:constant="ALWAYS"/>
-                            </HBox.hgrow>
-                        </TextArea>
-                    </children>
-                </HBox>
+                                <HBox spacing="10.0" alignment="TOP_LEFT" styleClass="user-form-row">
+                                    <children>
+                                        <Label text="Description" prefWidth="130.0" styleClass="user-form-field-label"/>
+                                        <TextArea fx:id="descriptionArea" wrapText="true" prefRowCount="5" styleClass="user-form-textarea">
+                                            <HBox.hgrow>
+                                                <Priority fx:constant="ALWAYS"/>
+                                            </HBox.hgrow>
+                                        </TextArea>
+                                    </children>
+                                </HBox>
 
-                <HBox fx:id="tempPasswordRow" spacing="10.0" alignment="CENTER_LEFT">
-                    <children>
-                        <Label text="Temp Password" prefWidth="130.0"/>
-                        <TextField fx:id="tempPasswordField" editable="false">
-                            <HBox.hgrow>
-                                <Priority fx:constant="ALWAYS"/>
-                            </HBox.hgrow>
-                        </TextField>
-                        <Button text="Regenerate" onAction="#onGenerateTempPassword"/>
-                        <Button text="Copy" onAction="#onCopyTempPassword"/>
-                    </children>
-                </HBox>
+                                <Label text="For security, temporary passwords are generated automatically at save time and sent directly to the user email. Admins cannot view or copy passwords."
+                                       wrapText="true"
+                                       maxWidth="680.0"
+                                       styleClass="user-form-security-note"/>
 
-                <CheckBox fx:id="sendWelcomeEmailCheckBox" text="Send welcome email after user is created"/>
+                                <CheckBox fx:id="sendWelcomeEmailCheckBox" text="Send welcome email with temporary password" styleClass="user-form-check"/>
 
-                <HBox fx:id="statusRow" spacing="10.0" alignment="CENTER_LEFT">
-                    <children>
-                        <Label text="Status" prefWidth="130.0"/>
-                        <ComboBox fx:id="statusComboBox" prefWidth="220.0"/>
+                                <HBox fx:id="statusRow" spacing="10.0" alignment="CENTER_LEFT" styleClass="user-form-row">
+                                    <children>
+                                        <Label text="Status" prefWidth="130.0" styleClass="user-form-field-label"/>
+                                        <ComboBox fx:id="statusComboBox" prefWidth="250.0" styleClass="user-form-input"/>
+                                    </children>
+                                </HBox>
+                            </children>
+                        </VBox>
                     </children>
-                </HBox>
-            </children>
-        </VBox>
+                </VBox>
+            </content>
+        </ScrollPane>
     </center>
 
     <bottom>
-        <HBox spacing="10.0" alignment="CENTER_RIGHT">
+        <HBox spacing="10.0" alignment="CENTER_RIGHT" styleClass="user-form-actions">
             <BorderPane.margin>
                 <Insets top="8.0" right="16.0" bottom="14.0" left="16.0"/>
             </BorderPane.margin>
             <children>
-                <Button text="Cancel" onAction="#onCancel"/>
-                <Button text="Save" onAction="#onSave" defaultButton="true"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="Cancel" onAction="#onCancel" styleClass="ghost-button" prefWidth="110.0"/>
+                <Button text="Save" onAction="#onSave" defaultButton="true" styleClass="primary-button" prefWidth="110.0"/>
             </children>
         </HBox>
     </bottom>

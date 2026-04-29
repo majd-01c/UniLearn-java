@@ -41,3 +41,18 @@ build/
 ### Local database config ###
 #src/main/java/Utils/DatabaseConnection.java
 #src/main/java/Utils/MyDatabase.java
+
+### Local mail credentials ###
+confg/mail.local.properties
+src/main/resources/confg/mail.local.properties
+
+### Local AI credentials ###
+.env
+confg/groq.local.properties
+src/main/resources/confg/groq.local.properties
+### ATS Module — contains Gemini API key, never commit ###
+src/main/resources/config/ats-config.properties
+
+### Local AI credentials ###
+src/main/resources/confg/ai.local.properties
+confg/ai.local.properties

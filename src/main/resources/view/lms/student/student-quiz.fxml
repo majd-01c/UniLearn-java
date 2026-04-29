@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="controller.lms.StudentQuizController"
+            styleClass="app-shell-root">
+    <top>
+        <VBox spacing="6" styleClass="lms-root" BorderPane.alignment="CENTER_LEFT">
+            <padding>
+                <Insets top="16" right="24" bottom="12" left="24"/>
+            </padding>
+            <Label text="Quizzes" styleClass="lms-page-title"/>
+            <Label text="Take and review your quizzes" styleClass="lms-text"/>
+        </VBox>
+    </top>
+
+    <center>
+        <StackPane fx:id="screenStack" styleClass="lms-root">
+            <VBox fx:id="quizListScreen" spacing="16" maxWidth="1100" StackPane.alignment="TOP_CENTER">
+                <padding>
+                    <Insets top="20" right="24" bottom="24" left="24"/>
+                </padding>
+                <VBox spacing="12" styleClass="lms-card">
+                    <Label text="Available Quizzes" styleClass="card-title"/>
+                    <Label text="Choose a quiz to start or review your previous attempt." styleClass="card-text" wrapText="true"/>
+                </VBox>
+
+                <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-control-inner-background: transparent;" VBox.vgrow="ALWAYS">
+                    <FlowPane fx:id="quizListFlow" hgap="24" vgap="24" style="-fx-padding: 4;"/>
+                </ScrollPane>
+
+                <Label fx:id="emptyQuizzesLabel"
+                       text="No quizzes available for your classes."
+                       styleClass="empty-state"
+                       visible="false"
+                       managed="false"/>
+            </VBox>
+
+            <VBox fx:id="quizTakingScreen" spacing="16" visible="false" managed="false" maxWidth="1100" StackPane.alignment="TOP_CENTER">
+                <padding>
+                    <Insets top="20" right="24" bottom="24" left="24"/>
+                </padding>
+
+                <VBox spacing="8" styleClass="lms-card">
+                    <HBox spacing="12" alignment="CENTER_LEFT">
+                        <Label fx:id="quizTitleLabel" styleClass="card-title"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="timerLabel" text="30:00" styleClass="quiz-timer"/>
+                    </HBox>
+                    <Label fx:id="quizDescriptionLabel" text="Quiz description" styleClass="card-text" wrapText="true"/>
+                    <HBox spacing="16" alignment="CENTER_LEFT">
+                        <Label fx:id="progressLabel" text="Question 1 of 10" styleClass="quiz-progress"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                    </HBox>
+                </VBox>
+
+                <ScrollPane fx:id="questionsScrollPane" fitToWidth="true" style="-fx-background-color: transparent; -fx-control-inner-background: transparent;" VBox.vgrow="ALWAYS">
+                    <VBox fx:id="questionsContainer" spacing="16" style="-fx-padding: 8;"/>
+                </ScrollPane>
+
+                <HBox fx:id="navigationBox" spacing="12" styleClass="lms-card">
+                    <Button fx:id="previousButton" text="← Previous" styleClass="ghost-button"/>
+                    <Button fx:id="nextButton" text="Next →" styleClass="ghost-button"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="submitButton" text="✓ Submit Quiz" styleClass="primary-button"/>
+                </HBox>
+            </VBox>
+
+            <ScrollPane fx:id="resultsScreen" fitToWidth="true" visible="false" managed="false" maxWidth="1100" StackPane.alignment="TOP_CENTER">
+                <VBox spacing="16" style="-fx-padding: 20 24 24 24;">
+                    <VBox spacing="8" styleClass="lms-card">
+                        <Label fx:id="resultsTitleLabel" styleClass="card-title"/>
+                        <Label fx:id="resultsDescriptionLabel" styleClass="card-text" wrapText="true"/>
+                    </VBox>
+
+                    <VBox spacing="12" styleClass="lms-card">
+                        <HBox spacing="16" alignment="CENTER_LEFT">
+                            <VBox spacing="6" alignment="CENTER_LEFT">
+                                <Label fx:id="scoreLabel" text="0/0 (0%)" style="-fx-font-size: 30px; -fx-font-weight: 800; -fx-text-fill: -ul-primary;"/>
+                                <Label text="Your Score" styleClass="card-text"/>
+                            </VBox>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="passStatusLabel" text="PASSED" style="-fx-font-size: 18px; -fx-font-weight: 800; -fx-text-fill: -ul-success;"/>
+                        </HBox>
+                    </VBox>
+
+                    <Label text="Question Review" styleClass="card-title"/>
+                    <VBox fx:id="questionReviewBox" spacing="12"/>
+
+                    <HBox spacing="12" styleClass="lms-card">
+                        <Button fx:id="backToListButton" text="Back to Quizzes" styleClass="primary-button"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                    </HBox>
+                </VBox>
+            </ScrollPane>
+        </StackPane>
+    </center>
+</BorderPane>

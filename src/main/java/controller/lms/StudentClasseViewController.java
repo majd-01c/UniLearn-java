@@ -2,12 +2,15 @@ package controller.lms;
 
 import dto.lms.*;
 import entities.User;
+import entities.Quiz;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import service.lms.ClassDeliveryService;
+import service.lms.StudentQuizService;
 import util.AppNavigator;
 
 import java.net.URL;
@@ -15,24 +18,36 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 public class StudentClasseViewController implements Initializable {
-    @FXML private Label breadcrumb, classTitle, classInfo, emptyLabel;
+    @FXML private Label breadcrumb, classTitle, classInfo, emptyModulesLabel;
     @FXML private VBox modulesContainer;
 
     private final ClassDeliveryService cdSvc = new ClassDeliveryService();
+    private User currentStudent;
+    private int classeId;
 
     @Override public void initialize(URL u, ResourceBundle r) {}
 
     public void init(StudentClasseRowDto c, User student) {
+        this.currentStudent = student;
+        this.classeId = c.getClasseId();
+        
         breadcrumb.setText(c.getClasseName());
         classTitle.setText(c.getClasseName());
         classInfo.setText(c.getLevel() + " • " + c.getSpecialty() + " • Program: " + c.getProgramName());
 
+        loadModules(c);
+    }
+
+    private void loadModules(StudentClasseRowDto c) {
         List<ModuleRowDto> modules = cdSvc.getModulesForClasseDto(c.getClasseId());
         if (modules.isEmpty()) {
-            emptyLabel.setVisible(true);
-            emptyLabel.setManaged(true);
+            emptyModulesLabel.setVisible(true);
+            emptyModulesLabel.setManaged(true);
             return;
         }
+
+        emptyModulesLabel.setVisible(false);
+        emptyModulesLabel.setManaged(false);
 
         for (ModuleRowDto cm : modules) {
             VBox card = new VBox(8);
@@ -68,6 +83,8 @@ public class StudentClasseViewController implements Initializable {
             modulesContainer.getChildren().add(card);
         }
     }
+
+
 
     @FXML private void onBackToLearning() {
         AppNavigator.showStudentLearning();

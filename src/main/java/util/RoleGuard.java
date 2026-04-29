@@ -3,34 +3,14 @@ package util;
 import entities.User;
 import security.UserSession;
 
-/**
- * Centralized role-based access control guard.
- *
- * <h3>Permission Matrix</h3>
- * <pre>
- * ┌──────────────────────────────────┬───────┬─────────┬─────────┐
- * │ Action                           │ ADMIN │ TEACHER │ STUDENT │
- * ├──────────────────────────────────┼───────┼─────────┼─────────┤
- * │ Global CRUD Program/Module/      │  ✓    │   ✗     │   ✗     │
- * │   Course/Content/Class           │       │         │         │
- * │ Assign program to class          │  ✓    │   ✗     │   ✗     │
- * │ Enroll/unenroll students         │  ✓    │   ✗     │   ✗     │
- * │ Assign/unassign teachers         │  ✓    │   ✗     │   ✗     │
- * │ Create module for own assignment │  ✗    │   ✓     │   ✗     │
- * │ Add course to own class module   │  ✓    │   ✓*    │   ✗     │
- * │ Add content to own class course  │  ✓    │   ✓*    │   ✗     │
- * │ Toggle visibility on own items   │  ✓    │   ✓*    │   ✗     │
- * │ Read own learning path           │  ✓    │   ✓     │   ✓     │
- * └──────────────────────────────────┴───────┴─────────┴─────────┘
- *  * = ownership + active-assignment check required
- * </pre>
- */
+
 public final class RoleGuard {
 
     // ── Role constants (single source of truth) ──
     public static final String ROLE_ADMIN   = "ADMIN";
     public static final String ROLE_TEACHER = "TEACHER";
     public static final String ROLE_STUDENT = "STUDENT";
+    public static final String ROLE_PARTNER = "BUSINESS_PARTNER";
 
     private RoleGuard() {}
 
@@ -45,6 +25,7 @@ public final class RoleGuard {
     public static boolean isAdmin(User u)   { return ROLE_ADMIN.equals(normalize(u)); }
     public static boolean isTeacher(User u) { return ROLE_TEACHER.equals(normalize(u)); }
     public static boolean isStudent(User u) { return ROLE_STUDENT.equals(normalize(u)); }
+    public static boolean isPartner(User u) { return ROLE_PARTNER.equals(normalize(u)); }
 
     public static void requireAdmin(User u) {
         if (!isAdmin(u)) throw new SecurityException("Access denied: administrator privileges required.");

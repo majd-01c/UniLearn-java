@@ -26,6 +26,19 @@ public class AuthenticationService {
 
     private final Map<String, Instant> loginAttemptTimestamps = new ConcurrentHashMap<>();
 
+    /**
+     * Result of authentication that includes SMS verification requirement.
+     */
+    public static class AuthenticationResult {
+        public final User user;
+        public final boolean requiresSmsVerification;
+
+        public AuthenticationResult(User user, boolean requiresSmsVerification) {
+            this.user = user;
+            this.requiresSmsVerification = requiresSmsVerification;
+        }
+    }
+
     public AuthenticationService() {
         this.userRepository = new UserRepository();
         this.resetTokenRepository = new ResetTokenRepository();
@@ -55,6 +68,21 @@ public class AuthenticationService {
         user.setUpdatedAt(Timestamp.from(Instant.now()));
         userRepository.save(user);
         return user;
+    }
+
+    /**
+     * Authenticate user with SMS verification requirement check.
+     * Returns AuthenticationResult with SMS verification flag.
+     */
+    public AuthenticationResult authenticateWithSmsCheck(String email, String password) {
+        User user = authenticate(email, password);
+        
+        // Require SMS verification only when the user has a phone number configured,
+        // is not already SMS-verified, and has not completed first-login.
+        boolean hasPhone = user.getSmsPhoneNumber() != null && !user.getSmsPhoneNumber().isBlank();
+        boolean requiresSmsVerification = hasPhone && !user.isSmsVerified() && !user.isFirstLoginCompleted();
+
+        return new AuthenticationResult(user, requiresSmsVerification);
     }
 
     public ResetToken validateResetToken(String token, User user) {

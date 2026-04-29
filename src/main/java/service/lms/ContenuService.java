@@ -22,7 +22,7 @@ public class ContenuService {
     public long count() { return contenuRepo.count(); }
 
     public Contenu createContenu(String title, String type, boolean published,
-                                  String fileName, String fileType, Integer fileSize) {
+                                  String fileName, String fileType, Integer fileSize, String contentHtml) {
         util.RoleGuard.requireCurrentAdminOrTeacher();
         Contenu c = new Contenu();
         c.setTitle(title.trim());
@@ -31,6 +31,7 @@ public class ContenuService {
         c.setFileName(fileName);
         c.setFileType(fileType);
         c.setFileSize(fileSize);
+        c.setContentHtml(contentHtml);
         Timestamp now = new Timestamp(System.currentTimeMillis());
         c.setCreatedAt(now);
         c.setUpdatedAt(now);
@@ -38,15 +39,16 @@ public class ContenuService {
     }
 
     public Contenu updateContenu(Integer id, String title, String type, boolean published,
-                                  String fileName, String fileType, Integer fileSize) {
+                                  String fileName, String fileType, Integer fileSize, String contentHtml) {
         util.RoleGuard.requireCurrentAdminOrTeacher();
         Contenu c = contenuRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Content not found: " + id));
         c.setTitle(title.trim());
         c.setType(type);
         c.setPublished(published ? (byte) 1 : (byte) 0);
-        if (fileName != null) c.setFileName(fileName);
-        if (fileType != null) c.setFileType(fileType);
-        if (fileSize != null) c.setFileSize(fileSize);
+        c.setFileName(fileName);
+        c.setFileType(fileType);
+        c.setFileSize(fileSize);
+        c.setContentHtml(contentHtml);
         c.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         return contenuRepo.update(c);
     }

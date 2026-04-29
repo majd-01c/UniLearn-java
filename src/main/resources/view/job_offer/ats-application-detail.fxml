@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controller.job_offer.AtsApplicationDetailController"
+      fx:id="rootContainer"
+      styleClass="job-offer-root"
+      spacing="14">
+
+    <!-- ── Toolbar ─────────────────────────────────────────────────────────── -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Button fx:id="backButton" text="← Back to Applications" styleClass="ghost-button" onAction="#onBack"/>
+        <Label fx:id="pageTitleLabel" text="Application Detail"
+               styleClass="job-offer-page-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="recalcScoreButton" text="⚡ Recalculate Score"
+                styleClass="ghost-button" onAction="#onRecalculateScore"/>
+        <Button fx:id="extractCvButton" text="🤖 Extract CV (AI)"
+                styleClass="ghost-button" onAction="#onExtractCv"/>
+    </HBox>
+
+    <ScrollPane fitToWidth="true" styleClass="job-offer-form-scroll" VBox.vgrow="ALWAYS">
+        <VBox spacing="14" style="-fx-padding: 0 4 0 0;">
+
+            <!-- ── Score Hero Card ──────────────────────────────────────────── -->
+            <HBox spacing="16" alignment="CENTER_LEFT" styleClass="job-offer-surface-card">
+                <!-- Big score circle -->
+                <VBox alignment="CENTER" minWidth="90" minHeight="90"
+                      style="-fx-background-color: derive(-ul-info, 55%); -fx-background-radius: 999; -fx-border-radius: 999;">
+                    <Label fx:id="scoreBigLabel" text="—"
+                           style="-fx-text-fill: -ul-info; -fx-font-size: 30px; -fx-font-weight: 900; -fx-alignment: center;"/>
+                    <Label text="/100"
+                           style="-fx-text-fill: -ul-text-muted; -fx-font-size: 10px; -fx-alignment: center;"/>
+                </VBox>
+
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label fx:id="offerTitleLabel" text="Job Offer"
+                           styleClass="job-offer-card-title"/>
+                    <Label fx:id="candidateNameLabel" text="Candidate"
+                           styleClass="job-offer-section-label"/>
+                    <Label fx:id="candidateEmailLabel" text="Email"
+                           styleClass="job-offer-card-meta"/>
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <Label fx:id="stageChipLabel" text="SUBMITTED"
+                               styleClass="job-offer-status-chip"/>
+                    </HBox>
+                </VBox>
+
+                <!-- Move Stage Panel -->
+                <VBox spacing="8" alignment="CENTER" minWidth="210">
+                    <Label text="Move Stage" styleClass="job-offer-admin-label"/>
+                    <ComboBox fx:id="moveStageCombo" promptText="Select stage…"
+                              prefWidth="200" styleClass="job-offer-filter-combo"/>
+                    <Button fx:id="moveStageButton" text="Move →"
+                            styleClass="primary-button" maxWidth="Infinity"
+                            onAction="#onMoveStage"/>
+                </VBox>
+            </HBox>
+
+            <!-- ── Two-column layout ────────────────────────────────────────── -->
+            <HBox spacing="14" VBox.vgrow="ALWAYS">
+
+                <!-- Left column: Score breakdown + Notes -->
+                <VBox spacing="14" HBox.hgrow="ALWAYS" prefWidth="0">
+
+                    <!-- Score Breakdown Card -->
+                    <VBox styleClass="job-offer-surface-card,job-offer-score-card" spacing="10">
+                        <Label text="Score Breakdown" styleClass="job-offer-section-title"/>
+
+                        <TableView fx:id="breakdownTable" prefHeight="230" minHeight="180"
+                                   styleClass="job-offer-list-view">
+                            <columns>
+                                <TableColumn fx:id="colCriterion"   text="Criterion"   prefWidth="140"/>
+                                <TableColumn fx:id="colWeight"      text="Weight"      prefWidth="70"/>
+                                <TableColumn fx:id="colScore"       text="Score"       prefWidth="70"/>
+                                <TableColumn fx:id="colExplanation" text="Explanation" prefWidth="340"/>
+                            </columns>
+                            <placeholder>
+                                <Label text="Score not yet calculated. Click 'Recalculate Score'."
+                                       styleClass="job-offer-empty-label"/>
+                            </placeholder>
+                        </TableView>
+
+                    </VBox>
+
+                    <!-- Notes / Cover Letter -->
+                    <VBox styleClass="job-offer-surface-card" spacing="10">
+                        <Label text="Cover Letter / Message" styleClass="job-offer-section-title"/>
+                        <TextArea fx:id="coverLetterArea" editable="false" wrapText="true"
+                                  prefRowCount="5" styleClass="job-offer-readonly-area"/>
+
+                        <Separator/>
+
+                        <Label text="Add Note" styleClass="job-offer-section-title"/>
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <TextField fx:id="noteField" promptText="Add a review note…"
+                                       styleClass="job-offer-input" HBox.hgrow="ALWAYS"/>
+                            <Button text="Add" styleClass="ghost-button" onAction="#onAddNote"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- CV Info -->
+                    <VBox styleClass="job-offer-surface-card" spacing="8">
+                        <Label text="CV / Resume" styleClass="job-offer-section-title"/>
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <Label fx:id="cvFilenameLabel" text="No CV attached"
+                                   styleClass="job-offer-card-meta" HBox.hgrow="ALWAYS"/>
+                            <Button fx:id="openCvButton" text="Open CV"
+                                    styleClass="ghost-button" onAction="#onOpenCv"/>
+                        </HBox>
+                    </VBox>
+                </VBox>
+
+                <!-- Right column: Candidate profile + Audit history -->
+                <VBox spacing="14" prefWidth="310" minWidth="280">
+
+                    <!-- Candidate Profile Card -->
+                    <VBox styleClass="job-offer-surface-card" spacing="10">
+                        <Label text="Extracted Profile" styleClass="job-offer-section-title"/>
+
+                        <Label text="Skills" styleClass="job-offer-admin-label"/>
+                        <Label fx:id="skillsLabel" text="—" styleClass="job-offer-card-meta" wrapText="true"/>
+
+                        <Label text="Experience" styleClass="job-offer-admin-label"/>
+                        <Label fx:id="expLabel" text="—" styleClass="job-offer-card-meta"/>
+
+                        <Label text="Education" styleClass="job-offer-admin-label"/>
+                        <Label fx:id="eduLabel" text="—" styleClass="job-offer-card-meta"/>
+
+                        <Label text="Languages" styleClass="job-offer-admin-label"/>
+                        <Label fx:id="langsLabel" text="—" styleClass="job-offer-card-meta" wrapText="true"/>
+
+                        <Label text="Education Field" styleClass="job-offer-admin-label"/>
+                        <Label fx:id="educationFieldLabel" text="—" styleClass="job-offer-card-meta" wrapText="true"/>
+
+                        <Label text="Portfolio URLs" styleClass="job-offer-admin-label"/>
+                        <Label fx:id="portfolioUrlsLabel" text="—" styleClass="job-offer-card-meta" wrapText="true"/>
+
+                        <Label fx:id="extractionNoteLabel"
+                               text="ⓘ Click 'Extract CV (AI)' to populate this panel"
+                               styleClass="job-offer-form-note" wrapText="true"/>
+                    </VBox>
+
+                    <!-- Audit History -->
+                    <VBox styleClass="job-offer-surface-card" spacing="10" VBox.vgrow="ALWAYS">
+                        <Label text="Audit History" styleClass="job-offer-section-title"/>
+                        <ScrollPane fitToWidth="true" prefHeight="220"
+                                    styleClass="job-offer-scroll">
+                            <VBox fx:id="auditList" spacing="6"/>
+                        </ScrollPane>
+                    </VBox>
+                </VBox>
+            </HBox>
+        </VBox>
+    </ScrollPane>
+</VBox>

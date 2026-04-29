@@ -5,6 +5,9 @@ package entities;
 import entities.forum.ForumComment;
 import entities.forum.ForumCommentReaction;
 import entities.forum.ForumTopic;
+import entities.job_offer.GeneralChatMessage;
+import entities.job_offer.JobApplication;
+import entities.job_offer.JobOffer;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -15,6 +18,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import jakarta.persistence.Transient;
 import jakarta.persistence.UniqueConstraint;
 import java.sql.Timestamp;
 import java.util.HashSet;
@@ -28,6 +32,8 @@ import java.util.Set;
     , uniqueConstraints = @UniqueConstraint(columnNames="email") 
 )
 public class User  implements java.io.Serializable {
+
+    private static final String FACE_EMBEDDING_JSON_KEY = "\"embedding\"";
 
 
      private Integer id;
@@ -53,6 +59,15 @@ public class User  implements java.io.Serializable {
      private byte faceEnabled;
      private String faceDescriptors;
      private Timestamp faceEnrolledAt;
+     private String smsPhoneNumber;
+     private byte smsVerified;
+     private Timestamp smsVerifiedAt;
+     private String smsOtpHash;
+     private Timestamp smsOtpExpiresAt;
+     private Integer smsOtpAttempts;
+     private Timestamp smsOtpLastSentAt;
+     private Timestamp smsOtpLockedUntil;
+     private byte firstLoginCompleted;
      private Set<JobOffer> jobOffers = new HashSet<JobOffer>(0);
      private Set<Schedule> schedules = new HashSet<Schedule>(0);
      private Set<FaceVerificationLog> faceVerificationLogs = new HashSet<FaceVerificationLog>(0);
@@ -371,6 +386,180 @@ public class User  implements java.io.Serializable {
     
     public void setFaceEnrolledAt(Timestamp faceEnrolledAt) {
         this.faceEnrolledAt = faceEnrolledAt;
+    }
+
+    @Transient
+    public boolean isFaceIdEnabled() {
+        return this.faceEnabled == (byte) 1;
+    }
+
+    public void setFaceIdEnabled(boolean enabled) {
+        this.faceEnabled = enabled ? (byte) 1 : (byte) 0;
+    }
+
+    @Transient
+    public String getFaceEmbedding() {
+        if (this.faceDescriptors == null) {
+            return null;
+        }
+
+        String raw = this.faceDescriptors.trim();
+        if (raw.isEmpty()) {
+            return null;
+        }
+
+        if (!raw.startsWith("{")) {
+            return raw;
+        }
+
+        int keyIndex = raw.indexOf(FACE_EMBEDDING_JSON_KEY);
+        if (keyIndex < 0) {
+            return raw;
+        }
+
+        int colonIndex = raw.indexOf(':', keyIndex + FACE_EMBEDDING_JSON_KEY.length());
+        if (colonIndex < 0) {
+            return raw;
+        }
+
+        int valueStart = raw.indexOf('"', colonIndex + 1);
+        if (valueStart < 0) {
+            return raw;
+        }
+
+        int valueEnd = valueStart + 1;
+        while (valueEnd < raw.length()) {
+            if (raw.charAt(valueEnd) == '"' && raw.charAt(valueEnd - 1) != '\\') {
+                break;
+            }
+            valueEnd++;
+        }
+
+        if (valueEnd >= raw.length()) {
+            return raw;
+        }
+
+        String escaped = raw.substring(valueStart + 1, valueEnd);
+        return escaped.replace("\\\"", "\"").replace("\\\\", "\\");
+    }
+
+    public void setFaceEmbedding(String embedding) {
+        if (embedding == null || embedding.isBlank()) {
+            this.faceDescriptors = null;
+            return;
+        }
+
+        String value = embedding.trim();
+        if (value.startsWith("{") || value.startsWith("[")) {
+            this.faceDescriptors = value;
+            return;
+        }
+
+        String escaped = value.replace("\\", "\\\\").replace("\"", "\\\"");
+        this.faceDescriptors = "{\"embedding\":\"" + escaped + "\"}";
+    }
+
+    @Column(name="sms_phone_number", unique=false, length=20)
+    public String getSmsPhoneNumber() {
+        return this.smsPhoneNumber;
+    }
+    
+    public void setSmsPhoneNumber(String smsPhoneNumber) {
+        this.smsPhoneNumber = smsPhoneNumber;
+    }
+
+    @Column(name="sms_verified", nullable=false)
+    public byte getSmsVerified() {
+        return this.smsVerified;
+    }
+    
+    public void setSmsVerified(byte smsVerified) {
+        this.smsVerified = smsVerified;
+    }
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name="sms_verified_at", length=19)
+    public Timestamp getSmsVerifiedAt() {
+        return this.smsVerifiedAt;
+    }
+    
+    public void setSmsVerifiedAt(Timestamp smsVerifiedAt) {
+        this.smsVerifiedAt = smsVerifiedAt;
+    }
+
+    @Column(name="sms_otp_hash", length=255)
+    public String getSmsOtpHash() {
+        return this.smsOtpHash;
+    }
+    
+    public void setSmsOtpHash(String smsOtpHash) {
+        this.smsOtpHash = smsOtpHash;
+    }
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name="sms_otp_expires_at", length=19)
+    public Timestamp getSmsOtpExpiresAt() {
+        return this.smsOtpExpiresAt;
+    }
+    
+    public void setSmsOtpExpiresAt(Timestamp smsOtpExpiresAt) {
+        this.smsOtpExpiresAt = smsOtpExpiresAt;
+    }
+
+    @Column(name="sms_otp_attempts")
+    public Integer getSmsOtpAttempts() {
+        return this.smsOtpAttempts;
+    }
+    
+    public void setSmsOtpAttempts(Integer smsOtpAttempts) {
+        this.smsOtpAttempts = smsOtpAttempts;
+    }
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name="sms_otp_last_sent_at", length=19)
+    public Timestamp getSmsOtpLastSentAt() {
+        return this.smsOtpLastSentAt;
+    }
+    
+    public void setSmsOtpLastSentAt(Timestamp smsOtpLastSentAt) {
+        this.smsOtpLastSentAt = smsOtpLastSentAt;
+    }
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name="sms_otp_locked_until", length=19)
+    public Timestamp getSmsOtpLockedUntil() {
+        return this.smsOtpLockedUntil;
+    }
+    
+    public void setSmsOtpLockedUntil(Timestamp smsOtpLockedUntil) {
+        this.smsOtpLockedUntil = smsOtpLockedUntil;
+    }
+
+    @Column(name="first_login_completed", nullable=false)
+    public byte getFirstLoginCompleted() {
+        return this.firstLoginCompleted;
+    }
+    
+    public void setFirstLoginCompleted(byte firstLoginCompleted) {
+        this.firstLoginCompleted = firstLoginCompleted;
+    }
+
+    @Transient
+    public boolean isSmsVerified() {
+        return this.smsVerified == (byte) 1;
+    }
+
+    public void setSmsVerified(boolean verified) {
+        this.smsVerified = verified ? (byte) 1 : (byte) 0;
+    }
+
+    @Transient
+    public boolean isFirstLoginCompleted() {
+        return this.firstLoginCompleted == (byte) 1;
+    }
+
+    public void setFirstLoginCompleted(boolean completed) {
+        this.firstLoginCompleted = completed ? (byte) 1 : (byte) 0;
     }
 
 @OneToMany(fetch=FetchType.LAZY, mappedBy="user")

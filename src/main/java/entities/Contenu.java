@@ -8,6 +8,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -34,6 +35,7 @@ public class Contenu  implements java.io.Serializable {
      private Timestamp createdAt;
      private Timestamp updatedAt;
      private Integer fileSize;
+    private String contentHtml;
      private Set<BuildProgramContenu> buildProgramContenus = new HashSet<BuildProgramContenu>(0);
      private Set<ClasseContenu> classeContenus = new HashSet<ClasseContenu>(0);
      private Set<Assessment> assessments = new HashSet<Assessment>(0);
@@ -159,6 +161,16 @@ public class Contenu  implements java.io.Serializable {
     
     public void setFileSize(Integer fileSize) {
         this.fileSize = fileSize;
+    }
+
+    @Lob
+    @Column(name="content_html", columnDefinition="LONGTEXT")
+    public String getContentHtml() {
+        return this.contentHtml;
+    }
+
+    public void setContentHtml(String contentHtml) {
+        this.contentHtml = contentHtml;
     }
 
 @OneToMany(fetch=FetchType.LAZY, mappedBy="contenu")

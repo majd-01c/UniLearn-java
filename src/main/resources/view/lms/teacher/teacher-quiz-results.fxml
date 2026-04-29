@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controller.lms.TeacherQuizResultsController"
+            styleClass="lms-scroll" fitToWidth="true">
+    <VBox styleClass="lms-root" spacing="16">
+        <padding>
+            <Insets top="12" right="16" bottom="16" left="16"/>
+        </padding>
+
+        <!-- Top Bar -->
+        <HBox spacing="8" alignment="CENTER_LEFT" styleClass="breadcrumb-bar">
+            <Button text="← Back to Workspace" onAction="#onBack" styleClass="ghost-button"/>
+        </HBox>
+
+        <!-- Quiz Info Card -->
+        <VBox styleClass="lms-card" spacing="10">
+            <padding>
+                <Insets top="16" right="16" bottom="16" left="16"/>
+            </padding>
+            <Label fx:id="quizTitleLabel" text="Quiz Results" styleClass="card-title" style="-fx-font-size: 20px;"/>
+            <Label fx:id="quizInfoLabel" text="" styleClass="card-text"/>
+        </VBox>
+
+        <!-- Stats Summary -->
+        <HBox spacing="12">
+            <VBox styleClass="stat-card" spacing="4" alignment="CENTER" HBox.hgrow="ALWAYS">
+                <Label fx:id="attemptCountLabel" text="0" styleClass="stat-value"/>
+                <Label text="Total Attempts" styleClass="stat-label"/>
+            </VBox>
+            <VBox styleClass="stat-card" spacing="4" alignment="CENTER" HBox.hgrow="ALWAYS">
+                <Label fx:id="avgScoreLabel" text="—" styleClass="stat-value"/>
+                <Label text="Average Score" styleClass="stat-label"/>
+            </VBox>
+            <VBox styleClass="stat-card" spacing="4" alignment="CENTER" HBox.hgrow="ALWAYS">
+                <Label fx:id="passRateLabel" text="—" styleClass="stat-value"/>
+                <Label text="Pass Rate" styleClass="stat-label"/>
+            </VBox>
+        </HBox>
+
+        <!-- Results Table -->
+        <VBox styleClass="lms-card" spacing="8">
+            <padding>
+                <Insets top="16" right="16" bottom="16" left="16"/>
+            </padding>
+            <Label text="Student Results" styleClass="card-title"/>
+            <Separator/>
+            <VBox fx:id="resultsContainer" spacing="0"/>
+            <Label fx:id="emptyLabel" text="No students have attempted this quiz yet."
+                   styleClass="empty-state" visible="false" managed="false"/>
+        </VBox>
+    </VBox>
+</ScrollPane>

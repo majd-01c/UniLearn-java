@@ -5,6 +5,8 @@ import entities.forum.ForumComment;
 import entities.forum.ForumCommentReaction;
 import entities.forum.ForumTopic;
 import entities.forum.TopicStatus;
+import javafx.animation.PauseTransition;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
@@ -18,7 +20,9 @@ import security.UserSession;
 import services.forum.ServiceForumComment;
 import services.forum.ServiceForumCommentReaction;
 import services.forum.ServiceForumTopic;
+import services.forum.ForumAiAssistantService;
 import util.AppNavigator;
+import javafx.util.Duration;
 
 import java.net.URL;
 import java.sql.Timestamp;
@@ -40,20 +44,33 @@ public class ForumTopicController implements Initializable {
     @FXML private HBox topicActionsBox;
     @FXML private Label pinnedBadge;
     @FXML private VBox commentFormBox;
+    @FXML private VBox aiAnswerBox;
+    @FXML private Button aiAnswerButton;
+    @FXML private VBox aiAnswerContentBox;
+    @FXML private HBox aiAnswerLoadingBox;
+    @FXML private Label aiAnswerLabel;
+    @FXML private HBox toxicityCheckingBox;
+    @FXML private VBox toxicityWarningBox;
+    @FXML private Label toxicityReasonLabel;
 
     private final ServiceForumTopic topicService = new ServiceForumTopic();
     private final ServiceForumComment commentService = new ServiceForumComment();
     private final ServiceForumCommentReaction reactionService = new ServiceForumCommentReaction();
+    private final ForumAiAssistantService aiAssistantService = new ForumAiAssistantService();
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy 'at' HH:mm");
 
     private ForumTopic topic;
     private int currentUserId;
     private String currentUserRole = "";
+    private PauseTransition toxicityDelay;
+    private String lastCheckedCommentText = "";
+    private boolean highSeverityToxicity = false;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         currentUserId = UserSession.getCurrentUserId().orElse(0);
         currentUserRole = getCurrentUserRole();
+        setupToxicityCheck();
     }
 
     public void setTopic(ForumTopic topic) {
@@ -68,6 +85,7 @@ public class ForumTopicController implements Initializable {
 
         renderTopic();
         loadComments();
+        resetAiAnswer();
     }
 
     private void renderTopic() {
@@ -207,6 +225,11 @@ public class ForumTopicController implements Initializable {
         dislikeBtn.setOnAction(e -> onReact(comment, "dislike"));
 
         actions.getChildren().addAll(likeBtn, dislikeBtn);
+
+        Button aiRateBtn = new Button("AI Rate");
+        aiRateBtn.getStyleClass().add("reaction-button");
+        aiRateBtn.setOnAction(e -> onRateCommentQuality(comment, aiRateBtn));
+        actions.getChildren().add(aiRateBtn);
 
         // Reply button
         if (!topic.isLocked() && !isReply) {
@@ -410,7 +433,11 @@ public class ForumTopicController implements Initializable {
 
     @FXML
     private void onSubmitComment() {
-        String content = commentInput.getText().trim();
+        String content = commentInput.getText() == null ? "" : commentInput.getText().trim();
+        if (highSeverityToxicity) {
+            showAlert("Please revise the comment before posting.");
+            return;
+        }
         if (content.isEmpty()) {
             showAlert("Comment cannot be empty.");
             return;
@@ -434,7 +461,51 @@ public class ForumTopicController implements Initializable {
         topicService.update(topic);
 
         commentInput.clear();
+        hideToxicityWarning();
         loadComments();
+    }
+
+    @FXML
+    private void onGenerateAiAnswer() {
+        if (!aiAssistantService.isAvailable()) {
+            showAiAnswerText("AI service is not configured. Set GROQ_API_KEY or groq.local.properties.");
+            return;
+        }
+
+        setAiAnswerLoading(true);
+        aiAnswerButton.setDisable(true);
+        aiAnswerButton.setText("Generating...");
+
+        Task<String> task = new Task<>() {
+            @Override
+            protected String call() {
+                List<ForumComment> comments = commentService.findTopLevelByTopic(topic.getId());
+                return aiAssistantService.generateTopicAnswer(topic, comments);
+            }
+        };
+
+        task.setOnSucceeded(event -> {
+            setAiAnswerLoading(false);
+            String answer = task.getValue();
+            if (answer == null || answer.isBlank()) {
+                showAiAnswerText("AI could not generate an answer right now.");
+                aiAnswerButton.setDisable(false);
+                aiAnswerButton.setText("Try Again");
+            } else {
+                showAiAnswerText(answer);
+                aiAnswerButton.setText("AI Answer Generated");
+            }
+        });
+        task.setOnFailed(event -> {
+            setAiAnswerLoading(false);
+            showAiAnswerText("AI answer failed. Please try again.");
+            aiAnswerButton.setDisable(false);
+            aiAnswerButton.setText("Try Again");
+        });
+
+        Thread thread = new Thread(task, "forum-ai-answer");
+        thread.setDaemon(true);
+        thread.start();
     }
 
     @FXML
@@ -455,6 +526,181 @@ public class ForumTopicController implements Initializable {
         User u = new User();
         u.setId(userId);
         return u;
+    }
+
+    private void setupToxicityCheck() {
+        if (commentInput == null || toxicityWarningBox == null) {
+            return;
+        }
+
+        toxicityDelay = new PauseTransition(Duration.millis(1500));
+        toxicityDelay.setOnFinished(event -> runToxicityCheck());
+
+        commentInput.textProperty().addListener((observable, oldValue, newValue) -> {
+            highSeverityToxicity = false;
+            submitCommentButton.setDisable(false);
+            String text = newValue == null ? "" : newValue.trim();
+            if (text.length() < 10 || !aiAssistantService.isAvailable()) {
+                hideToxicityWarning();
+                return;
+            }
+
+            toxicityDelay.playFromStart();
+        });
+    }
+
+    private void runToxicityCheck() {
+        String text = commentInput.getText() == null ? "" : commentInput.getText().trim();
+        if (text.length() < 10 || text.equals(lastCheckedCommentText)) {
+            return;
+        }
+        lastCheckedCommentText = text;
+        setToxicityChecking(true);
+
+        Task<ForumAiAssistantService.ToxicityResult> task = new Task<>() {
+            @Override
+            protected ForumAiAssistantService.ToxicityResult call() {
+                return aiAssistantService.checkToxicity(text);
+            }
+        };
+
+        task.setOnSucceeded(event -> {
+            setToxicityChecking(false);
+            String current = commentInput.getText() == null ? "" : commentInput.getText().trim();
+            if (!text.equals(current)) {
+                return;
+            }
+            displayToxicityResult(task.getValue());
+        });
+        task.setOnFailed(event -> {
+            setToxicityChecking(false);
+            hideToxicityWarning();
+        });
+
+        Thread thread = new Thread(task, "forum-toxicity-check");
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private void displayToxicityResult(ForumAiAssistantService.ToxicityResult result) {
+        if (result == null || !result.isToxic()) {
+            hideToxicityWarning();
+            return;
+        }
+
+        String severity = result.severity() == null ? "medium" : result.severity().toLowerCase();
+        highSeverityToxicity = "high".equals(severity);
+        submitCommentButton.setDisable(highSeverityToxicity);
+
+        toxicityReasonLabel.setText(result.reason() == null || result.reason().isBlank()
+                ? "This comment may contain inappropriate content."
+                : result.reason());
+        toxicityWarningBox.getStyleClass().setAll("forum-toxicity-warning", "toxicity-" + severity);
+        toxicityWarningBox.setVisible(true);
+        toxicityWarningBox.setManaged(true);
+    }
+
+    private void hideToxicityWarning() {
+        highSeverityToxicity = false;
+        if (submitCommentButton != null) {
+            submitCommentButton.setDisable(false);
+        }
+        if (toxicityWarningBox != null) {
+            toxicityWarningBox.setVisible(false);
+            toxicityWarningBox.setManaged(false);
+        }
+        if (toxicityReasonLabel != null) {
+            toxicityReasonLabel.setText("");
+        }
+        setToxicityChecking(false);
+    }
+
+    private void setToxicityChecking(boolean checking) {
+        if (toxicityCheckingBox == null) {
+            return;
+        }
+        toxicityCheckingBox.setVisible(checking);
+        toxicityCheckingBox.setManaged(checking);
+    }
+
+    private void onRateCommentQuality(ForumComment comment, Button rateButton) {
+        if (!aiAssistantService.isAvailable()) {
+            rateButton.setText("AI off");
+            rateButton.setTooltip(new Tooltip("AI service is not configured."));
+            return;
+        }
+
+        rateButton.setDisable(true);
+        rateButton.setText("Rating...");
+
+        String question = topic.getTitle() + "\n" + truncate(topic.getContent(), 500);
+        String answer = truncate(comment.getContent(), 500);
+
+        Task<ForumAiAssistantService.QualityRatingResult> task = new Task<>() {
+            @Override
+            protected ForumAiAssistantService.QualityRatingResult call() {
+                return aiAssistantService.rateAnswerQuality(question, answer);
+            }
+        };
+
+        task.setOnSucceeded(event -> {
+            ForumAiAssistantService.QualityRatingResult result = task.getValue();
+            if (result == null || result.score() <= 0) {
+                rateButton.setText("N/A");
+                rateButton.setDisable(false);
+                return;
+            }
+
+            rateButton.setText(result.score() + "/5 " + result.label());
+            rateButton.setTooltip(new Tooltip(result.reason()));
+            rateButton.setDisable(true);
+        });
+        task.setOnFailed(event -> {
+            rateButton.setText("Error");
+            rateButton.setDisable(false);
+        });
+
+        Thread thread = new Thread(task, "forum-ai-rate-comment");
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private void resetAiAnswer() {
+        if (aiAnswerContentBox == null) {
+            return;
+        }
+        aiAnswerContentBox.setVisible(false);
+        aiAnswerContentBox.setManaged(false);
+        aiAnswerLabel.setText("");
+        aiAnswerButton.setDisable(false);
+        aiAnswerButton.setText("Get AI Answer");
+        setAiAnswerLoading(false);
+    }
+
+    private void setAiAnswerLoading(boolean loading) {
+        if (aiAnswerContentBox == null || aiAnswerLoadingBox == null) {
+            return;
+        }
+        aiAnswerContentBox.setVisible(true);
+        aiAnswerContentBox.setManaged(true);
+        aiAnswerLoadingBox.setVisible(loading);
+        aiAnswerLoadingBox.setManaged(loading);
+    }
+
+    private void showAiAnswerText(String text) {
+        if (aiAnswerContentBox == null) {
+            return;
+        }
+        aiAnswerContentBox.setVisible(true);
+        aiAnswerContentBox.setManaged(true);
+        aiAnswerLabel.setText(text == null ? "" : text);
+    }
+
+    private static String truncate(String value, int maxLength) {
+        if (value == null || value.length() <= maxLength) {
+            return value;
+        }
+        return value.substring(0, maxLength);
     }
 
     private boolean isStaffRole() {

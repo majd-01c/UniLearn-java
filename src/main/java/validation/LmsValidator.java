@@ -30,10 +30,18 @@ public final class LmsValidator {
         return errors;
     }
 
-    public static List<String> validateContenuForm(String title, String type) {
+    public static List<String> validateContenuForm(String title, String type, boolean writeMode,
+                                                   String contentHtml, boolean hasFile) {
         List<String> errors = new ArrayList<>();
         if (title == null || title.trim().isEmpty()) errors.add("Content title is required.");
         if (type == null || type.trim().isEmpty()) errors.add("Content type is required.");
+        if (writeMode) {
+            if (contentHtml == null || contentHtml.replaceAll("(?s)<[^>]*>", "").replace("&nbsp;", " ").trim().isEmpty()) {
+                errors.add("Content body is required when using the in-app editor.");
+            }
+        } else if (!hasFile) {
+            errors.add("Select a file or switch to the in-app editor.");
+        }
         return errors;
     }
 

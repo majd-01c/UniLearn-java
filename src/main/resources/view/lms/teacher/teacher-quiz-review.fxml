@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="20.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.lms.TeacherQuizReviewController">
+    <padding>
+        <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+    </padding>
+
+    <!-- Header Section -->
+    <HBox alignment="CENTER_LEFT" spacing="15.0">
+        <Button onAction="#onBack" styleClass="secondary-button" text="← Back to Results" />
+        <VBox HBox.hgrow="ALWAYS">
+            <Label fx:id="studentLabel" style="-fx-font-size: 24px; -fx-font-weight: bold;" text="Student Name" />
+            <HBox spacing="10.0">
+                <Label fx:id="scoreLabel" style="-fx-font-size: 14px; -fx-text-fill: #7f8c8d;" text="0/0 (0%)" />
+                <Label fx:id="statusLabel" styleClass="badge" text="STATUS" />
+            </HBox>
+        </VBox>
+    </HBox>
+
+    <!-- Content Section -->
+    <ScrollPane fx:id="scrollPane" fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
+        <VBox fx:id="questionsContainer" spacing="15.0">
+            <!-- Review items injected here -->
+        </VBox>
+    </ScrollPane>
+</VBox>

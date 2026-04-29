@@ -6,17 +6,27 @@ import entities.Grade;
 import entities.Reclamation;
 import entities.Schedule;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputControl;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import security.UserSession;
 import service.evaluation.EvaluationService;
 
+import java.awt.Desktop;
+import java.io.File;
+import java.net.URI;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.function.UnaryOperator;
+
+import javafx.scene.control.TextFormatter;
 
 public class EvaluationStudentController {
 
@@ -76,10 +86,16 @@ public class EvaluationStudentController {
 
     @FXML
     public void initialize() {
-        studentIdField.setText(String.valueOf(UserSession.getCurrentUserId().orElse(1)));
-        studentIdField.setEditable(false);
-        studentIdField.setDisable(true);
-        classIdField.setText("1");
+        int currentStudentId = resolveStudentId();
+        if (studentIdField != null) {
+            studentIdField.setText(String.valueOf(currentStudentId));
+            studentIdField.setEditable(false);
+            studentIdField.setDisable(true);
+        }
+        if (classIdField != null) {
+            classIdField.setText("1");
+        }
+        installInputValidation();
 
         docTypeBox.getItems().setAll(
                 "attestation_stage",
@@ -93,6 +109,26 @@ public class EvaluationStudentController {
 
         showSection(gradesPane);
         refreshAll();
+    }
+
+    @FXML
+    private void showGrades() {
+        onOpenGrades();
+    }
+
+    @FXML
+    private void showSchedule() {
+        onOpenSchedule();
+    }
+
+    @FXML
+    private void showComplaints() {
+        onOpenComplaints();
+    }
+
+    @FXML
+    private void showDocuments() {
+        onOpenDocuments();
     }
 
     @FXML
@@ -123,7 +159,7 @@ public class EvaluationStudentController {
     public void openSection(String sectionKey) {
         String normalized = sectionKey == null ? "GRADES" : sectionKey.trim().toUpperCase();
         switch (normalized) {
-            case "RECOMMENDATIONS" -> showSection(recommendationsPane);
+            case "RECOMMENDATIONS" -> showSection(recommendationsPane != null ? recommendationsPane : gradesPane);
             case "SCHEDULE" -> showSection(schedulePane);
             case "COMPLAINTS" -> showSection(complaintsPane);
             case "DOCUMENTS" -> showSection(documentsPane);
@@ -139,9 +175,22 @@ public class EvaluationStudentController {
     @FXML
     private void onCreateComplaint() {
         try {
-            int studentId = intValue(studentIdField.getText());
-            String courseName = complaintCourseNameField.getText();
-            service.createReclamation(studentId, courseName, complaintSubjectField.getText(), complaintDescriptionArea.getText());
+            int studentId = resolveStudentId();
+            String courseName = requireNotBlank(complaintCourseNameField.getText(), "Course name");
+            String subject = requireNotBlank(complaintSubjectField.getText(), "Complaint subject");
+            String description = requireNotBlank(complaintDescriptionArea.getText(), "Complaint description");
+
+            if (subject.length() < 3) {
+                throw new IllegalArgumentException("Complaint subject must have at least 3 characters.");
+            }
+            if (description.length() < 10) {
+                throw new IllegalArgumentException("Complaint description must have at least 10 characters.");
+            }
+            if (service.findCourseIdByName(courseName) == null) {
+                throw new IllegalArgumentException("Course name is invalid. Please enter an existing course title.");
+            }
+
+            service.createReclamation(studentId, courseName, subject, description);
             complaintSubjectField.clear();
             complaintDescriptionArea.clear();
             complaintCourseNameField.clear();
@@ -155,8 +204,17 @@ public class EvaluationStudentController {
     @FXML
     private void onCreateDocumentRequest() {
         try {
-            int studentId = intValue(studentIdField.getText());
-            service.createDocumentRequest(studentId, docTypeBox.getValue(), docInfoArea.getText());
+            int studentId = resolveStudentId();
+            String docType = docTypeBox.getValue();
+            if (docType == null || docType.isBlank()) {
+                throw new IllegalArgumentException("Please select a document type.");
+            }
+            String additionalInfo = requireNotBlank(docInfoArea.getText(), "Document request details");
+            if (additionalInfo.length() < 5) {
+                throw new IllegalArgumentException("Document request details must have at least 5 characters.");
+            }
+
+            service.createDocumentRequest(studentId, docType, additionalInfo);
             docInfoArea.clear();
             refreshDocRequests(studentId);
             showFeedback("Document request created.");
@@ -167,8 +225,8 @@ public class EvaluationStudentController {
 
     private void refreshAll() {
         try {
-            int studentId = intValue(studentIdField.getText());
-            int classId = intValue(classIdField.getText());
+            int studentId = resolveStudentId();
+            int classId = resolveClassId();
 
             List<Grade> grades = service.getGradesByStudent(studentId);
             renderGrades(grades);
@@ -216,12 +274,22 @@ public class EvaluationStudentController {
             return;
         }
         for (DocumentRequest row : rows) {
-            docRequestsCardsBox.getChildren().add(dataCard(
+            String documentPath = row.getDocumentPath();
+            VBox card = dataCard(
                     "Request #" + row.getId(),
                     "Type: " + safe(row.getDocumentType()),
                     "Status: " + safe(row.getStatus()),
-                    "Path: " + safe(row.getDocumentPath())
-            ));
+                    "Path: " + safe(documentPath)
+            );
+            if (documentPath != null && !documentPath.isBlank()) {
+                Button downloadButton = new Button("Download / Open");
+                downloadButton.getStyleClass().add("eval-ghost-btn");
+                downloadButton.setOnAction(event -> openDocument(documentPath));
+                HBox actions = new HBox(downloadButton);
+                actions.setAlignment(Pos.CENTER_LEFT);
+                card.getChildren().add(actions);
+            }
+            docRequestsCardsBox.getChildren().add(card);
         }
     }
 
@@ -243,6 +311,9 @@ public class EvaluationStudentController {
     }
 
     private void renderRecommendations(List<EvaluationService.RecommendationRow> rows) {
+        if (recommendationsCardsBox == null) {
+            return;
+        }
         recommendationsCardsBox.getChildren().clear();
         if (rows.isEmpty()) {
             recommendationsCardsBox.getChildren().add(emptyCard("No recommendations available"));
@@ -309,12 +380,85 @@ public class EvaluationStudentController {
     }
 
     private void setVisibleManaged(VBox pane, boolean visible) {
+        if (pane == null) {
+            return;
+        }
         pane.setVisible(visible);
         pane.setManaged(visible);
     }
 
     private int intValue(String value) {
         return Integer.parseInt(value.trim());
+    }
+
+    private void installInputValidation() {
+        if (classIdField != null) {
+            setIntegerField(classIdField);
+        }
+        if (complaintSubjectField != null) {
+            setLengthField(complaintSubjectField, 150);
+        }
+        if (complaintCourseNameField != null) {
+            setLengthField(complaintCourseNameField, 150);
+        }
+        if (docInfoArea != null) {
+            setLengthField(docInfoArea, 500);
+        }
+        if (complaintDescriptionArea != null) {
+            setLengthField(complaintDescriptionArea, 1000);
+        }
+    }
+
+    private int resolveStudentId() {
+        if (studentIdField != null && studentIdField.getText() != null && !studentIdField.getText().isBlank()) {
+            return requirePositiveInt(studentIdField.getText(), "Student ID");
+        }
+        return UserSession.getCurrentUserId()
+                .filter(id -> id > 0)
+                .orElseThrow(() -> new IllegalStateException("No authenticated student found in session."));
+    }
+
+    private int resolveClassId() {
+        if (classIdField != null && classIdField.getText() != null && !classIdField.getText().isBlank()) {
+            return requirePositiveInt(classIdField.getText(), "Class ID");
+        }
+        return 1;
+    }
+
+    private void setIntegerField(TextField field) {
+        UnaryOperator<TextFormatter.Change> filter = change -> {
+            String next = change.getControlNewText();
+            return next.matches("\\d*") ? change : null;
+        };
+        field.setTextFormatter(new TextFormatter<>(filter));
+    }
+
+    private void setLengthField(TextInputControl input, int maxLength) {
+        UnaryOperator<TextFormatter.Change> filter = change -> {
+            String next = change.getControlNewText();
+            return next.length() <= maxLength ? change : null;
+        };
+        input.setTextFormatter(new TextFormatter<>(filter));
+    }
+
+    private int requirePositiveInt(String rawValue, String fieldName) {
+        String normalized = requireNotBlank(rawValue, fieldName);
+        try {
+            int parsed = Integer.parseInt(normalized);
+            if (parsed <= 0) {
+                throw new IllegalArgumentException(fieldName + " must be greater than 0.");
+            }
+            return parsed;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(fieldName + " must be a valid integer.");
+        }
+    }
+
+    private String requireNotBlank(String rawValue, String fieldName) {
+        if (rawValue == null || rawValue.trim().isEmpty()) {
+            throw new IllegalArgumentException(fieldName + " is required.");
+        }
+        return rawValue.trim();
     }
 
     private String safe(String value) {
@@ -339,5 +483,34 @@ public class EvaluationStudentController {
 
     private void showFeedback(String text) {
         feedbackLabel.setText(new SimpleDateFormat("HH:mm:ss").format(new java.util.Date()) + " - " + text);
+    }
+
+    private void openDocument(String documentPath) {
+        try {
+            if (documentPath == null || documentPath.isBlank()) {
+                throw new IllegalArgumentException("No document uploaded yet.");
+            }
+            if (!Desktop.isDesktopSupported()) {
+                throw new IllegalStateException("Desktop actions are not supported on this system.");
+            }
+
+            String normalized = documentPath.trim();
+            Desktop desktop = Desktop.getDesktop();
+
+            if (normalized.startsWith("http://") || normalized.startsWith("https://")) {
+                desktop.browse(URI.create(normalized));
+                showFeedback("Opened document URL.");
+                return;
+            }
+
+            File file = new File(normalized);
+            if (!file.exists()) {
+                throw new IllegalArgumentException("Document file not found: " + normalized);
+            }
+            desktop.open(file);
+            showFeedback("Opened document file.");
+        } catch (Exception exception) {
+            showFeedback("Unable to open document: " + exception.getMessage());
+        }
     }
 }

@@ -3,6 +3,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.HBox?>
@@ -41,6 +42,23 @@
             <HBox fx:id="topicActionsBox" spacing="8.0" alignment="CENTER_LEFT"/>
         </VBox>
 
+        <!-- AI Answer Section -->
+        <VBox fx:id="aiAnswerBox" spacing="10.0" styleClass="forum-ai-card">
+            <HBox spacing="8.0" alignment="CENTER_LEFT">
+                <Label text="UniLearn AI Assistant" styleClass="forum-ai-title"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="aiAnswerButton" text="Get AI Answer" onAction="#onGenerateAiAnswer" styleClass="ghost-button"/>
+            </HBox>
+            <VBox fx:id="aiAnswerContentBox" spacing="8.0" visible="false" managed="false">
+                <HBox fx:id="aiAnswerLoadingBox" spacing="8.0" alignment="CENTER_LEFT" visible="false" managed="false">
+                    <ProgressIndicator prefWidth="18.0" prefHeight="18.0"/>
+                    <Label text="AI is thinking..." styleClass="forum-ai-muted"/>
+                </HBox>
+                <Label fx:id="aiAnswerLabel" text="" wrapText="true" styleClass="forum-ai-body"/>
+                <Label text="AI-generated answers may not always be accurate." styleClass="forum-ai-muted" wrapText="true"/>
+            </VBox>
+        </VBox>
+
         <!-- Comments Section -->
         <VBox spacing="4.0">
             <Label text="💬 Comments" styleClass="forum-card-title"/>
@@ -51,6 +69,14 @@
         <VBox fx:id="commentFormBox" spacing="8.0" styleClass="forum-card">
             <Label text="Post a Comment" styleClass="forum-card-title"/>
             <TextArea fx:id="commentInput" promptText="Write your comment..." prefRowCount="4" styleClass="forum-text-area"/>
+            <HBox fx:id="toxicityCheckingBox" spacing="8.0" alignment="CENTER_LEFT" visible="false" managed="false">
+                <ProgressIndicator prefWidth="16.0" prefHeight="16.0"/>
+                <Label text="Checking content..." styleClass="forum-ai-muted"/>
+            </HBox>
+            <VBox fx:id="toxicityWarningBox" spacing="4.0" styleClass="forum-toxicity-warning" visible="false" managed="false">
+                <Label text="Content warning" styleClass="forum-ai-section-title"/>
+                <Label fx:id="toxicityReasonLabel" text="" wrapText="true" styleClass="forum-ai-body"/>
+            </VBox>
             <HBox spacing="8.0">
                 <Button fx:id="submitCommentButton" text="Post Comment" onAction="#onSubmitComment" styleClass="primary-button"/>
             </HBox>

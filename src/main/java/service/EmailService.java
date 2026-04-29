@@ -24,6 +24,7 @@ public class EmailService {
 
     private static final String WELCOME_SUBJECT = "\uD83C\uDF93 Welcome to UniLearn Platform";
     private static final String RESET_SUBJECT = "\uD83D\uDD10 Password Reset";
+    private static final String RESET_LINK_SUBJECT = "\uD83D\uDD11 Password Reset Link - UniLearn";
     private static final String VERIFY_SUBJECT = "Email Verification - UniLearn";
 
     private final ExecutorService emailExecutor = Executors.newFixedThreadPool(2, runnable -> {
@@ -104,6 +105,42 @@ public class EmailService {
                 + "</body></html>";
 
         return sendEmailAsync(user.getEmail(), RESET_SUBJECT, textBody, htmlBody);
+    }
+
+    public CompletableFuture<Boolean> sendPasswordResetLinkEmail(User user, String token, String resetLink) {
+        if (user == null || user.getEmail() == null || user.getEmail().isBlank()) {
+            return CompletableFuture.completedFuture(false);
+        }
+
+        String fullName = valueOrDefault(user.getName(), "Learner");
+        String safeToken = valueOrDefault(token, "");
+        String safeLink = valueOrDefault(resetLink, "");
+
+        String textBody = String.format(
+                "Hello %s,%n%n"
+                        + "A password reset was requested for your account.%n%n"
+                        + "Reset link:%n%s%n%n"
+                        + "Reset token:%n%s%n%n"
+                        + "If you did not request this, ignore this message.%n"
+                        + "This reset token expires in 2 hours.%n%n"
+                        + "Regards,%nUniLearn Team",
+                fullName,
+                safeLink,
+                safeToken
+        );
+
+        String htmlBody = "<html><body>"
+                + "<h2>Password Reset Request</h2>"
+                + "<p>Hello <b>" + escapeHtml(fullName) + "</b>,</p>"
+                + "<p>A password reset was requested for your account.</p>"
+                + "<p><b>Reset link:</b><br/><a href='" + escapeHtml(safeLink) + "'>" + escapeHtml(safeLink) + "</a></p>"
+                + "<p><b>Reset token:</b><br/><code>" + escapeHtml(safeToken) + "</code></p>"
+                + "<p>If you did not request this, ignore this message.</p>"
+                + "<p>This reset token expires in 2 hours.</p>"
+                + "<p>Regards,<br/>UniLearn Team</p>"
+                + "</body></html>";
+
+        return sendEmailAsync(user.getEmail(), RESET_LINK_SUBJECT, textBody, htmlBody);
     }
 
     public CompletableFuture<Boolean> sendVerificationCodeEmail(String email, String verificationCode) {

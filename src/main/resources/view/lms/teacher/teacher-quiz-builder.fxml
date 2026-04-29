@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="controller.lms.TeacherQuizBuilderController"
+            styleClass="app-shell-root">
+    <top>
+        <HBox spacing="16" alignment="CENTER_LEFT" styleClass="lms-root" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="16" right="24" bottom="12" left="24"/>
+            </padding>
+            <VBox spacing="4">
+                <Label text="Quiz Builder" styleClass="lms-page-title"/>
+                <Label fx:id="courseContextLabel" text="Course: " styleClass="lms-text"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Cancel" onAction="#onCancel" styleClass="ghost-button"/>
+            <Button text="Save Quiz" onAction="#onSaveQuiz" styleClass="primary-button"/>
+        </HBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-control-inner-background: transparent;" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="20" right="24" bottom="24" left="24"/>
+            </padding>
+            <VBox spacing="24" maxWidth="1000">
+                
+                <!-- Basic Quiz Information -->
+                <VBox spacing="16" styleClass="lms-card">
+                    <padding><Insets top="16" right="20" bottom="20" left="20"/></padding>
+                    <Label text="Basic Settings" styleClass="card-title"/>
+                    
+                    <VBox spacing="8">
+                        <Label text="Quiz Title *" styleClass="form-label"/>
+                        <TextField fx:id="quizTitleField" promptText="Enter quiz title" styleClass="lms-input"/>
+                    </VBox>
+                    
+                    <VBox spacing="8">
+                        <Label text="Description" styleClass="form-label"/>
+                        <TextArea fx:id="quizDescriptionField" promptText="Enter quiz description or instructions" prefRowCount="3" styleClass="lms-input" wrapText="true"/>
+                    </VBox>
+                    
+                    <HBox spacing="24">
+                        <VBox spacing="8" HBox.hgrow="SOMETIMES">
+                            <Label text="Time Limit (minutes) *" styleClass="form-label"/>
+                            <Spinner fx:id="timeLimitSpinner" prefWidth="120" styleClass="lms-input"/>
+                        </VBox>
+                        <VBox spacing="8" HBox.hgrow="SOMETIMES">
+                            <Label text="Passing Score (%) *" styleClass="form-label"/>
+                            <Spinner fx:id="passingScoreSpinner" prefWidth="120" styleClass="lms-input"/>
+                        </VBox>
+                    </HBox>
+                    
+                    <Label fx:id="errorLabel" style="-fx-text-fill: -ul-danger; -fx-font-weight: bold;" visible="false" managed="false" wrapText="true"/>
+                </VBox>
+                
+                <!-- Questions Section -->
+                <VBox spacing="16">
+                    <HBox alignment="CENTER_LEFT">
+                        <Label text="Questions" styleClass="lms-page-title"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button text="+ Add Question" onAction="#onAddQuestion" styleClass="ghost-button"/>
+                    </HBox>
+                    
+                    <VBox fx:id="questionsContainer" spacing="16"/>
+                    
+                    <VBox alignment="CENTER" spacing="12" style="-fx-padding: 30; -fx-border-color: #ddd; -fx-border-style: dashed; -fx-border-radius: 8;">
+                        <Label text="No questions added yet." styleClass="card-text" fx:id="noQuestionsLabel"/>
+                        <Button text="Add Your First Question" onAction="#onAddQuestion" styleClass="primary-button"/>
+                    </VBox>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controller.job_offer.PartnerApplicationsController"
+      spacing="15"
+      styleClass="job-offer-root">
+
+    <HBox spacing="10" alignment="CENTER_LEFT" styleClass="job-offer-surface-card job-offer-toolbar">
+        <VBox spacing="4" HBox.hgrow="ALWAYS">
+            <Label fx:id="pageTitleLabel" text="Application Review" styleClass="job-offer-page-title"/>
+            <Label fx:id="pageSubtitleLabel"
+                   text="Pick an offer, select one candidate, review the dossier, then submit a final decision."
+                   styleClass="job-offer-page-subtitle"
+                   wrapText="true"/>
+        </VBox>
+        <Button fx:id="refreshButton" text="Refresh" styleClass="ghost-button" onAction="#onRefresh"/>
+        <Button fx:id="backButton" text="Back to Job Offers" styleClass="ghost-button" onAction="#onBack"/>
+    </HBox>
+
+    <HBox spacing="12">
+        <VBox spacing="2" styleClass="job-offer-surface-card job-offer-review-stat-card" HBox.hgrow="ALWAYS">
+            <Label text="Offers" styleClass="job-offer-admin-stat-label"/>
+            <Label fx:id="offersCountLabel" text="0" styleClass="job-offer-admin-stat-value"/>
+        </VBox>
+        <VBox spacing="2" styleClass="job-offer-surface-card job-offer-review-stat-card" HBox.hgrow="ALWAYS">
+            <Label text="Applications" styleClass="job-offer-admin-stat-label"/>
+            <Label fx:id="applicationsCountLabel" text="0" styleClass="job-offer-admin-stat-value"/>
+        </VBox>
+        <VBox spacing="2" styleClass="job-offer-surface-card job-offer-review-stat-card" HBox.hgrow="ALWAYS">
+            <Label text="Pending Review" styleClass="job-offer-admin-stat-label"/>
+            <Label fx:id="pendingCountLabel" text="0" styleClass="job-offer-admin-stat-value"/>
+        </VBox>
+    </HBox>
+
+    <GridPane hgap="12" vgap="10" styleClass="job-offer-surface-card job-offer-review-steps">
+        <VBox spacing="4" styleClass="job-offer-review-step" maxWidth="1.7976931348623157E308" GridPane.columnIndex="0" GridPane.hgrow="ALWAYS">
+            <Label fx:id="stepOneBadge" text="1. Pick an offer" styleClass="job-offer-step-badge job-offer-step-badge-active" wrapText="true" maxWidth="1.7976931348623157E308"/>
+            <Label text="Click any offer card to select it, then continue." styleClass="job-offer-card-meta" wrapText="true" maxWidth="1.7976931348623157E308"/>
+        </VBox>
+        <VBox spacing="4" styleClass="job-offer-review-step" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS">
+            <Label fx:id="stepTwoBadge" text="2. Select candidate" styleClass="job-offer-step-badge" wrapText="true" maxWidth="1.7976931348623157E308"/>
+            <Label text="See only candidates for the selected offer and choose one." styleClass="job-offer-card-meta" wrapText="true" maxWidth="1.7976931348623157E308"/>
+        </VBox>
+        <VBox spacing="4" styleClass="job-offer-review-step" maxWidth="1.7976931348623157E308" GridPane.columnIndex="2" GridPane.hgrow="ALWAYS">
+            <Label fx:id="stepThreeBadge" text="3. Review &amp; score" styleClass="job-offer-step-badge" wrapText="true" maxWidth="1.7976931348623157E308"/>
+            <Label text="Read the ATS breakdown, profile, and cover letter." styleClass="job-offer-card-meta" wrapText="true" maxWidth="1.7976931348623157E308"/>
+        </VBox>
+        <VBox spacing="4" styleClass="job-offer-review-step" maxWidth="1.7976931348623157E308" GridPane.columnIndex="3" GridPane.hgrow="ALWAYS">
+            <Label fx:id="stepFourBadge" text="4. Decide" styleClass="job-offer-step-badge" wrapText="true" maxWidth="1.7976931348623157E308"/>
+            <Label text="Pick a status, generate AI feedback, and submit." styleClass="job-offer-card-meta" wrapText="true" maxWidth="1.7976931348623157E308"/>
+        </VBox>
+        <columnConstraints>
+            <ColumnConstraints hgrow="ALWAYS" percentWidth="25"/>
+            <ColumnConstraints hgrow="ALWAYS" percentWidth="25"/>
+            <ColumnConstraints hgrow="ALWAYS" percentWidth="25"/>
+            <ColumnConstraints hgrow="ALWAYS" percentWidth="25"/>
+        </columnConstraints>
+    </GridPane>
+
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="job-offer-scroll">
+    <StackPane>
+        <BorderPane fx:id="stepOnePane" styleClass="job-offer-surface-card job-offer-review-column">
+            <center>
+            <VBox spacing="16">
+            <HBox spacing="16" alignment="CENTER_LEFT" styleClass="job-offer-review-hero-card">
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label text="Step 1" styleClass="job-offer-admin-label"/>
+                    <Label text="Pick an offer" styleClass="job-offer-page-title"/>
+                    <Label fx:id="selectedOfferHeroMetaLabel" text="Click any offer card to select it, then continue."
+                           styleClass="job-offer-card-meta" wrapText="true"/>
+                </VBox>
+                <VBox spacing="6" alignment="CENTER_RIGHT">
+                    <Label text="Selected offer" styleClass="job-offer-admin-label"/>
+                    <Label fx:id="selectedOfferHeroLabel" text="No offer selected yet" styleClass="job-offer-card-title" wrapText="true"/>
+                </VBox>
+            </HBox>
+
+            <HBox alignment="CENTER_LEFT">
+                <Label text="Job Offers" styleClass="job-offer-section-title"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="offersMetaLabel" text="0 offers" styleClass="job-offer-card-meta"/>
+            </HBox>
+
+            <TextField fx:id="offerSearchField"
+                       promptText="Search your offers..."
+                       styleClass="job-offer-search-field"/>
+
+            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="job-offer-grid-scroll">
+                <VBox fx:id="offersList" spacing="10"/>
+            </ScrollPane>
+            </VBox>
+            </center>
+        </BorderPane>
+
+        <VBox fx:id="stepTwoPane" spacing="16" styleClass="job-offer-surface-card job-offer-review-column" visible="false" managed="false">
+            <HBox spacing="16" alignment="CENTER_LEFT" styleClass="job-offer-review-info-card">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="Step 2" styleClass="job-offer-admin-label"/>
+                    <Label text="Select candidate" styleClass="job-offer-section-title"/>
+                    <Label fx:id="selectedOfferMetaLabel" text="Candidates will appear here." styleClass="job-offer-card-meta" wrapText="true"/>
+                </VBox>
+                <VBox spacing="4" alignment="CENTER_RIGHT">
+                    <Label text="Offer" styleClass="job-offer-admin-label"/>
+                    <Label fx:id="selectedOfferLabel" text="Select a job offer first" styleClass="job-offer-card-title" wrapText="true"/>
+                </VBox>
+            </HBox>
+
+            <HBox alignment="CENTER_LEFT">
+                <Label text="Candidates for this offer" styleClass="job-offer-section-title"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="scoreAllCandidatesButton" text="Calculate All ATS" styleClass="ghost-button" onAction="#onScoreAllCandidates"/>
+                <ComboBox fx:id="statusFilterCombo" prefWidth="155" styleClass="job-offer-filter-combo"/>
+            </HBox>
+
+            <Label fx:id="candidatesHelperLabel"
+                   text="Pick an offer first, then you can calculate ATS scores for all of its candidates."
+                   styleClass="job-offer-card-meta"
+                   wrapText="true"/>
+
+            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="job-offer-grid-scroll">
+                <VBox fx:id="applicationsList" spacing="10"/>
+            </ScrollPane>
+
+            <Label fx:id="emptyStateLabel"
+                   text="No candidates available for the selected offer."
+                   styleClass="job-offer-empty-label"
+                   visible="false"
+                   managed="false"/>
+        </VBox>
+
+        <VBox fx:id="stepThreePane" spacing="16" styleClass="job-offer-surface-card job-offer-review-column" visible="false" managed="false">
+            <HBox alignment="CENTER_LEFT">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="Step 3" styleClass="job-offer-admin-label"/>
+                    <Label fx:id="reviewTitleLabel" text="Review &amp; score" styleClass="job-offer-section-title"/>
+                    <Label fx:id="reviewSubtitleLabel" text="Select a candidate in step 2 to load the full ATS breakdown, profile, and cover letter."
+                           styleClass="job-offer-card-meta" wrapText="true"/>
+                </VBox>
+                <Label fx:id="reviewStatusChip" text="Waiting" styleClass="job-offer-status-chip job-offer-status-closed"/>
+            </HBox>
+
+            <HBox spacing="14" styleClass="job-offer-review-header">
+                <VBox spacing="6" styleClass="job-offer-review-hero-card" HBox.hgrow="ALWAYS">
+                    <Label text="Candidate" styleClass="job-offer-admin-label"/>
+                    <Label fx:id="candidateNameLabel" text="No candidate selected" styleClass="job-offer-card-title" wrapText="true"/>
+                    <Label fx:id="candidateEmailLabel" text="Candidate details will appear here." styleClass="job-offer-card-meta" wrapText="true"/>
+                </VBox>
+                <VBox spacing="6" alignment="CENTER" styleClass="job-offer-review-score-card">
+                    <Label text="ATS Score" styleClass="job-offer-admin-label"/>
+                    <Label fx:id="scoreLabel" text="Not scored" styleClass="job-offer-review-score-value"/>
+                    <Label fx:id="scoreCaptionLabel" text="ATS details will appear here." styleClass="job-offer-card-meta" wrapText="true"/>
+                </VBox>
+            </HBox>
+
+            <HBox spacing="12">
+                <VBox spacing="5" HBox.hgrow="ALWAYS" styleClass="job-offer-review-info-card">
+                    <Label text="Applied" styleClass="job-offer-admin-label"/>
+                    <Label fx:id="appliedDateLabel" text="—" styleClass="job-offer-body-text" wrapText="true"/>
+                </VBox>
+                <VBox spacing="5" HBox.hgrow="ALWAYS" styleClass="job-offer-review-info-card">
+                    <Label text="Current status" styleClass="job-offer-admin-label"/>
+                    <Label fx:id="statusTextLabel" text="—" styleClass="job-offer-body-text" wrapText="true"/>
+                </VBox>
+            </HBox>
+
+            <HBox spacing="14" alignment="TOP_LEFT">
+                <VBox spacing="10" styleClass="job-offer-review-info-card" HBox.hgrow="ALWAYS" prefWidth="0">
+                    <Label text="ATS breakdown" styleClass="job-offer-section-title"/>
+                    <VBox fx:id="scoreBreakdownList" spacing="8"/>
+                </VBox>
+
+                <HBox spacing="14" HBox.hgrow="ALWAYS" prefWidth="0" alignment="TOP_LEFT">
+                    <VBox spacing="10" styleClass="job-offer-review-info-card" HBox.hgrow="ALWAYS" prefWidth="0">
+                        <Label text="Candidate profile" styleClass="job-offer-section-title"/>
+
+                        <Label text="Skills" styleClass="job-offer-admin-label"/>
+                        <Label fx:id="profileSkillsLabel" text="—" styleClass="job-offer-card-meta" wrapText="true"/>
+
+                        <Label text="Experience" styleClass="job-offer-admin-label"/>
+                        <Label fx:id="profileExperienceLabel" text="—" styleClass="job-offer-card-meta" wrapText="true"/>
+
+                        <Label text="Education" styleClass="job-offer-admin-label"/>
+                        <Label fx:id="profileEducationLabel" text="—" styleClass="job-offer-card-meta" wrapText="true"/>
+
+                        <Label text="Languages" styleClass="job-offer-admin-label"/>
+                        <Label fx:id="profileLanguagesLabel" text="—" styleClass="job-offer-card-meta" wrapText="true"/>
+
+                        <Label text="Portfolio URLs" styleClass="job-offer-admin-label"/>
+                        <Label fx:id="profilePortfolioLabel" text="—" styleClass="job-offer-card-meta" wrapText="true"/>
+
+                        <Label fx:id="profileExtractionNoteLabel" text="No extracted profile is available for this candidate yet."
+                               styleClass="job-offer-form-note" wrapText="true"/>
+                    </VBox>
+
+                    <VBox spacing="10" styleClass="job-offer-review-info-card" minWidth="220" prefWidth="240">
+                        <Label text="Candidate files" styleClass="job-offer-section-title"/>
+                        <Button fx:id="openCvButton" text="Open CV" styleClass="ghost-button" onAction="#onOpenSelectedCv"/>
+                        <Button fx:id="openAtsButton" text="Open ATS calculator" styleClass="ghost-button" onAction="#onOpenSelectedAtsDetail"/>
+                    </VBox>
+                </HBox>
+            </HBox>
+
+            <VBox spacing="10" styleClass="job-offer-review-info-card">
+                <Label text="Cover letter" styleClass="job-offer-section-title"/>
+                <TextArea fx:id="messageArea" wrapText="true" editable="false" prefRowCount="8" styleClass="job-offer-readonly-area"/>
+            </VBox>
+
+        </VBox>
+
+        <VBox fx:id="stepFourPane" spacing="16" styleClass="job-offer-surface-card job-offer-review-column" visible="false" managed="false">
+            <HBox alignment="CENTER_LEFT">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="Step 4" styleClass="job-offer-admin-label"/>
+                    <Label text="Decide" styleClass="job-offer-section-title"/>
+                    <Label text="Pick the final status, generate AI feedback if needed, and submit."
+                           styleClass="job-offer-card-meta" wrapText="true"/>
+                </VBox>
+            </HBox>
+
+            <HBox spacing="14">
+                <VBox spacing="5" styleClass="job-offer-review-info-card" HBox.hgrow="ALWAYS">
+                    <Label text="Candidate" styleClass="job-offer-admin-label"/>
+                    <Label fx:id="decisionCandidateLabel" text="No candidate selected" styleClass="job-offer-card-title" wrapText="true"/>
+                </VBox>
+                <VBox spacing="5" styleClass="job-offer-review-info-card" HBox.hgrow="ALWAYS">
+                    <Label text="Offer" styleClass="job-offer-admin-label"/>
+                    <Label fx:id="decisionOfferLabel" text="Pick a candidate in step 2 first." styleClass="job-offer-card-title" wrapText="true"/>
+                </VBox>
+            </HBox>
+
+            <VBox spacing="10" styleClass="job-offer-review-info-card">
+                <Label text="Final status" styleClass="job-offer-section-title"/>
+                <ComboBox fx:id="feedbackDecisionCombo" prefWidth="220" styleClass="job-offer-filter-combo"/>
+            </VBox>
+
+            <VBox spacing="10" styleClass="job-offer-review-info-card">
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="Feedback to candidate" styleClass="job-offer-section-title"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="generateFeedbackButton" text="Generate AI feedback" styleClass="ghost-button" onAction="#onGenerateFeedback"/>
+                </HBox>
+                <Label fx:id="feedbackHelperLabel" text="Step 4 unlocks after you review a selected candidate." styleClass="job-offer-card-meta" wrapText="true"/>
+                <TextArea fx:id="feedbackArea" wrapText="true" prefRowCount="8" styleClass="job-offer-text-area"/>
+            </VBox>
+
+        </VBox>
+
+        <VBox fx:id="donePane" spacing="18" alignment="CENTER_LEFT" styleClass="job-offer-surface-card job-offer-review-column" visible="false" managed="false">
+            <Label text="Done" styleClass="job-offer-admin-label"/>
+            <Label fx:id="doneTitleLabel" text="Decision submitted" styleClass="job-offer-page-title"/>
+            <Label fx:id="doneSummaryLabel" text="Your review has been saved." styleClass="job-offer-body-text" wrapText="true"/>
+            <HBox spacing="10">
+                <Button text="Review Another" styleClass="primary-button" onAction="#onReviewAnother"/>
+                <Button text="Back to Offers" styleClass="ghost-button" onAction="#onDoneBackToOffers"/>
+            </HBox>
+        </VBox>
+    </StackPane>
+    </ScrollPane>
+
+    <HBox fx:id="fixedStepOneActions" spacing="10" alignment="CENTER_RIGHT"
+          styleClass="job-offer-surface-card job-offer-review-fixed-actions">
+        <Button fx:id="nextFromOfferButton" text="Next" styleClass="primary-button" onAction="#onContinueToCandidates"/>
+    </HBox>
+
+    <HBox fx:id="fixedStepTwoActions" spacing="10" alignment="CENTER_RIGHT"
+          styleClass="job-offer-surface-card job-offer-review-fixed-actions"
+          visible="false" managed="false">
+        <Button text="Back" styleClass="ghost-button" onAction="#onBackToOffers"/>
+        <Button fx:id="nextFromCandidateButton" text="Next" styleClass="primary-button" onAction="#onContinueToReview"/>
+    </HBox>
+
+    <HBox fx:id="fixedStepThreeActions" spacing="10" alignment="CENTER_RIGHT"
+          styleClass="job-offer-surface-card job-offer-review-fixed-actions"
+          visible="false" managed="false">
+        <Button text="Back" styleClass="ghost-button" onAction="#onBackToCandidates"/>
+        <Button text="Next" styleClass="primary-button" onAction="#onContinueToDecision"/>
+    </HBox>
+
+    <HBox fx:id="fixedStepFourActions" spacing="10" alignment="CENTER_RIGHT"
+          styleClass="job-offer-surface-card job-offer-review-fixed-actions"
+          visible="false" managed="false">
+        <Button text="Back" styleClass="ghost-button" onAction="#onBackToReview"/>
+        <Button fx:id="submitDecisionButton" text="Submit" styleClass="primary-button" onAction="#onSubmitDecision"/>
+    </HBox>
+</VBox>
