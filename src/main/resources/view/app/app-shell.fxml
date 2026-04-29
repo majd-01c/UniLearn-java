@@ -51,11 +51,6 @@
                         <!-- Evaluation -->
                         <Label text="EVALUATION" styleClass="side-section-label"/>
                         <Button fx:id="navEvaluationButton" text="✎  Evaluation" onAction="#onNavEvaluation" maxWidth="1.7976931348623157E308" styleClass="side-button"/>
-                        <Button fx:id="navEvaluationGradesButton" text="Grades" onAction="#onNavEvaluationGrades" maxWidth="1.7976931348623157E308" styleClass="side-button side-sub-button" visible="false" managed="false"/>
-                        <Button fx:id="navEvaluationRecommendationsButton" text="Recommendations" onAction="#onNavEvaluationRecommendations" maxWidth="1.7976931348623157E308" styleClass="side-button side-sub-button" visible="false" managed="false"/>
-                        <Button fx:id="navEvaluationScheduleButton" text="Schedule" onAction="#onNavEvaluationSchedule" maxWidth="1.7976931348623157E308" styleClass="side-button side-sub-button" visible="false" managed="false"/>
-                        <Button fx:id="navEvaluationComplaintsButton" text="Complaints" onAction="#onNavEvaluationComplaints" maxWidth="1.7976931348623157E308" styleClass="side-button side-sub-button" visible="false" managed="false"/>
-                        <Button fx:id="navEvaluationDocumentsButton" text="Documents" onAction="#onNavEvaluationDocuments" maxWidth="1.7976931348623157E308" styleClass="side-button side-sub-button" visible="false" managed="false"/>
 
                         <!-- Rooms -->
                         <Label text="ROOMS" styleClass="side-section-label"/>

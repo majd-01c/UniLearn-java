@@ -8,11 +8,13 @@ import entities.DocumentRequest;
 import entities.Grade;
 import entities.Reclamation;
 import entities.Schedule;
+import entities.StudentClasse;
 import entities.User;
 import entities.Quiz;
 import entities.Question;
 import entities.Choice;
 import evaluation.AssessmentType;
+import repository.lms.StudentClasseRepository;
 import services.ServiceAssessment;
 import services.ServiceChoice;
 import services.ServiceContenu;
@@ -30,16 +32,36 @@ import service.lms.FileUploadService;
 import security.UserSession;
 
 import java.io.File;
+import service.evaluation.ai.GroqAiService;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
+import org.apache.pdfbox.text.PDFTextStripper;
+
+import java.io.File;
+import java.io.IOException;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class EvaluationService {
@@ -53,21 +75,42 @@ public class EvaluationService {
     private final ServiceContenu contenuService = new ServiceContenu();
     private final ServiceUser userService = new ServiceUser();
     private final ClasseService classeService = new ClasseService();
+<<<<<<< HEAD
     private final ServiceQuiz quizService = new ServiceQuiz();
     private final ServiceQuestion questionService = new ServiceQuestion();
     private final ServiceChoice choiceService = new ServiceChoice();
     private final ContenuService contenuWriteService = new ContenuService();
     private final FileUploadService fileUploadService = new FileUploadService();
     private final AiQuizGenerationService aiQuizGenerationService = new AiQuizGenerationService();
+=======
+    private final StudentClasseRepository studentClasseRepository = new StudentClasseRepository();
+    private final GroqAiService groqAiService = new GroqAiService();
+>>>>>>> 2c8168d08353ec1c98a3f47dfc3d08ce9a82403c
 
     public List<Grade> getGradesByStudent(int studentId) {
-        return gradeService.getALL().stream()
+        List<Grade> rawGrades = gradeService.getALL().stream()
                 .filter(g -> g.getUserByStudentId() != null && g.getUserByStudentId().getId() != null)
                 .filter(g -> g.getUserByStudentId().getId() == studentId)
+                .toList();
+
+        for (Grade g : rawGrades) {
+            if (g.getAssessment() != null && g.getAssessment().getId() != null) {
+                g.setAssessment(getAssessmentById(g.getAssessment().getId()));
+            }
+        }
+
+        return rawGrades.stream()
                 .sorted(Comparator
                         .comparing((Grade g) -> g.getCreatedAt(), Comparator.nullsLast(Comparator.reverseOrder()))
                         .thenComparing(Grade::getId, Comparator.nullsLast(Comparator.reverseOrder())))
                 .collect(Collectors.toList());
+    }
+
+    public Assessment getAssessmentById(int id) {
+        return assessmentService.getALL().stream()
+                .filter(a -> a.getId() != null && a.getId() == id)
+                .findFirst()
+                .orElse(null);
     }
 
     public StudentSummary computeStudentSummary(int studentId) {
@@ -89,6 +132,572 @@ public class EvaluationService {
 
         double average = total == 0 ? 0.0 : sum / total;
         return new StudentSummary(total, passed, failed, average);
+    }
+
+    public Integer resolvePrimaryClassIdForStudent(int studentId) {
+        return studentClasseRepository.findActiveByStudentId(studentId).stream()
+                .filter(sc -> sc.getClasse() != null && sc.getClasse().getId() != null)
+                .sorted(Comparator.comparing(StudentClasse::getEnrolledAt, Comparator.nullsLast(Comparator.reverseOrder())))
+                .map(sc -> sc.getClasse().getId())
+                .findFirst()
+                .orElse(null);
+    }
+
+    public List<String> getCourseNamesForStudent(int studentId) {
+        Set<String> names = new LinkedHashSet<>();
+
+        getGradesByStudent(studentId).stream()
+                .map(grade -> grade.getAssessment() == null || grade.getAssessment().getCourse() == null
+                        ? null
+                        : resolveCourseTitle(grade.getAssessment().getCourse().getId()))
+                .filter(title -> title != null && !title.isBlank())
+                .forEach(names::add);
+
+        studentClasseRepository.findActiveByStudentId(studentId).stream()
+                .map(StudentClasse::getClasse)
+                .filter(classe -> classe != null && classe.getId() != null)
+                .forEach(classe -> getScheduleByClasse(classe.getId()).stream()
+                        .map(schedule -> schedule.getCourse() == null ? null : resolveCourseTitle(schedule.getCourse().getId()))
+                        .filter(title -> title != null && !title.isBlank())
+                        .forEach(names::add));
+
+        if (names.isEmpty()) {
+            courseService.getALL().stream()
+                    .map(Course::getTitle)
+                    .filter(title -> title != null && !title.isBlank())
+                    .forEach(names::add);
+        }
+
+        return names.stream().sorted(String::compareToIgnoreCase).collect(Collectors.toList());
+    }
+
+    public List<String> getTeacherCourseNames(int teacherId) {
+        Set<String> names = new LinkedHashSet<>();
+
+        getAssessmentsByTeacher(teacherId).stream()
+                .map(assessment -> assessment.getCourse() == null ? null : resolveCourseTitle(assessment.getCourse().getId()))
+                .filter(title -> title != null && !title.isBlank())
+                .forEach(names::add);
+
+        getScheduleByTeacher(teacherId).stream()
+                .map(schedule -> schedule.getCourse() == null ? null : resolveCourseTitle(schedule.getCourse().getId()))
+                .filter(title -> title != null && !title.isBlank())
+                .forEach(names::add);
+
+        if (names.isEmpty()) {
+            courseService.getALL().stream()
+                .map(Course::getTitle)
+                .filter(title -> title != null && !title.isBlank())
+                .forEach(names::add);
+        }
+
+        return names.stream().sorted(String::compareToIgnoreCase).collect(Collectors.toList());
+    }
+
+    public List<String> getTeacherClassNames(int teacherId) {
+        Set<String> names = new LinkedHashSet<>();
+
+        getAssessmentsByTeacher(teacherId).stream()
+                .map(assessment -> assessment.getClasse() == null ? null : resolveClasseName(assessment.getClasse().getId()))
+                .filter(name -> name != null && !name.isBlank())
+                .forEach(names::add);
+
+        getScheduleByTeacher(teacherId).stream()
+                .map(schedule -> schedule.getClasse() == null ? null : resolveClasseName(schedule.getClasse().getId()))
+                .filter(name -> name != null && !name.isBlank())
+                .forEach(names::add);
+
+        if (names.isEmpty()) {
+            classeService.listAll().stream()
+                .map(Classe::getName)
+                .filter(name -> name != null && !name.isBlank())
+                .forEach(names::add);
+        }
+
+        return names.stream().sorted(String::compareToIgnoreCase).collect(Collectors.toList());
+    }
+
+    public List<String> getContenuTitles() {
+        return contenuService.getALL().stream()
+                .map(Contenu::getTitle)
+                .filter(title -> title != null && !title.isBlank())
+                .distinct()
+                .sorted(String::compareToIgnoreCase)
+                .collect(Collectors.toList());
+    }
+
+    public List<String> getStudentNamesForTeacher(int teacherId, String classNameFilter) {
+        Set<String> names = new LinkedHashSet<>();
+
+        List<Integer> classIds = new ArrayList<>();
+        if (classNameFilter != null && !classNameFilter.isBlank()) {
+            Integer classId = findClasseIdByName(classNameFilter);
+            if (classId != null) {
+                classIds.add(classId);
+            }
+        } else {
+            getTeacherClassNames(teacherId).forEach(className -> {
+                Integer classId = findClasseIdByName(className);
+                if (classId != null) {
+                    classIds.add(classId);
+                }
+            });
+        }
+
+        classIds.forEach(classId -> studentClasseRepository.findByClasseId(classId).stream()
+                .filter(sc -> sc.getIsActive() == 1)
+                .map(StudentClasse::getUser)
+                .filter(user -> user != null)
+                .map(this::userLabel)
+                .filter(label -> label != null && !label.isBlank())
+                .forEach(names::add));
+
+        if (names.isEmpty()) {
+            gradeService.getALL().stream()
+                    .filter(grade -> grade.getAssessment() != null && grade.getAssessment().getUser() != null)
+                    .filter(grade -> grade.getAssessment().getUser().getId() != null && grade.getAssessment().getUser().getId() == teacherId)
+                    .map(Grade::getUserByStudentId)
+                    .filter(user -> user != null)
+                    .map(this::userLabel)
+                    .filter(label -> label != null && !label.isBlank())
+                    .forEach(names::add);
+        }
+
+        return names.stream().sorted(String::compareToIgnoreCase).collect(Collectors.toList());
+    }
+
+    public String generateAiStudentRecommendations(int studentId) {
+        List<RecommendationRow> rows = buildRecommendations(studentId);
+        StudentSummary summary = computeStudentSummary(studentId);
+        
+        if (!groqAiService.isConfigured()) {
+            return buildLocalStudentRecommendations(summary, rows);
+        }
+
+        StringBuilder prompt = new StringBuilder();
+        prompt.append("Student performance summary:\n");
+        prompt.append("- Total grades: ").append(summary.getTotalGrades()).append("\n");
+        prompt.append("- Passed: ").append(summary.getPassed()).append("\n");
+        prompt.append("- Failed: ").append(summary.getFailed()).append("\n");
+        prompt.append("- Average: ").append(String.format(Locale.ROOT, "%.2f", summary.getAverage())).append("\n\n");
+        prompt.append("Course-level data:\n");
+        for (RecommendationRow row : rows) {
+            prompt.append("- ").append(row.getCourseName())
+                    .append(" | priority=").append(row.getPriority())
+                    .append(" | average=").append(String.format(Locale.ROOT, "%.2f", row.getAverage()))
+                    .append("\n");
+        }
+
+        return groqAiService.ask(
+                "You are an Elite Academic Performance Coach. Create a high-impact, professional Study Roadmap. " +
+                "Group your advice into 3-4 clear, actionable 'Strategic Focus' blocks. Use powerful, professional language. " +
+                "Format each block with a clear heading. Keep it clean and concise.",
+                prompt.toString(),
+                800
+        );
+    }
+
+    public String generateAiTeacherMessageFromStudent(int studentId) {
+        List<RecommendationRow> rows = buildRecommendations(studentId);
+        String studentName = resolveUserDisplayName(studentId);
+        
+        if (!groqAiService.isConfigured()) {
+            return buildLocalTeacherMessage(studentName, studentId, rows);
+        }
+
+        StringBuilder prompt = new StringBuilder();
+        prompt.append("Write a professional and proactive message from a student to their teacher.\n");
+        prompt.append("Student Name: ").append(studentName == null ? ("#" + studentId) : studentName).append("\n");
+        prompt.append("Performance context:\n");
+        for (RecommendationRow row : rows) {
+            prompt.append("- ").append(row.getCourseName())
+                    .append(" | priority=").append(row.getPriority())
+                    .append(" | average=").append(String.format(Locale.ROOT, "%.2f", row.getAverage()))
+                    .append("\n");
+        }
+        prompt.append("Tone: Respectful, ambitious, and solution-oriented. Request specific guidance on these topics.");
+
+        return groqAiService.ask(
+                "You are a professional communication assistant. Write a high-quality email draft from a student to a professor.",
+                prompt.toString(),
+                500
+        );
+    }
+
+    public String generateAiTeacherInsights(int teacherId) {
+        List<Assessment> assessments = getAssessmentsByTeacher(teacherId);
+        if (assessments.isEmpty()) {
+            throw new IllegalArgumentException("No assessments found for this teacher.");
+        }
+
+        List<Integer> assessmentIds = assessments.stream()
+                .map(Assessment::getId)
+                .filter(id -> id != null)
+                .toList();
+
+        Map<String, List<Grade>> byStudent = gradeService.getALL().stream()
+                .filter(grade -> grade.getAssessment() != null && grade.getAssessment().getId() != null)
+                .filter(grade -> assessmentIds.contains(grade.getAssessment().getId()))
+                .filter(grade -> grade.getUserByStudentId() != null)
+                .collect(Collectors.groupingBy(grade -> {
+                    String label = userLabel(grade.getUserByStudentId());
+                    return label == null || label.isBlank() ? "Student" : label;
+                }));
+
+        if (byStudent.isEmpty()) {
+            throw new IllegalArgumentException("No grades found to generate teacher insights.");
+        }
+        
+        if (!groqAiService.isConfigured()) {
+            return buildLocalTeacherInsights(byStudent);
+        }
+
+        StringBuilder prompt = new StringBuilder();
+        prompt.append("Teacher dashboard data:\n");
+        byStudent.forEach((student, grades) -> {
+            double avg = grades.stream().mapToDouble(Grade::getScore).average().orElse(0.0);
+            long lowScores = grades.stream().filter(g -> g.getScore() < 10.0).count();
+            prompt.append("- ").append(student)
+                    .append(" | avg=").append(String.format(Locale.ROOT, "%.2f", avg))
+                    .append(" | low_scores=").append(lowScores)
+                    .append(" | count=").append(grades.size())
+                    .append("\n");
+        });
+        prompt.append("Provide actionable recommendations for the teacher: class-level actions, targeted student support, and next-week priorities.");
+
+        return groqAiService.ask(
+                "You are an Elite Teaching Consultant. Analyze the class performance and provide high-level instructional strategy advice. Group into 'Urgent Interventions' and 'Long-term Growth'.",
+                prompt.toString(),
+                900
+        );
+    }
+
+    public String translatePdfDocument(String documentPath, String targetLanguage) {
+        String text = extractPdfText(documentPath);
+        if (text.isBlank()) {
+            throw new IllegalArgumentException("PDF appears to be empty or not extractable.");
+        }
+        
+        if (!groqAiService.isConfigured()) {
+            return "AI translation is unavailable because GROQ_API_KEY is not configured. "
+                    + "The source text is shown below:\n\n" + clipText(text, 12000);
+        }
+
+        String clipped = text.length() > 12000 ? text.substring(0, 12000) : text;
+        String prompt = "Translate the following PDF text to " + targetLanguage +
+                ". Preserve structure, headings, bullets, and academic terminology when relevant.\n\n" + clipped;
+
+        return groqAiService.ask(
+                "You are a professional academic translator. Keep the translation faithful and clear.",
+                prompt,
+                1200
+        );
+    }
+
+    public void saveTextAsPdf(String text, File outputFile) throws IOException {
+        try (PDDocument document = new PDDocument()) {
+            PDPage page = new PDPage();
+            document.addPage(page);
+
+            try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
+                contentStream.beginText();
+                contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), 12);
+                contentStream.setLeading(14.5f);
+                contentStream.newLineAtOffset(50, 750);
+
+                String[] lines = text.split("\\n");
+                for (String line : lines) {
+                    // Basic character escaping and multi-page logic would go here if text is very long
+                    // For now, we do a basic single-page write
+                    String safeLine = line.replace("\r", "").replace("\t", "    ");
+                    contentStream.showText(safeLine);
+                    contentStream.newLine();
+                }
+                contentStream.endText();
+            }
+            document.save(outputFile);
+        }
+    }
+
+    private String extractPdfText(String documentPath) {
+        if (documentPath == null || documentPath.isBlank()) {
+            throw new IllegalArgumentException("Document path is required.");
+        }
+        if (documentPath.startsWith("http://") || documentPath.startsWith("https://")) {
+            throw new IllegalArgumentException("Remote URLs are not supported for PDF translation. Use a local PDF file path.");
+        }
+
+        try {
+            Path path = Path.of(documentPath.trim());
+            if (!path.isAbsolute()) {
+                path = Path.of(System.getProperty("user.dir")).resolve(path).normalize();
+            }
+            if (!Files.exists(path)) {
+                throw new IllegalArgumentException("PDF file not found: " + path);
+            }
+
+            try (PDDocument document = Loader.loadPDF(path.toFile())) {
+                PDFTextStripper stripper = new PDFTextStripper();
+                return stripper.getText(document);
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to read PDF content: " + e.getMessage(), e);
+        }
+    }
+
+    public String generateStudentTranscriptPdfContent(int studentId) {
+        StringBuilder content = new StringBuilder();
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH);
+        DecimalFormat scoreFormat = new DecimalFormat("00.00");
+
+        User student = userService.getById(studentId);
+        if (student == null) {
+            return "ERROR: Student identity not found in database.";
+        }
+
+        content.append("************************************************************************\n");
+        content.append("                       UniLearn UNIVERSITY GROUP\n");
+        content.append("                  OFFICIAL ACADEMIC TRANSCRIPT OF RECORDS\n");
+        content.append("************************************************************************\n\n");
+
+        content.append(String.format("STUDENT IDENTIFICATION\n"));
+        content.append(String.format("Full Name: %-30s | Student ID: %d\n", resolveUserDisplayName(studentId), studentId));
+        content.append(String.format("Email: %-34s | Academic Year: 2023-2024\n", student.getEmail()));
+        
+        Integer primaryClassId = resolvePrimaryClassIdForStudent(studentId);
+        if (primaryClassId != null) {
+            content.append(String.format("Assigned Class: %-27s | Status: ACTIVE\n", resolveClasseName(primaryClassId)));
+        }
+        content.append("\n------------------------------------------------------------------------\n");
+        content.append(String.format("%-40s | %-10s | %-10s\n", "COURSE TITLE", "RESULT", "STATUS"));
+        content.append("------------------------------------------------------------------------\n");
+
+        List<Grade> grades = getGradesByStudent(studentId);
+        if (grades.isEmpty()) {
+            content.append("\n[ No academic records currently available for this student profile ]\n\n");
+        } else {
+            for (Grade grade : grades) {
+                String courseTitle = (grade.getAssessment() != null && grade.getAssessment().getCourse() != null)
+                        ? resolveCourseTitle(grade.getAssessment().getCourse().getId()) : "N/A";
+                String status = grade.getScore() >= 10.0 ? "VALIDATED" : "RETAKE";
+
+                content.append(String.format("%-40s | %-10s | %-10s\n", 
+                        clipText(courseTitle, 38), 
+                        scoreFormat.format(grade.getScore()) + "/20", 
+                        status));
+            }
+            content.append("------------------------------------------------------------------------\n\n");
+
+            StudentSummary summary = computeStudentSummary(studentId);
+            content.append("PERFORMANCE SUMMARY\n");
+            content.append(String.format("Total Courses Evaluated: %d\n", summary.getTotalGrades()));
+            content.append(String.format("Passed Credits: %d\n", summary.getPassed()));
+            content.append(String.format("Failed / To Retake: %d\n", summary.getFailed()));
+            content.append(String.format("General Grade Point Average (GPA): %s / 20.00\n", scoreFormat.format(summary.getAverage())));
+            content.append("\n");
+        }
+
+        content.append("************************************************************************\n");
+        content.append("OFFICIAL VERIFICATION\n");
+        content.append("Generated on: ").append(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))).append("\n");
+        content.append("Digital Signature: UniLearn_ADMIN_VERIFIED_").append(System.currentTimeMillis()).append("\n");
+        content.append("This document is a certified copy of the student's academic standing.\n");
+        content.append("************************************************************************\n");
+
+        return content.toString();
+    }
+
+    public String generateSchedulePdfContent(List<Schedule> schedules, String title) {
+        StringBuilder content = new StringBuilder();
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        content.append("************************************************************************\n");
+        content.append("                       UniLearn UNIVERSITY GROUP\n");
+        content.append("                      ").append(title.toUpperCase()).append("\n");
+        content.append("************************************************************************\n\n");
+
+        if (schedules == null || schedules.isEmpty()) {
+            content.append("\n[ No schedule entries found for the selected period ]\n\n");
+        } else {
+            Map<String, List<Schedule>> schedulesByDay = new LinkedHashMap<>();
+            String[] daysOrder = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+            for (String d : daysOrder) {
+                schedulesByDay.put(d, new ArrayList<>());
+            }
+
+            for (Schedule s : schedules) {
+                String day = s.getDayOfWeek();
+                if (day != null) {
+                    String normalizedDay = day.substring(0, 1).toUpperCase() + day.substring(1).toLowerCase();
+                    if (schedulesByDay.containsKey(normalizedDay)) {
+                        schedulesByDay.get(normalizedDay).add(s);
+                    }
+                }
+            }
+
+            for (Map.Entry<String, List<Schedule>> entry : schedulesByDay.entrySet()) {
+                if (entry.getValue().isEmpty()) continue;
+
+                content.append("========================================================================\n");
+                content.append(String.format("                         %s\n", entry.getKey().toUpperCase()));
+                content.append("========================================================================\n");
+                content.append(String.format("%-12s | %-30s | %-25s\n", "TIME", "COURSE", "ROOM"));
+                content.append("------------------------------------------------------------------------\n");
+
+                entry.getValue().sort(Comparator.comparing(Schedule::getStartTime));
+                for (Schedule s : entry.getValue()) {
+                    String course = s.getCourse() == null ? "N/A" : resolveCourseTitle(s.getCourse().getId());
+                    String classe = s.getClasse() == null ? "N/A" : resolveClasseName(s.getClasse().getId());
+                    String teacher = s.getUser() == null ? "N/A" : resolveUserDisplayName(s.getUser().getId());
+                    String startTime = s.getStartTime() != null ? s.getStartTime().toLocalTime().format(timeFormatter) : "--:--";
+                    String endTime = s.getEndTime() != null ? s.getEndTime().toLocalTime().format(timeFormatter) : "--:--";
+                    String room = safe(s.getRoom());
+
+                    content.append(String.format("%-12s | %-30s | %-25s\n", 
+                            startTime + "-" + endTime,
+                            clipText(course + " (" + classe + ")", 28),
+                            clipText(room + " - " + teacher, 23)));
+                }
+                content.append("------------------------------------------------------------------------\n\n");
+            }
+        }
+
+        content.append("************************************************************************\n");
+        content.append("Generated by UniLearn Academic System - Admin Certified\n");
+        content.append("Digital Signature ID: ").append(System.currentTimeMillis()).append("_SCHEDULE\n");
+        content.append("************************************************************************\n");
+
+        return content.toString();
+    }
+
+    public void downloadStudentTranscript(int studentId, File file) throws IOException {
+        String content = generateStudentTranscriptPdfContent(studentId);
+        saveTextAsPdf(content, file);
+    }
+
+    public void downloadAcademicSchedule(File file) throws IOException {
+        String content = generateSchedulePdfContent(getAllSchedules(), "Official University Schedule");
+        saveTextAsPdf(content, file);
+    }
+
+    public void downloadTeacherSchedule(int teacherId, File file) throws IOException {
+        String teacherName = resolveUserDisplayName(teacherId);
+        String content = generateSchedulePdfContent(getScheduleByTeacher(teacherId), "Personal Schedule: Prof. " + teacherName);
+        saveTextAsPdf(content, file);
+    }
+
+    public void downloadStudentSchedule(int studentId, File file) throws IOException {
+        Integer classId = resolvePrimaryClassIdForStudent(studentId);
+        String studentName = resolveUserDisplayName(studentId);
+        if (classId == null) throw new IOException("No primary class found for student ID: " + studentId);
+        String content = generateSchedulePdfContent(getScheduleByClasse(classId), "Student Schedule: " + studentName);
+        saveTextAsPdf(content, file);
+    }
+
+    private String buildLocalStudentRecommendations(StudentSummary summary, List<RecommendationRow> rows) {
+        StringBuilder result = new StringBuilder();
+        result.append("STRATEGIC ACADEMIC ROADMAP\n\n");
+        result.append("Performance Baseline:\n");
+        result.append("• Overall Average: ").append(String.format(Locale.ROOT, "%.2f", summary.getAverage())).append("\n");
+        result.append("• Track Record: ").append(summary.getPassed()).append(" Successes / ").append(summary.getFailed()).append(" Challenges\n\n");
+
+        if (rows.isEmpty()) {
+            result.append("Current Focus: Foundational Assessment\n");
+            result.append("Your performance profile is initializing. Complete upcoming assessments to unlock strategic insights.\n");
+            return result.toString();
+        }
+
+        result.append("KEY STRATEGIC OBJECTIVES:\n");
+        for (RecommendationRow row : rows) {
+            result.append("• [").append(row.getPriority()).append("] ").append(row.getCourseName().toUpperCase())
+                  .append(": ").append(row.getAction()).append("\n");
+        }
+
+        return result.toString();
+    }
+
+    private String buildLocalTeacherMessage(String studentName, int studentId, List<RecommendationRow> rows) {
+        StringBuilder result = new StringBuilder();
+        result.append("Dear Professor,\n\n");
+        result.append("I am reaching out to discuss my current performance and proactive steps for improvement. ");
+        result.append("Based on my recent metrics, I have identified specific areas where your guidance would be invaluable:\n\n");
+
+        if (rows.isEmpty()) {
+            result.append("- Strategic study methodologies and performance optimization.\n");
+        } else {
+            for (RecommendationRow row : rows) {
+                result.append("- ").append(row.getCourseName()).append(": Optimization of '").append(row.getAction()).append("'.\n");
+            }
+        }
+
+        result.append("\nI am committed to achieving academic excellence and appreciate your support.\n\nBest regards,\n").append(studentName != null ? studentName : "Student");
+        return result.toString();
+    }
+
+    private String buildLocalTeacherInsights(Map<String, List<Grade>> byStudent) {
+        StringBuilder result = new StringBuilder();
+        result.append("### CLASS PERFORMANCE INSIGHTS\n\n");
+        result.append("Academic Metrics:\n");
+
+        byStudent.forEach((student, grades) -> {
+            double average = grades.stream().mapToDouble(Grade::getScore).average().orElse(0.0);
+            long lowScores = grades.stream().filter(grade -> grade.getScore() < 10.0).count();
+            result.append("• ").append(student)
+                    .append(" | score_avg=").append(String.format(Locale.ROOT, "%.2f", average))
+                    .append(" | risk_level=").append(lowScores > 0 ? "HIGH" : "LOW")
+                    .append("\n");
+        });
+
+        result.append("\nINSTRUCTIONAL PRIORITIES:\n");
+        result.append("1. Intervention: Targeted support for students flagged with high risk levels.\n");
+        result.append("2. Pedagogy: Refinement of modules with average scores below institutional baselines.\n");
+        return result.toString();
+    }
+
+    private String clipText(String text, int maxLength) {
+        if (text == null) {
+            return "";
+        }
+        if (text.length() <= maxLength) {
+            return text;
+        }
+        return text.substring(0, maxLength - 3) + "...";
+    }
+
+    private String buildYoutubeSearchUrl(String topic) {
+        return "https://www.youtube.com/results?search_query=" + encodeQuery(topic + " tutorial exercises");
+    }
+
+    private String buildUdemySearchUrl(String topic) {
+        return "https://www.udemy.com/courses/search/?q=" + encodeQuery(topic);
+    }
+
+    private String buildCourseraSearchUrl(String topic) {
+        return "https://www.coursera.org/search?query=" + encodeQuery(topic);
+    }
+
+    private String encodeQuery(String value) {
+        return URLEncoder.encode(value == null ? "" : value, StandardCharsets.UTF_8);
+    }
+
+    private String userLabel(User user) {
+        if (user == null) {
+            return null;
+        }
+        String name = user.getName();
+        if (name != null && !name.isBlank()) {
+            return name.trim();
+        }
+        String email = user.getEmail();
+        if (email != null && !email.isBlank()) {
+            return email.trim();
+        }
+        return user.getId() == null ? null : ("User #" + user.getId());
+    }
+
+    private String safe(String value) {
+        return value == null || value.isBlank() ? "-" : value;
     }
 
     public List<RecommendationRow> buildRecommendations(int studentId) {
@@ -115,13 +724,13 @@ public class EvaluationService {
             String action;
             if (avg < 8.0) {
                 priority = "HIGH";
-                action = "Urgent remediation and teacher follow-up";
+                action = "Intensive remediation";
             } else if (avg < 10.0) {
                 priority = "MEDIUM";
-                action = "Focused revision and weekly practice";
+                action = "Focused academic review";
             } else {
                 priority = "LOW";
-                action = "Keep momentum and deepen understanding";
+                action = "Performance maintenance";
             }
             rows.add(new RecommendationRow(entry.getKey(), priority, action, avg));
         }
@@ -130,6 +739,33 @@ public class EvaluationService {
             .thenComparing(RecommendationRow::getAverage)
             .thenComparing(RecommendationRow::getCourseName));
         return rows;
+    }
+
+    public List<LearningResourceRow> buildLearningResources(int studentId) {
+        List<RecommendationRow> recommendations = buildRecommendations(studentId);
+        List<LearningResourceRow> resources = new ArrayList<>();
+
+        for (RecommendationRow recommendation : recommendations) {
+            String topic = recommendation.getCourseName() == null || recommendation.getCourseName().isBlank()
+                    ? "study skills"
+                    : recommendation.getCourseName().trim();
+            String guidance = switch (recommendation.getPriority().toUpperCase(Locale.ROOT)) {
+                case "HIGH" -> "Review foundational concepts using introductory guides.";
+                case "MEDIUM" -> "Strengthen understanding with intermediate exercise sets.";
+                default -> "Maintain excellence by exploring advanced applications.";
+            };
+
+            resources.add(new LearningResourceRow(
+                    topic,
+                    recommendation.getPriority(),
+                    guidance,
+                    buildYoutubeSearchUrl(topic),
+                    buildUdemySearchUrl(topic),
+                    buildCourseraSearchUrl(topic)
+            ));
+        }
+
+        return resources;
     }
 
     public List<Schedule> getScheduleByClasse(int classeId) {
@@ -161,7 +797,7 @@ public class EvaluationService {
                 .sorted(Comparator
                         .comparing((Reclamation r) -> statusWeight(r.getStatus()))
                         .thenComparing(Reclamation::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder()))
-                        .thenComparing(Reclamation::getId, Comparator.nullsLast(Comparator.reverseOrder())))
+                        .thenComparing(Reclamation::getId, Comparator.nullsLast(Integer::compareTo)))
                 .collect(Collectors.toList());
     }
 
@@ -170,7 +806,7 @@ public class EvaluationService {
                 .sorted(Comparator
                         .comparing((Reclamation r) -> statusWeight(r.getStatus()))
                         .thenComparing(Reclamation::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder()))
-                        .thenComparing(Reclamation::getId, Comparator.nullsLast(Comparator.reverseOrder())))
+                        .thenComparing(Reclamation::getId, Comparator.nullsLast(Integer::compareTo)))
                 .collect(Collectors.toList());
     }
 
@@ -319,7 +955,7 @@ public class EvaluationService {
                 .sorted(Comparator
                         .comparing((DocumentRequest d) -> statusWeight(d.getStatus()))
                         .thenComparing(DocumentRequest::getRequestedAt, Comparator.nullsLast(Comparator.reverseOrder()))
-                        .thenComparing(DocumentRequest::getId, Comparator.nullsLast(Comparator.reverseOrder())))
+                        .thenComparing(DocumentRequest::getId, Comparator.nullsLast(Integer::compareTo)))
                 .collect(Collectors.toList());
     }
 
@@ -328,7 +964,7 @@ public class EvaluationService {
                 .sorted(Comparator
                         .comparing((DocumentRequest d) -> statusWeight(d.getStatus()))
                         .thenComparing(DocumentRequest::getRequestedAt, Comparator.nullsLast(Comparator.reverseOrder()))
-                        .thenComparing(DocumentRequest::getId, Comparator.nullsLast(Comparator.reverseOrder())))
+                        .thenComparing(DocumentRequest::getId, Comparator.nullsLast(Integer::compareTo)))
                 .collect(Collectors.toList());
     }
 
@@ -365,7 +1001,7 @@ public class EvaluationService {
                 .filter(a -> a.getUser().getId() == teacherId)
                 .sorted(Comparator
                         .comparing(Assessment::getDate, Comparator.nullsLast(Comparator.reverseOrder()))
-                        .thenComparing(Assessment::getId, Comparator.nullsLast(Comparator.reverseOrder())))
+                        .thenComparing(Assessment::getId, Comparator.nullsLast(Integer::compareTo)))
                 .collect(Collectors.toList());
     }
 
@@ -763,6 +1399,7 @@ public class EvaluationService {
         }
     }
 
+<<<<<<< HEAD
     public static class CreatedQuizResult {
         private final Integer contenuId;
         private final Integer quizId;
@@ -790,6 +1427,47 @@ public class EvaluationService {
 
         public String getTitle() {
             return title;
+=======
+    public static class LearningResourceRow {
+        private final String courseName;
+        private final String priority;
+        private final String guidance;
+        private final String youtubeUrl;
+        private final String udemyUrl;
+        private final String courseraUrl;
+
+        public LearningResourceRow(String courseName, String priority, String guidance, String youtubeUrl, String udemyUrl, String courseraUrl) {
+            this.courseName = courseName;
+            this.priority = priority;
+            this.guidance = guidance;
+            this.youtubeUrl = youtubeUrl;
+            this.udemyUrl = udemyUrl;
+            this.courseraUrl = courseraUrl;
+        }
+
+        public String getCourseName() {
+            return courseName;
+        }
+
+        public String getPriority() {
+            return priority;
+        }
+
+        public String getGuidance() {
+            return guidance;
+        }
+
+        public String getYoutubeUrl() {
+            return youtubeUrl;
+        }
+
+        public String getUdemyUrl() {
+            return udemyUrl;
+        }
+
+        public String getCourseraUrl() {
+            return courseraUrl;
+>>>>>>> 2c8168d08353ec1c98a3f47dfc3d08ce9a82403c
         }
     }
 }

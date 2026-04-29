@@ -67,7 +67,7 @@
 
 .eval-student-hero {
     background-color: #ffffff;
-    -fx-background-color: linear-gradient(from 0% 0% to 100% 0%, #ffffff, #f4f8ff);    border-color: #d8e5fc;
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 0%, #ffffff, #f4f8ff);
     -fx-border-color: #d8e5fc;
     border-width: 1px;
     -fx-border-width: 1;
@@ -115,7 +115,8 @@
 
 .eval-primary-btn {
     background-color: #1f6ed6;
--fx-background-color: linear-gradient(from 0% 0% to 0% 100%, #2a78de, #1e65c7);    -fx-text-fill: white;
+    -fx-background-color: linear-gradient(from 0% 0% to 0% 100%, #2a78de, #1e65c7);
+    -fx-text-fill: white;
     font-weight: 700;
     -fx-font-weight: 700;
     -fx-background-radius: 10;
@@ -162,15 +163,16 @@
     -fx-font-size: 17px;
 }
 
+/* Success message (Green) */
 .eval-feedback {
-    -fx-text-fill: #114e2f;
-    font-size: 12px;
-    -fx-font-size: 12px;
-    background-color: #e8f8ee;
-    -fx-background-color: #e8f8ee;
-    -fx-background-radius: 8;
-    padding: 4px 8px;
-    -fx-padding: 4 8;
+    -fx-text-fill: #10b981;
+    -fx-font-weight: bold;
+}
+
+/* Error message (Red) */
+.eval-feedback-error {
+    -fx-text-fill: #ef4444;
+    -fx-font-weight: bold;
 }
 
 .eval-root .table-view,
@@ -252,6 +254,131 @@
     border-radius: 0 0 12px 12px;
     -fx-border-radius: 0 0 12 12;
     -fx-background-radius: 0 0 12 12;
+}
+
+.eval-recommendations-panel {
+    background-color: #08121f;
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #08121f 0%, #0e1728 55%, #131d31 100%);
+    border-color: #22314a;
+    -fx-border-color: #22314a;
+    -fx-background-radius: 18;
+    -fx-border-radius: 18;
+    -fx-effect: dropshadow(gaussian, rgba(3, 11, 24, 0.45), 30, 0.25, 0, 10);
+}
+
+.eval-recommendations-hero {
+    background-color: rgba(255, 255, 255, 0.03);
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 0%, rgba(42, 120, 222, 0.22), rgba(24, 166, 215, 0.12));
+    border-color: rgba(111, 198, 255, 0.18);
+    -fx-border-color: rgba(111, 198, 255, 0.18);
+    border-radius: 16px;
+    -fx-border-radius: 16;
+    -fx-background-radius: 16;
+    padding: 14px;
+    -fx-padding: 14;
+}
+
+.eval-reco-textarea {
+    background-color: rgba(8, 18, 31, 0.88);
+    -fx-background-color: rgba(8, 18, 31, 0.88);
+    border-color: rgba(103, 157, 255, 0.28);
+    -fx-border-color: rgba(103, 157, 255, 0.28);
+    border-radius: 14px;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-text-fill: #eaf2ff;
+    -fx-prompt-text-fill: #90a8ca;
+    -fx-font-family: "Segoe UI", "system-ui";
+    -fx-font-size: 13px;
+}
+
+.eval-reco-textarea .content {
+    -fx-background-color: transparent;
+}
+
+.eval-resource-card {
+    background-color: rgba(13, 23, 38, 0.95);
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, rgba(16, 29, 48, 0.98), rgba(11, 20, 34, 0.98));
+    border-color: rgba(96, 128, 184, 0.26);
+    -fx-border-color: rgba(96, 128, 184, 0.26);
+    border-width: 1px;
+    -fx-border-width: 1;
+    border-radius: 16px;
+    -fx-border-radius: 16;
+    -fx-background-radius: 16;
+    padding: 14px;
+    -fx-padding: 14;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.28), 14, 0.2, 0, 5);
+}
+
+.eval-resource-title {
+    -fx-text-fill: #f3f7ff;
+    font-size: 15px;
+    -fx-font-size: 15px;
+    font-weight: 800;
+    -fx-font-weight: 800;
+}
+
+.eval-resource-badge {
+    background-color: #19c37d;
+    -fx-background-color: #19c37d;
+    -fx-text-fill: #06121f;
+    -fx-background-radius: 999;
+    padding: 3px 10px;
+    -fx-padding: 3 10;
+    font-size: 11px;
+    -fx-font-size: 11px;
+    font-weight: 800;
+    -fx-font-weight: 800;
+}
+
+.eval-resource-text {
+    -fx-text-fill: #d0d9ea;
+    font-size: 12px;
+    -fx-font-size: 12px;
+}
+
+.eval-resource-links {
+    -fx-padding: 2 0 0 0;
+}
+
+.eval-link-btn {
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-padding: 7 14;
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-font-family: "Segoe UI";
+}
+
+.eval-link-youtube {
+    -fx-background-color: linear-gradient(to bottom, #ff5f6d, #f44336);
+    -fx-text-fill: white;
+}
+
+.eval-link-udemy {
+    -fx-background-color: linear-gradient(to bottom, #ffb74d, #fb8c00);
+    -fx-text-fill: white;
+}
+
+.eval-link-coursera {
+    -fx-background-color: linear-gradient(to bottom, #55c2ff, #2f80ed);
+    -fx-text-fill: white;
+}
+
+.eval-link-btn:hover {
+    -fx-opacity: 0.92;
+    -fx-effect: dropshadow(gaussian, rgba(39, 114, 255, 0.22), 12, 0.2, 0, 2);
+}
+
+.eval-recommendations-panel .eval-section-label,
+.eval-recommendations-panel .eval-page-subtitle {
+    -fx-text-fill: #d7e3f8;
+}
+
+.eval-recommendations-panel .eval-card-title,
+.eval-recommendations-panel .eval-section-label {
+    -fx-text-fill: #f4f8ff;
 }
 
 .eval-section-menu {
@@ -384,376 +511,39 @@
     -fx-font-weight: 700;
 }
 
-/* Evaluation cards - extends existing styles */
-.eval-card {
-    -fx-background-color: #ffffff;
-    -fx-background-radius: 12;
-    -fx-padding: 16;
-    -fx-effect: dropshadow(gaussian, rgba(10,34,56,0.08), 12, 0.25, 0, 4);
-}
-
-.eval-card:hover {
-    -fx-scale-x: 1.02;
-    -fx-scale-y: 1.02;
-    -fx-effect: dropshadow(gaussian, rgba(29,111,165,0.2), 16, 0.3, 0, 6);
-}
-
-.eval-status-badge {
-    -fx-background-radius: 20;
-    -fx-padding: 4 12;
-    -fx-font-size: 11;
-    -fx-font-weight: 700;
-}
-
-.status-pending {
-    -fx-background-color: #fff3cd;
-    -fx-text-fill: #856404;
-}
-
-.status-approved {
-    -fx-background-color: #d4f5e9;
-    -fx-text-fill: #1a7f4f;
-}
-
-.status-rejected {
-    -fx-background-color: #f8d7da;
-    -fx-text-fill: #721c24;
-}
-
-/* === PDF DROP ZONE === */
-.eval-pdf-dropzone {
-    -fx-border-color: #667eea;
-    -fx-border-width: 2;
-    -fx-border-style: dashed;
-    -fx-border-radius: 10;
-    -fx-background-color: #f0f4ff;
-    -fx-background-radius: 10;
-    -fx-padding: 16;
-}
-
-.eval-pdf-dropzone:hover {
-    -fx-background-color: #e0e9ff;
-}
-
-.eval-pdf-drop-label {
-    -fx-font-size: 14;
-    -fx-text-fill: #667eea;
-    -fx-font-weight: bold;
-}
-
-/* === STATUS COMBOBOX === */
-.eval-status-combo .list-cell {
-    -fx-padding: 6 12;
-}
-
-/* === KPI COLORS === */
-.eval-kpi-total  { -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #667eea, #764ba2); }
-.eval-kpi-passed { -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #43e97b, #38f9d7); }
-.eval-kpi-failed { -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #f5576c, #f093fb); }
-.eval-kpi-avg    { -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #4facfe, #00f2fe); }
-.eval-kpi-card .eval-kpi-label    { -fx-text-fill: white; -fx-font-size: 11; }
-.eval-kpi-card .eval-summary-value { -fx-text-fill: white; -fx-font-size: 26; -fx-font-weight: bold; }
-
-/* === TAB BAR === */
-.eval-tab-bar { -fx-padding: 4 0; }
-.eval-tab-btn {
-    -fx-background-color: #f0f0f0;
-    -fx-background-radius: 20;
-    -fx-padding: 6 16;
-    -fx-font-size: 12;
-}
-.eval-tab-active {
-    -fx-background-color: #667eea;
-    -fx-text-fill: white;
-}
-
-/* === FORM CARD === */
-.eval-form-card {
-    -fx-background-color: #f8f9ff;
-    -fx-background-radius: 12;
-    -fx-padding: 14;
-    -fx-border-color: #e0e4f0;
-    -fx-border-radius: 12;
-    -fx-border-width: 1;
-}
-.eval-section-label {
-    -fx-font-size: 13;
-    -fx-font-weight: bold;
-    -fx-text-fill: #4a4a8a;
-}
-
-/* === DANGER BTN === */
-.eval-danger-btn {
-    -fx-background-color: #f5576c;
-    -fx-text-fill: white;
-    -fx-background-radius: 20;
-    -fx-padding: 7 16;
-}
-.eval-danger-btn:hover { -fx-background-color: #d9455a; }
-
-/* === GHOST BTN === */
-.eval-ghost-btn {
-    -fx-background-color: transparent;
-    -fx-border-color: #667eea;
-    -fx-border-radius: 20;
-    -fx-border-width: 1;
-    -fx-text-fill: #667eea;
-    -fx-padding: 7 16;
-}
-.eval-ghost-btn:hover { -fx-background-color: #f0f4ff; }
-
-/* === POLISHED TABS (Teacher/Admin) === */
-.eval-tabpane {
-    -fx-background-color: transparent;
-    -fx-tab-min-height: 36;
-}
-
-.eval-tabpane .tab-header-area {
-    -fx-padding: 0 0 8 0;
-}
-
-.eval-tabpane .tab-header-area .tab-header-background {
-    -fx-background-color: transparent;
-}
-
-.eval-tabpane .headers-region {
-    -fx-background-color: #e9f1ff;
-    -fx-background-radius: 12;
-    -fx-padding: 4;
-}
-
-.eval-tabpane .tab {
-    -fx-background-color: transparent;
-    -fx-background-insets: 0;
-    -fx-background-radius: 10;
-    -fx-border-color: transparent;
-    -fx-padding: 7 14;
-}
-
-.eval-tabpane .tab:hover {
-    -fx-background-color: #dbe8ff;
-}
-
-.eval-tabpane .tab:selected {
-    -fx-background-color: linear-gradient(to bottom, #2f80ed, #1d63c6);
-    -fx-effect: dropshadow(gaussian, rgba(21,74,147,0.25), 10, 0.25, 0, 2);
-}
-
-.eval-tabpane .tab .tab-label {
-    -fx-text-fill: #1f3f67;
-    -fx-font-size: 12px;
-    -fx-font-weight: 700;
-}
-
-.eval-tabpane .tab:selected .tab-label {
+.eval-root .tab-pane .tab:selected .tab-label,
+.eval-shell-root .tab-pane .tab:selected .tab-label {
     -fx-text-fill: #ffffff;
 }
 
-.eval-tabpane .tab-content-area {
-    -fx-background-color: #ffffff;
-    -fx-background-radius: 12;
-    -fx-border-color: #d5e3fb;
-    -fx-border-radius: 12;
+/* NAVIGATION BAR STYLES */
+.eval-nav-bar {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 0%, #09172a, #10213a, #0f1e34);
+    -fx-border-color: #244064;
     -fx-border-width: 1;
-    -fx-padding: 2;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-padding: 10 12;
+    -fx-spacing: 8;
 }
 
-/* === STUDENT MENU BUTTON / DROPDOWN === */
-.eval-root .menu-button.eval-tab-btn {
-    -fx-background-color: linear-gradient(to bottom, #f7fbff, #e9f2ff);
-    -fx-background-radius: 22;
-    -fx-border-color: #c6d9fb;
-    -fx-border-radius: 22;
+.eval-nav-btn {
+    -fx-background-color: rgba(143, 182, 246, 0.14);
+    -fx-border-color: rgba(120, 167, 240, 0.32);
     -fx-border-width: 1;
-    -fx-padding: 6 14;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-text-fill: #d7e9ff;
     -fx-font-size: 12px;
     -fx-font-weight: 700;
-    -fx-text-fill: #1f4774;
+    -fx-padding: 8 16;
 }
 
-.eval-root .menu-button.eval-tab-btn:hover {
-    -fx-background-color: linear-gradient(to bottom, #ecf5ff, #dcecff);
-    -fx-border-color: #9ebff4;
+.eval-nav-btn:hover {
+    -fx-background-color: rgba(120, 175, 255, 0.24);
 }
 
-.eval-root .menu-button.eval-tab-btn:showing {
-    -fx-background-color: linear-gradient(to bottom, #2f80ed, #1d63c6);
-    -fx-border-color: #1f5db4;
-    -fx-text-fill: #ffffff;
-}
-
-.eval-root .menu-button.eval-tab-btn > .arrow-button {
-    -fx-background-color: transparent;
-    -fx-padding: 0 2 0 8;
-}
-
-.eval-root .menu-button.eval-tab-btn > .arrow-button > .arrow {
-    -fx-background-color: #466ea0;
-}
-
-.eval-root .menu-button.eval-tab-btn:showing > .arrow-button > .arrow {
-    -fx-background-color: #ffffff;
-}
-
-.eval-root .context-menu {
-    -fx-background-color: #ffffff;
-    -fx-background-radius: 10;
-    -fx-border-color: #cfe0fd;
-    -fx-border-radius: 10;
-    -fx-border-width: 1;
-    -fx-padding: 6;
-}
-
-.eval-root .context-menu .menu-item {
-    -fx-background-radius: 8;
-    -fx-padding: 7 12;
-}
-
-.eval-root .context-menu .menu-item .label {
-    -fx-text-fill: #284b78;
-    -fx-font-size: 12px;
-    -fx-font-weight: 700;
-}
-
-.eval-root .context-menu .menu-item:focused {
-    -fx-background-color: linear-gradient(to right, #2f80ed, #1d63c6);
-}
-
-.eval-root .context-menu .menu-item:focused .label {
-    -fx-text-fill: #ffffff;
-}
-
-/* === COMBOBOX THEME (DOCUMENT TYPE + OTHERS) === */
-.eval-root .combo-box {
-    -fx-background-color: #ffffff;
-    -fx-background-radius: 16;
-    -fx-border-color: #bcd1f6;
-    -fx-border-radius: 16;
-    -fx-border-width: 1;
-    -fx-padding: 2 8;
-}
-
-.eval-root .combo-box:hover {
-    -fx-border-color: #91b2ec;
-}
-
-.eval-root .combo-box:focused,
-.eval-root .combo-box:showing {
-    -fx-border-color: #2f80ed;
-    -fx-border-width: 1.5;
-    -fx-effect: dropshadow(gaussian, rgba(47,128,237,0.18), 8, 0.2, 0, 1);
-}
-
-.eval-root .combo-box .list-cell {
-    -fx-text-fill: #1f4774;
-    -fx-font-size: 12px;
-    -fx-font-weight: 700;
-}
-
-.eval-root .combo-box .arrow-button {
-    -fx-background-color: transparent;
-}
-
-.eval-root .combo-box .arrow {
-    -fx-background-color: #4e73a5;
-}
-
-/* Stronger overrides to beat generic .eval-root .tab-pane rules */
-.eval-root .tab-pane.eval-tabpane .tab-header-area .tab-header-background {
-    -fx-background-color: transparent;
-}
-
-.eval-root .tab-pane.eval-tabpane .headers-region {
-    -fx-background-color: #e9f1ff;
-    -fx-background-radius: 12;
-    -fx-padding: 4;
-}
-
-.eval-root .tab-pane.eval-tabpane .tab {
-    -fx-background-color: transparent;
-    -fx-background-insets: 0;
-    -fx-background-radius: 10;
-    -fx-border-color: transparent;
-    -fx-padding: 7 14;
-}
-
-.eval-root .tab-pane.eval-tabpane .tab:hover {
-    -fx-background-color: #dbe8ff;
-}
-
-.eval-root .tab-pane.eval-tabpane .tab:selected {
-    -fx-background-color: linear-gradient(to bottom, #2f80ed, #1d63c6);
-    -fx-effect: dropshadow(gaussian, rgba(21,74,147,0.25), 10, 0.25, 0, 2);
-}
-
-.eval-root .tab-pane.eval-tabpane .tab .tab-label {
-    -fx-text-fill: #1f3f67;
-    -fx-font-size: 12px;
-    -fx-font-weight: 700;
-}
-
-.eval-root .tab-pane.eval-tabpane .tab:selected .tab-label {
-    -fx-text-fill: #ffffff;
-}
-
-.eval-root .tab-pane.eval-tabpane .tab-content-area {
-    -fx-background-color: #ffffff;
-    -fx-background-radius: 12;
-    -fx-border-color: #d5e3fb;
-    -fx-border-radius: 12;
-    -fx-border-width: 1;
-    -fx-padding: 2;
-}
-
-/* Popup is not a child of .eval-root, so style it globally */
-.context-menu {
-    -fx-background-color: #ffffff;
-    -fx-background-radius: 10;
-    -fx-border-color: #cfe0fd;
-    -fx-border-radius: 10;
-    -fx-border-width: 1;
-    -fx-padding: 6;
-}
-
-.context-menu .menu-item {
-    -fx-background-radius: 8;
-    -fx-padding: 7 12;
-}
-
-.context-menu .menu-item .label {
-    -fx-text-fill: #284b78;
-    -fx-font-size: 12px;
-    -fx-font-weight: 700;
-}
-
-.context-menu .menu-item:focused {
-    -fx-background-color: linear-gradient(to right, #2f80ed, #1d63c6);
-}
-
-.context-menu .menu-item:focused .label {
-    -fx-text-fill: #ffffff;
-}
-
-/* Better dropdown list for combobox popup */
-.combo-box-popup .list-view {
-    -fx-background-color: #ffffff;
-    -fx-border-color: #cfe0fd;
-    -fx-border-radius: 10;
-    -fx-background-radius: 10;
-}
-
-.combo-box-popup .list-cell {
-    -fx-text-fill: #284b78;
-    -fx-font-size: 12px;
-    -fx-font-weight: 700;
-    -fx-padding: 7 10;
-}
-
-.combo-box-popup .list-cell:filled:hover {
-    -fx-background-color: #e8f2ff;
-}
-
-.combo-box-popup .list-cell:filled:selected {
-    -fx-background-color: linear-gradient(to right, #2f80ed, #1d63c6);
-    -fx-text-fill: #ffffff;
+.eval-nav-btn-active {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #28c7ea, #2f80ed);
+    -fx-text-fill: white !important;
 }
