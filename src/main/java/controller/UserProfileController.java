@@ -205,11 +205,7 @@ public class UserProfileController implements Initializable {
         }
 
         setFaceProcessing(true);
-        try {
-            enrollFaceFromFile(imageFile);
-        } finally {
-            setFaceProcessing(false);
-        }
+        enrollFaceFromFile(imageFile);
     }
 
     @FXML
@@ -221,17 +217,16 @@ public class UserProfileController implements Initializable {
         setFaceProcessing(true);
         CameraCaptureResult captureResult = cameraService.captureToTempImage();
 
-        try {
-            if (!captureResult.success() || captureResult.imagePath() == null) {
-                setFaceMessage(captureResult.reason(), true);
-                return;
-            }
-
-            enrollFaceFromFile(captureResult.imagePath().toFile());
-        } finally {
-            cameraService.cleanupCapturedFile(captureResult.imagePath());
+        if (!captureResult.success() || captureResult.imagePath() == null) {
+            setFaceMessage(captureResult.reason(), true);
             setFaceProcessing(false);
+            return;
         }
+
+        enrollFaceFromFile(
+                captureResult.imagePath().toFile(),
+                () -> cameraService.cleanupCapturedFile(captureResult.imagePath())
+        );
     }
 
     @FXML
@@ -352,6 +347,10 @@ public class UserProfileController implements Initializable {
     }
 
     private void enrollFaceFromFile(File imageFile) {
+        enrollFaceFromFile(imageFile, null);
+    }
+
+    private void enrollFaceFromFile(File imageFile, Runnable cleanupAction) {
         setFaceProcessing(true);
 
         Task<FaceEnrollmentResult> task = new Task<>() {
@@ -382,49 +381,53 @@ public class UserProfileController implements Initializable {
                         ButtonType cancelBtn = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
                         alert.getButtonTypes().setAll(retryBtn, continueBtn, cancelBtn);
 
-                        alert.showAndWait().ifPresent(choice -> {
-                            if (choice == continueBtn) {
-                                // Force enrollment skipping quality gate
-                                Task<FaceEnrollmentResult> forceTask = new Task<>() {
-                                    @Override
-                                    protected FaceEnrollmentResult call() throws Exception {
-                                        return faceRecognitionService.enrollFaceSkippingQuality(currentUser, imageFile);
+                        ButtonType choice = alert.showAndWait().orElse(cancelBtn);
+                        if (choice == continueBtn) {
+                            // Force enrollment skipping quality gate
+                            Task<FaceEnrollmentResult> forceTask = new Task<>() {
+                                @Override
+                                protected FaceEnrollmentResult call() throws Exception {
+                                    return faceRecognitionService.enrollFaceSkippingQuality(currentUser, imageFile);
+                                }
+                            };
+
+                            forceTask.setOnSucceeded(e2 -> {
+                                FaceEnrollmentResult r2 = forceTask.getValue();
+                                if (!r2.success() || r2.user() == null) {
+                                    setFaceMessage(r2.reason(), true);
+                                } else {
+                                    currentUser = r2.user();
+                                    if (!currentUser.isFaceIdEnabled()) {
+                                        currentUser = faceRecognitionService.setFaceIdEnabled(currentUser, true);
                                     }
-                                };
-
-                                forceTask.setOnSucceeded(e2 -> {
-                                    FaceEnrollmentResult r2 = forceTask.getValue();
-                                    if (!r2.success() || r2.user() == null) {
-                                        setFaceMessage(r2.reason(), true);
-                                    } else {
-                                        currentUser = r2.user();
-                                        if (!currentUser.isFaceIdEnabled()) {
-                                            currentUser = faceRecognitionService.setFaceIdEnabled(currentUser, true);
-                                        }
-                                        UserSession.setCurrentUser(currentUser);
-                                        setFaceMessage("Face enrollment successful. Face ID is now enabled.", false);
-                                        bindFaceSettings();
-                                    }
-                                    setFaceProcessing(false);
-                                });
-
-                                forceTask.setOnFailed(e2 -> {
-                                    setFaceMessage(safeErrorMessage(new Exception(forceTask.getException())), true);
-                                    setFaceProcessing(false);
-                                });
-
-                                new Thread(forceTask).start();
-                            } else if (choice == retryBtn) {
-                                // Let user try another photo; simply clear message
-                                setFaceMessage("Please select another photo and try again.", false);
+                                    UserSession.setCurrentUser(currentUser);
+                                    setFaceMessage("Face enrollment successful. Face ID is now enabled.", false);
+                                    bindFaceSettings();
+                                }
+                                cleanupEnrollmentImage(cleanupAction);
                                 setFaceProcessing(false);
-                            } else {
+                            });
+
+                            forceTask.setOnFailed(e2 -> {
+                                setFaceMessage(safeErrorMessage(new Exception(forceTask.getException())), true);
+                                cleanupEnrollmentImage(cleanupAction);
                                 setFaceProcessing(false);
-                            }
-                        });
+                            });
+
+                            new Thread(forceTask).start();
+                        } else if (choice == retryBtn) {
+                            // Let user try another photo; simply clear message
+                            setFaceMessage("Please select another photo and try again.", false);
+                            cleanupEnrollmentImage(cleanupAction);
+                            setFaceProcessing(false);
+                        } else {
+                            cleanupEnrollmentImage(cleanupAction);
+                            setFaceProcessing(false);
+                        }
                     });
                 } else {
                     setFaceMessage(reason, true);
+                    cleanupEnrollmentImage(cleanupAction);
                     setFaceProcessing(false);
                 }
 
@@ -439,15 +442,29 @@ public class UserProfileController implements Initializable {
             UserSession.setCurrentUser(currentUser);
             setFaceMessage("Face enrollment successful. Face ID is now enabled.", false);
             bindFaceSettings();
+            cleanupEnrollmentImage(cleanupAction);
             setFaceProcessing(false);
         });
 
         task.setOnFailed(evt -> {
             setFaceMessage(safeErrorMessage(new Exception(task.getException())), true);
+            cleanupEnrollmentImage(cleanupAction);
             setFaceProcessing(false);
         });
 
         new Thread(task).start();
+    }
+
+    private void cleanupEnrollmentImage(Runnable cleanupAction) {
+        if (cleanupAction == null) {
+            return;
+        }
+
+        try {
+            cleanupAction.run();
+        } catch (Exception exception) {
+            setFaceMessage("Enrollment finished, but temporary camera image cleanup failed.", true);
+        }
     }
 
     private void setFaceProcessing(boolean processing) {
