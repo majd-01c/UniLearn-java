@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.TextFlow?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controller.SmsVerificationController"
+            prefWidth="600.0" prefHeight="500.0" styleClass="sms-verification-root">
+
+    <center>
+        <VBox alignment="TOP_CENTER" spacing="16.0" style="-fx-padding: 40px;">
+            <padding>
+                <Insets top="24.0" right="28.0" bottom="24.0" left="28.0"/>
+            </padding>
+            
+            <!-- Header -->
+            <VBox alignment="CENTER" spacing="8.0">
+                <Label text="Verify Your Phone Number" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+                <Label text="Complete SMS verification to continue" 
+                       style="-fx-text-fill: #6b7280; -fx-font-size: 14px;"/>
+            </VBox>
+
+            <!-- Info Card -->
+            <VBox spacing="12.0" style="-fx-border-radius: 8px; -fx-background-color: #f0f9ff; -fx-padding: 16px;">
+                <Label text="Verification Code Sent" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                <VBox spacing="8.0">
+                    <Label fx:id="phoneNumberLabel" text="Phone: +216 XXXX XXXX" 
+                           style="-fx-text-fill: #1f2937; -fx-font-size: 13px;"/>
+                    <Label text="We've sent a 6-digit verification code to your phone number." 
+                           style="-fx-text-fill: #6b7280; -fx-font-size: 12px; -fx-wrap-text: true;"/>
+                </VBox>
+            </VBox>
+
+            <!-- OTP Input -->
+            <VBox spacing="8.0" style="-fx-max-width: 400.0;">
+                <Label text="Verification Code" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                <TextField fx:id="otpField" 
+                          promptText="Enter 6-digit code"
+                          maxWidth="400.0"
+                          style="-fx-font-size: 16px; -fx-padding: 10px; -fx-text-alignment: center;"/>
+                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                    <Label fx:id="otpErrorLabel" text="" style="-fx-text-fill: #dc2626; -fx-font-size: 12px;"/>
+                </HBox>
+            </VBox>
+
+            <!-- Verify Button -->
+            <VBox spacing="8.0" style="-fx-max-width: 400.0;">
+                <Button fx:id="verifyButton"
+                        text="Verify Code"
+                        onAction="#handleVerifyCode"
+                        style="-fx-font-size: 14px; -fx-padding: 10px;"
+                        maxWidth="Infinity"/>
+                <Label fx:id="attemptsLabel" text="" 
+                       style="-fx-text-fill: #f59e0b; -fx-font-size: 12px;"/>
+            </VBox>
+
+            <!-- Resend Section -->
+            <VBox spacing="8.0" style="-fx-max-width: 400.0;">
+                <HBox alignment="CENTER" spacing="8.0">
+                    <Label text="Didn't receive the code?" style="-fx-text-fill: #6b7280;"/>
+                    <Button fx:id="resendButton"
+                            text="Resend"
+                            onAction="#handleResendCode"
+                            style="-fx-padding: 4px 12px; -fx-font-size: 12px;"/>
+                </HBox>
+                <Label fx:id="resendCooldownLabel" text="" 
+                       style="-fx-text-fill: #6b7280; -fx-font-size: 11px;"/>
+            </VBox>
+
+            <!-- Loading Indicator -->
+            <VBox alignment="CENTER" spacing="8.0" fx:id="loadingContainer" managed="false" visible="false">
+                <ProgressIndicator fx:id="progressIndicator" prefWidth="40" prefHeight="40"/>
+                <Label fx:id="loadingLabel" text="Verifying..." style="-fx-font-size: 12px;"/>
+            </VBox>
+
+            <!-- Success Message -->
+            <VBox alignment="CENTER" spacing="8.0" fx:id="successContainer" managed="false" visible="false"
+                  style="-fx-border-radius: 8px; -fx-background-color: #dcfce7; -fx-padding: 16px;">
+                <Label text="✓ SMS Verification Successful!" 
+                       style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #22c55e;"/>
+                <Label text="You can now access the dashboard." 
+                       style="-fx-text-fill: #16a34a; -fx-font-size: 12px;"/>
+            </VBox>
+
+            <!-- General Error Message -->
+            <VBox alignment="TOP_LEFT" spacing="4.0" fx:id="errorContainer" managed="false" visible="false"
+                  style="-fx-border-radius: 8px; -fx-background-color: #fee2e2; -fx-padding: 12px;">
+                <Label text="Error" style="-fx-font-weight: bold; -fx-text-fill: #dc2626;"/>
+                <Label fx:id="errorLabel" text="" 
+                       style="-fx-text-fill: #991b1b; -fx-font-size: 12px; -fx-wrap-text: true;"/>
+            </VBox>
+
+            <!-- Help Text -->
+            <VBox alignment="CENTER" spacing="4.0" style="-fx-padding: 20px 0px 0px 0px;">
+                <Label text="Troubleshooting" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #6b7280;"/>
+                <TextFlow maxWidth="400.0" style="-fx-font-size: 11px; -fx-text-fill: #6b7280;">
+                    <children>
+                        <Label text="• Check your SMS inbox for the code
+• Codes expire after 10 minutes
+• You have 3 attempts before temporary lockout
+• Contact support if you don't receive a code"/>
+                    </children>
+                </TextFlow>
+            </VBox>
+        </VBox>
+    </center>
+
+    <bottom>
+        <HBox alignment="CENTER" spacing="12.0" style="-fx-padding: 16px; -fx-border-color: #e5e7eb; -fx-border-width: 1 0 0 0;">
+            <Button fx:id="cancelButton" 
+                    text="Cancel" 
+                    onAction="#handleCancel"
+                    style="-fx-padding: 8px 16px;"/>
+        </HBox>
+    </bottom>
+</BorderPane>

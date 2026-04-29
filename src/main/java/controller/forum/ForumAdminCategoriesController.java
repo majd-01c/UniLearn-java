@@ -27,6 +27,7 @@ public class ForumAdminCategoriesController implements Initializable {
     @FXML private TextField nameField;
     @FXML private TextArea descriptionField;
     @FXML private TextField iconField;
+    @FXML private ComboBox<String> emojiPicker;
     @FXML private TextField positionField;
     @FXML private CheckBox activeCheckBox;
     @FXML private Label formErrorLabel;
@@ -35,6 +36,9 @@ public class ForumAdminCategoriesController implements Initializable {
 
     private final ServiceForumCategory categoryService = new ServiceForumCategory();
     private final ObservableList<ForumCategory> categories = FXCollections.observableArrayList();
+    private final ObservableList<String> emojiChoices = FXCollections.observableArrayList(
+            "", "💬", "📚", "🧠", "🧪", "💻", "📢", "❓", "🚀", "🎯", "🛠", "🧩"
+    );
     private ForumCategory selectedCategory;
 
     @Override
@@ -50,6 +54,9 @@ public class ForumAdminCategoriesController implements Initializable {
             selectedCategory = newVal;
             populateForm(newVal);
         });
+
+        emojiPicker.setItems(emojiChoices);
+        iconField.textProperty().addListener((obs, oldValue, newValue) -> syncEmojiPicker(newValue));
 
         loadCategories();
         clearForm();
@@ -67,6 +74,7 @@ public class ForumAdminCategoriesController implements Initializable {
         nameField.setText(cat.getName());
         descriptionField.setText(cat.getDescription() != null ? cat.getDescription() : "");
         iconField.setText(cat.getIcon() != null ? cat.getIcon() : "");
+        syncEmojiPicker(iconField.getText());
         positionField.setText(String.valueOf(cat.getPosition()));
         activeCheckBox.setSelected(cat.getIsActive() == 1);
         deleteButton.setDisable(false);
@@ -78,12 +86,35 @@ public class ForumAdminCategoriesController implements Initializable {
         nameField.clear();
         descriptionField.clear();
         iconField.clear();
+        emojiPicker.getSelectionModel().clearSelection();
         positionField.setText("0");
         activeCheckBox.setSelected(true);
         formErrorLabel.setText("");
         deleteButton.setDisable(true);
         saveButton.setText("Add");
         categoryTable.getSelectionModel().clearSelection();
+    }
+
+    private void syncEmojiPicker(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            emojiPicker.getSelectionModel().clearSelection();
+            return;
+        }
+        String icon = value.trim();
+        if (emojiChoices.contains(icon)) {
+            emojiPicker.getSelectionModel().select(icon);
+        } else {
+            emojiPicker.getSelectionModel().clearSelection();
+        }
+    }
+
+    @FXML
+    private void onEmojiSelected() {
+        String selected = emojiPicker.getValue();
+        if (selected == null) {
+            return;
+        }
+        iconField.setText(selected.trim());
     }
 
     @FXML

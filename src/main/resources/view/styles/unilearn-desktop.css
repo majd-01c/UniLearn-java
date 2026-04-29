@@ -1,5 +1,5 @@
 /* ============================================================
-   UniLearn Desktop — Complete Visual System
+   UniLearn Desktop â€” Complete Visual System
    Light & Dark Theme + LMS Module Styles
    ============================================================ */
 
@@ -637,6 +637,216 @@
     -fx-alignment: CENTER;
 }
 
+/* ----- IArooms ----- */
+.iarooms-tabpane {
+    -fx-background-color: transparent;
+    -fx-tab-min-height: 36;
+}
+
+.iarooms-tabpane .tab-header-area {
+    -fx-padding: 0 0 8 0;
+}
+
+.iarooms-tabpane .tab-header-area .tab-header-background {
+    -fx-background-color: transparent;
+}
+
+.iarooms-tabpane .headers-region {
+    -fx-background-color: -ul-ghost-bg;
+    -fx-background-radius: 12;
+    -fx-padding: 4;
+}
+
+.iarooms-tabpane .tab {
+    -fx-background-color: transparent;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-padding: 7 14;
+    -fx-cursor: hand;
+}
+
+.iarooms-tabpane .tab:hover {
+    -fx-background-color: -ul-ghost-hover;
+}
+
+.iarooms-tabpane .tab:selected {
+    -fx-background-color: -ul-card-bg;
+    -fx-effect: dropshadow(gaussian, -ul-card-shadow, 8, 0.18, 0, 2);
+}
+
+.iarooms-tabpane .tab .tab-label {
+    -fx-text-fill: -ul-text-sub;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+}
+
+.iarooms-tabpane .tab:selected .tab-label {
+    -fx-text-fill: -ul-primary;
+}
+
+.iarooms-tabpane .tab-content-area {
+    -fx-background-color: transparent;
+}
+
+.iarooms-section-title {
+    -fx-text-fill: -ul-text-heading;
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+}
+
+.iarooms-picker {
+    -fx-background-color: -ul-input-bg;
+    -fx-border-color: -ul-input-border;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-min-height: 38;
+    -fx-pref-height: 38;
+    -fx-effect: dropshadow(gaussian, rgba(10, 34, 56, 0.06), 7, 0.15, 0, 2);
+}
+
+.iarooms-picker:hover {
+    -fx-border-color: derive(-ul-primary, 35%);
+}
+
+.iarooms-picker:focused,
+.iarooms-picker:showing {
+    -fx-border-color: -ul-primary;
+    -fx-effect: dropshadow(gaussian, rgba(29, 111, 165, 0.18), 8, 0.1, 0, 0);
+}
+
+.iarooms-picker .text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: -ul-text-heading;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-padding: 8 10;
+}
+
+.iarooms-picker .arrow-button {
+    -fx-background-color: -ul-ghost-bg;
+    -fx-background-radius: 0 9 9 0;
+    -fx-border-color: transparent;
+    -fx-padding: 0 10;
+}
+
+.iarooms-picker .arrow {
+    -fx-background-color: -ul-primary;
+}
+
+.iarooms-time-picker .list-cell {
+    -fx-text-fill: -ul-text-heading;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-padding: 8 10;
+}
+
+.iarooms-time-picker .combo-box-popup .list-view,
+.combo-box-popup .list-view {
+    -fx-background-color: -ul-card-bg;
+    -fx-border-color: -ul-card-border;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.iarooms-card {
+    -fx-background-color: -ul-card-bg;
+    -fx-border-color: -ul-card-border;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-effect: dropshadow(gaussian, -ul-card-shadow, 8, 0.18, 0, 2);
+}
+
+.iarooms-card:hover {
+    -fx-border-color: derive(-ul-primary, 35%);
+    -fx-effect: dropshadow(gaussian, -ul-card-shadow, 12, 0.25, 0, 4);
+}
+
+.iarooms-room-card {
+    -fx-pref-width: 216;
+    -fx-min-height: 104;
+}
+
+.iarooms-room-card-selected {
+    -fx-border-color: -ul-primary;
+    -fx-border-width: 2;
+    -fx-background-color: derive(-ul-ghost-bg, 28%);
+}
+
+.iarooms-booking-card {
+    -fx-pref-width: 286;
+    -fx-min-height: 116;
+}
+
+.iarooms-availability-card {
+    -fx-pref-width: 246;
+    -fx-min-height: 92;
+}
+
+.iarooms-empty-room-card {
+    -fx-border-color: derive(-ul-success, 45%);
+}
+
+.iarooms-occupied-room-card {
+    -fx-border-color: derive(-ul-warning, 45%);
+}
+
+.iarooms-conflict-card {
+    -fx-pref-width: 520;
+    -fx-min-height: 148;
+    -fx-border-color: derive(-ul-danger, 45%);
+}
+
+.iarooms-card-header {
+    -fx-alignment: CENTER_LEFT;
+}
+
+.iarooms-card-title {
+    -fx-text-fill: -ul-text-heading;
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+}
+
+.iarooms-card-kicker {
+    -fx-text-fill: -ul-primary;
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+}
+
+.iarooms-chip {
+    -fx-background-radius: 999;
+    -fx-padding: 4 9;
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+}
+
+.iarooms-chip-muted {
+    -fx-background-color: -ul-ghost-bg;
+    -fx-text-fill: -ul-ghost-fg;
+}
+
+.iarooms-chip-info {
+    -fx-background-color: -ul-info-bg;
+    -fx-text-fill: -ul-info;
+}
+
+.iarooms-chip-success {
+    -fx-background-color: -ul-success-bg;
+    -fx-text-fill: -ul-success;
+}
+
+.iarooms-chip-warning {
+    -fx-background-color: -ul-warning-bg;
+    -fx-text-fill: -ul-warning;
+}
+
+.iarooms-chip-danger {
+    -fx-background-color: -ul-error-bg;
+    -fx-text-fill: -ul-error;
+}
+
 /* ----- Prev/Next Navigation ----- */
 .nav-button {
     -fx-background-color: -ul-ghost-bg;
@@ -676,7 +886,7 @@
 
 .forum-page-title {
     -fx-text-fill: #0f2740;
-    -fx-font-size: 22px;
+    -fx-font-size: 23px;
     -fx-font-weight: 800;
 }
 
@@ -686,13 +896,99 @@
 }
 
 .forum-card {
-    -fx-background-color: #ffffff;
-    -fx-border-color: #d7e4f2;
+    -fx-background-color: transparent;
+    -fx-border-color: #d4e0ec;
     -fx-border-width: 1;
-    -fx-border-radius: 12;
-    -fx-background-radius: 12;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
     -fx-padding: 14;
-    -fx-effect: dropshadow(gaussian, rgba(10, 34, 56, 0.06), 8, 0.2, 0, 3);
+}
+
+.forum-ai-card {
+    -fx-background-color: transparent;
+    -fx-border-color: #c5d6e6;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 12;
+}
+
+.forum-ai-title {
+    -fx-text-fill: #164e76;
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+}
+
+.forum-ai-section-title {
+    -fx-text-fill: #10243c;
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+}
+
+.forum-ai-body {
+    -fx-text-fill: #344256;
+    -fx-font-size: 13px;
+    -fx-line-spacing: 4;
+}
+
+.forum-ai-muted {
+    -fx-text-fill: #6b8099;
+    -fx-font-size: 11px;
+}
+
+.forum-ai-answer {
+    -fx-background-color: transparent;
+    -fx-border-color: #bfe8cf;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 10;
+}
+
+.forum-ai-advice {
+    -fx-background-color: transparent;
+    -fx-border-color: #c5ddf2;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 10;
+}
+
+.forum-ai-topic-row {
+    -fx-background-color: transparent;
+    -fx-border-color: #d6e3ef;
+    -fx-border-width: 1;
+    -fx-border-radius: 9;
+    -fx-background-radius: 9;
+    -fx-padding: 8 10;
+}
+
+.forum-ai-topic-row:hover {
+    -fx-border-color: #b9cddd;
+}
+
+.forum-toxicity-warning {
+    -fx-background-color: transparent;
+    -fx-border-color: #ffd08a;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 10;
+}
+
+.toxicity-low {
+    -fx-background-color: transparent;
+    -fx-border-color: #e6c05f;
+}
+
+.toxicity-medium {
+    -fx-background-color: transparent;
+    -fx-border-color: #f2aa6b;
+}
+
+.toxicity-high {
+    -fx-background-color: transparent;
+    -fx-border-color: #e98b8b;
 }
 
 .forum-card-title {
@@ -703,14 +999,16 @@
 }
 
 .forum-list-item {
-    -fx-background-color: #ffffff;
-    -fx-border-color: #e8f0f8;
-    -fx-border-width: 0 0 1 0;
+    -fx-background-color: transparent;
+    -fx-border-color: #deebf5;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
     -fx-padding: 10 12;
 }
 
 .forum-list-item:hover {
-    -fx-background-color: #f0f6fc;
+    -fx-border-color: #c2d6e8;
 }
 
 .forum-item-title {
@@ -729,15 +1027,21 @@
     -fx-min-width: 50;
     -fx-min-height: 50;
     -fx-alignment: center;
-    -fx-background-color: linear-gradient(to bottom right, #667eea, #764ba2);
+    -fx-background-color: transparent;
+    -fx-border-color: #d5e1ec;
+    -fx-border-width: 1;
     -fx-background-radius: 10;
-    -fx-text-fill: #ffffff;
+    -fx-border-radius: 10;
+    -fx-text-fill: #27455f;
 }
 
 .forum-badge-primary {
-    -fx-background-color: #1d6fa5;
-    -fx-text-fill: #ffffff;
+    -fx-background-color: transparent;
+    -fx-text-fill: #1d6fa5;
+    -fx-border-color: #1d6fa5;
+    -fx-border-width: 1;
     -fx-background-radius: 6;
+    -fx-border-radius: 6;
     -fx-padding: 3 8;
     -fx-font-size: 11px;
     -fx-font-weight: 700;
@@ -752,22 +1056,34 @@
 }
 
 .status-open {
-    -fx-background-color: #d4edfc;
+    -fx-background-color: transparent;
+    -fx-border-color: #1565a0;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
     -fx-text-fill: #1565a0;
 }
 
 .status-solved {
-    -fx-background-color: #d4f5e9;
+    -fx-background-color: transparent;
+    -fx-border-color: #1a7f4f;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
     -fx-text-fill: #1a7f4f;
 }
 
 .status-locked {
-    -fx-background-color: #e0e4e8;
+    -fx-background-color: transparent;
+    -fx-border-color: #4a5568;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
     -fx-text-fill: #4a5568;
 }
 
 .forum-pinned-badge {
-    -fx-background-color: #fff3cd;
+    -fx-background-color: transparent;
+    -fx-border-color: #856404;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
     -fx-text-fill: #856404;
     -fx-background-radius: 6;
     -fx-padding: 3 8;
@@ -802,8 +1118,8 @@
 
 /* Comments */
 .forum-comment-card {
-    -fx-background-color: #fafcff;
-    -fx-border-color: #e2ebf4;
+    -fx-background-color: transparent;
+    -fx-border-color: #d9e5f1;
     -fx-border-width: 1;
     -fx-border-radius: 10;
     -fx-background-radius: 10;
@@ -811,8 +1127,8 @@
 }
 
 .forum-reply-card {
-    -fx-background-color: #f5f8fc;
-    -fx-border-color: #dde7f2;
+    -fx-background-color: transparent;
+    -fx-border-color: #d5e1ec;
     -fx-border-width: 1;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
@@ -822,7 +1138,7 @@
 .forum-accepted-card {
     -fx-border-color: #27ae60;
     -fx-border-width: 2;
-    -fx-background-color: #eafaf1;
+    -fx-background-color: transparent;
 }
 
 .forum-comment-author {
@@ -837,7 +1153,10 @@
 }
 
 .forum-teacher-badge {
-    -fx-background-color: #fdf2e9;
+    -fx-background-color: transparent;
+    -fx-border-color: #e67e22;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
     -fx-text-fill: #e67e22;
     -fx-background-radius: 6;
     -fx-padding: 2 6;
@@ -846,7 +1165,10 @@
 }
 
 .forum-accepted-badge {
-    -fx-background-color: #d4f5e9;
+    -fx-background-color: transparent;
+    -fx-border-color: #1a7f4f;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
     -fx-text-fill: #1a7f4f;
     -fx-background-radius: 6;
     -fx-padding: 2 6;
@@ -856,7 +1178,10 @@
 
 /* Reactions */
 .reaction-button {
-    -fx-background-color: #f0f4f8;
+    -fx-background-color: transparent;
+    -fx-border-color: #c9d7e5;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
     -fx-text-fill: #556b81;
     -fx-background-radius: 8;
     -fx-padding: 4 10;
@@ -865,11 +1190,14 @@
 }
 
 .reaction-button:hover {
-    -fx-background-color: #e0eaf4;
+    -fx-border-color: #a9bfd4;
 }
 
 .reaction-active {
-    -fx-background-color: #d4edfc;
+    -fx-background-color: transparent;
+    -fx-border-color: #1565a0;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
     -fx-text-fill: #1565a0;
     -fx-font-weight: 700;
 }
@@ -887,7 +1215,7 @@
 }
 
 .forum-text-field {
-    -fx-background-color: #f7fbff;
+    -fx-background-color: #ffffff;
     -fx-border-color: #d0dde8;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
@@ -900,7 +1228,7 @@
 }
 
 .forum-text-area {
-    -fx-background-color: #f7fbff;
+    -fx-background-color: #ffffff;
     -fx-border-color: #d0dde8;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
@@ -912,7 +1240,7 @@
 }
 
 .forum-combo-box {
-    -fx-background-color: #f7fbff;
+    -fx-background-color: #ffffff;
     -fx-border-color: #d0dde8;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
@@ -940,18 +1268,130 @@
 
 /* Admin table */
 .forum-table {
-    -fx-background-color: #ffffff;
-    -fx-border-color: #d7e4f2;
+    -fx-background-color: transparent;
+    -fx-border-color: #d4e0ec;
     -fx-border-radius: 10;
     -fx-background-radius: 10;
 }
 
 .forum-table .column-header {
-    -fx-background-color: #edf4fb;
+    -fx-background-color: transparent;
+    -fx-border-color: #dce7f2;
+    -fx-border-width: 0 0 1 0;
 }
 
 .forum-table .column-header .label {
     -fx-text-fill: #10243c;
     -fx-font-weight: 700;
     -fx-font-size: 12px;
+}
+
+/* ========================================
+   QUIZ STYLES
+   ======================================== */
+
+.quiz-card {
+    -fx-cursor: hand;
+}
+
+.quiz-card:hover {
+    -fx-border-color: -ul-primary;
+    -fx-effect: dropshadow(gaussian, -ul-card-shadow, 20, 0.35, 0, 8);
+}
+
+.question-text {
+    -fx-text-fill: -ul-text-heading;
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+    -fx-wrap-text: true;
+}
+
+.points-label {
+    -fx-text-fill: -ul-primary;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-background-color: rgba(29, 111, 165, 0.1);
+    -fx-background-radius: 6;
+    -fx-padding: 3 8;
+}
+
+.answer-textarea {
+    -fx-background-color: -ul-input-bg;
+    -fx-border-color: -ul-input-border;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 8 12;
+    -fx-font-size: 13px;
+    -fx-text-fill: -ul-text-heading;
+}
+
+.answer-textarea:focused {
+    -fx-border-color: -ul-input-focus;
+    -fx-effect: dropshadow(gaussian, rgba(29, 111, 165, 0.15), 6, 0, 0, 0);
+}
+
+.review-question {
+    -fx-text-fill: -ul-text-heading;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+}
+
+.quiz-result-correct {
+    -fx-border-color: #27ae60;
+    -fx-border-width: 2;
+    -fx-border-radius: 8;
+    -fx-background-color: #f0fff4;
+    -fx-background-radius: 8;
+}
+
+.quiz-result-incorrect {
+    -fx-border-color: #e74c3c;
+    -fx-border-width: 2;
+    -fx-border-radius: 8;
+    -fx-background-color: #fff5f5;
+    -fx-background-radius: 8;
+}
+
+.quiz-timer {
+    -fx-text-fill: -ul-text-heading;
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-background-color: rgba(29, 111, 165, 0.08);
+    -fx-background-radius: 8;
+    -fx-padding: 6 14;
+}
+
+.quiz-progress {
+    -fx-text-fill: -ul-text-sub;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+}
+
+.quiz-score-passed {
+    -fx-text-fill: #27ae60;
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+}
+
+.quiz-score-failed {
+    -fx-text-fill: #e74c3c;
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+}
+
+/* Dark theme quiz styles */
+.dark-theme .quiz-result-correct {
+    -fx-background-color: rgba(39, 174, 96, 0.12);
+}
+
+.dark-theme .quiz-result-incorrect {
+    -fx-background-color: rgba(231, 76, 60, 0.12);
+}
+
+.dark-theme .quiz-timer {
+    -fx-background-color: rgba(58, 160, 224, 0.12);
+}
+
+.dark-theme .points-label {
+    -fx-background-color: rgba(58, 160, 224, 0.15);
 }

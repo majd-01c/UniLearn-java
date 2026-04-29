@@ -18,7 +18,7 @@ public class ServiceJobOffer extends ServiceSupport implements IService<JobOffer
 
     @Override
     public void add(JobOffer jobOffer) {
-        String sql = "INSERT INTO job_offer (partner_id, title, type, location, description, requirements, status, created_at, updated_at, published_at, expires_at, required_skills, preferred_skills, min_experience_years, min_education, required_languages) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO job_offer (partner_id, title, type, location, description, requirements, status, created_at, updated_at, published_at, expires_at, required_skills, preferred_skills, min_experience_years, min_education, required_languages, score_config) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             statement.setInt(1, jobOffer.getUser().getId());
             statement.setString(2, jobOffer.getTitle());
@@ -36,6 +36,7 @@ public class ServiceJobOffer extends ServiceSupport implements IService<JobOffer
             setNullableInteger(statement, 14, jobOffer.getMinExperienceYears());
             setNullableString(statement, 15, jobOffer.getMinEducation());
             setNullableString(statement, 16, toJsonArrayOrNull(jobOffer.getRequiredLanguages()));
+            setNullableString(statement, 17, jobOffer.getScoreConfig());
 
             int affectedRows = statement.executeUpdate();
             if (affectedRows != 1) {
@@ -54,7 +55,7 @@ public class ServiceJobOffer extends ServiceSupport implements IService<JobOffer
 
     @Override
     public void update(JobOffer jobOffer) {
-        String sql = "UPDATE job_offer SET partner_id = ?, title = ?, type = ?, location = ?, description = ?, requirements = ?, status = ?, created_at = ?, updated_at = ?, published_at = ?, expires_at = ?, required_skills = ?, preferred_skills = ?, min_experience_years = ?, min_education = ?, required_languages = ? WHERE id = ?";
+        String sql = "UPDATE job_offer SET partner_id = ?, title = ?, type = ?, location = ?, description = ?, requirements = ?, status = ?, created_at = ?, updated_at = ?, published_at = ?, expires_at = ?, required_skills = ?, preferred_skills = ?, min_experience_years = ?, min_education = ?, required_languages = ?, score_config = ? WHERE id = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, jobOffer.getUser().getId());
             statement.setString(2, jobOffer.getTitle());
@@ -72,7 +73,8 @@ public class ServiceJobOffer extends ServiceSupport implements IService<JobOffer
             setNullableInteger(statement, 14, jobOffer.getMinExperienceYears());
             setNullableString(statement, 15, jobOffer.getMinEducation());
             setNullableString(statement, 16, toJsonArrayOrNull(jobOffer.getRequiredLanguages()));
-            statement.setInt(17, jobOffer.getId());
+            setNullableString(statement, 17, jobOffer.getScoreConfig());
+            statement.setInt(18, jobOffer.getId());
 
             int affectedRows = statement.executeUpdate();
             if (affectedRows != 1) {
@@ -100,7 +102,7 @@ public class ServiceJobOffer extends ServiceSupport implements IService<JobOffer
 
     @Override
     public List<JobOffer> getALL() {
-        String sql = "SELECT id, partner_id, title, type, location, description, requirements, status, created_at, updated_at, published_at, expires_at, required_skills, preferred_skills, min_experience_years, min_education, required_languages FROM job_offer";
+        String sql = "SELECT id, partner_id, title, type, location, description, requirements, status, created_at, updated_at, published_at, expires_at, required_skills, preferred_skills, min_experience_years, min_education, required_languages, score_config FROM job_offer";
         List<JobOffer> jobOffers = new ArrayList<>();
 
         try (PreparedStatement statement = connection.prepareStatement(sql);
@@ -124,6 +126,7 @@ public class ServiceJobOffer extends ServiceSupport implements IService<JobOffer
                 jobOffer.setMinExperienceYears(getNullableInteger(resultSet, "min_experience_years"));
                 jobOffer.setMinEducation(resultSet.getString("min_education"));
                 jobOffer.setRequiredLanguages(fromJsonArrayToDisplay(resultSet.getString("required_languages")));
+                jobOffer.setScoreConfig(resultSet.getString("score_config"));
                 jobOffers.add(jobOffer);
             }
         } catch (SQLException e) {

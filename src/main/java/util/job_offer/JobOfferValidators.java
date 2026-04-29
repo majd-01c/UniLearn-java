@@ -112,10 +112,10 @@ public final class JobOfferValidators {
         if (education == null) {
             return true;  // Optional
         }
-        String upper = education.toUpperCase();
-        return upper.equals("HIGH_SCHOOL") || upper.equals("BACHELOR") || 
-               upper.equals("MASTER") || upper.equals("PHD") || 
-               upper.equals("NOT_REQUIRED");
+        String normalized = education.trim().toLowerCase();
+        return normalized.equals("bac") || normalized.equals("bac+2") ||
+               normalized.equals("licence") || normalized.equals("master") ||
+               normalized.equals("ingenieur") || normalized.equals("doctorat");
     }
 
     /**
@@ -123,11 +123,9 @@ public final class JobOfferValidators {
      */
     public static String normalizeEducationLevel(String education) {
         if (education == null || education.isBlank()) {
-            return "NOT_REQUIRED";
+            return null;
         }
-        String upper = education.trim().toUpperCase();
-        return upper.equals("HIGH_SCHOOL") || upper.equals("BACHELOR") || 
-               upper.equals("MASTER") || upper.equals("PHD") || 
-               upper.equals("NOT_REQUIRED") ? upper : "NOT_REQUIRED";
+        String normalized = education.trim().toLowerCase();
+        return isValidEducationLevel(normalized) ? normalized : null;
     }
 }

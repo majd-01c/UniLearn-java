@@ -80,6 +80,8 @@ public class AppShellController implements Initializable {
     @FXML
     private Button navJobOffersButton;
     @FXML
+    private Button navIARoomsButton;
+    @FXML
     private StackPane contentHost;
 
     // Admin LMS nav
@@ -107,6 +109,8 @@ public class AppShellController implements Initializable {
     private Label studentSectionLabel;
     @FXML
     private Button navMyLearningButton;
+    @FXML
+    private Button navQuizzesButton;
 
     @FXML
     private Label breadcrumbsLabel;
@@ -174,6 +178,7 @@ public class AppShellController implements Initializable {
             case "EVALUATION_SCHEDULE" -> onNavEvaluationSchedule();
             case "EVALUATION_COMPLAINTS" -> onNavEvaluationComplaints();
             case "EVALUATION_DOCUMENTS" -> onNavEvaluationDocuments();
+            case "IAROOMS" -> showIARoomsView();
             case "LOGIN" -> showLoginView();
             default -> showHomeView();
         }
@@ -214,6 +219,21 @@ public class AppShellController implements Initializable {
         showHomeView();
     }
 
+    public void showSmsVerificationView(User user) {
+        if (user == null) {
+            showLoginView();
+            return;
+        }
+
+        setCurrentUser(user);
+        setNavigationVisible(false);
+        setNavigationState("SMS_VERIFICATION", "Login", "Verify Phone");
+        setHeader("Verify Your Phone Number", "Complete SMS verification to continue");
+        loadCenter("/view/user/sms-verification.fxml", controller -> {
+            // Controller will be SmsVerificationController and will auto-initialize from FXML
+        });
+    }
+
     // ==================== Role-Based Nav ====================
     private void configureNavForRole() {
         boolean admin = RoleGuard.isAdmin(currentUser);
@@ -237,9 +257,11 @@ public class AppShellController implements Initializable {
         // Student section
         setNodeVisible(studentSectionLabel, student);
         setNodeVisible(navMyLearningButton, student);
+        setNodeVisible(navQuizzesButton, student);
 
         // Evaluation module for authenticated academic roles.
         setNodeVisible(navEvaluationButton, currentUser != null && currentUser.getId() != null);
+        setNodeVisible(navIARoomsButton, currentUser != null && currentUser.getId() != null);
         updateEvaluationSubNavVisibility();
     }
 
@@ -586,8 +608,31 @@ public class AppShellController implements Initializable {
         });
     }
 
+    public void showStudentQuizzesView(User student) {
+        if (!ensureAuthenticated())
+            return;
+        setHeader("Quizzes", "Take and review your quizzes");
+        loadCenter("/view/lms/student/student-quiz.fxml", controller -> {
+            if (controller instanceof StudentQuizController sc)
+                sc.setStudent(student);
+        });
+    }
+
     public void logout() {
         showLoginView();
+    }
+
+    // ========================
+    // IAROOMS NAVIGATION
+    // ========================
+
+    public void showIARoomsView() {
+        if (!ensureAuthenticated()) {
+            return;
+        }
+        setHeader("IArooms", "Shared Symfony and Java room availability workspace");
+        setNavigationState("IAROOMS", "Home", "IArooms");
+        loadCenter("/view/iarooms/iarooms-dashboard.fxml", null);
     }
 
     // ========================
@@ -598,6 +643,7 @@ public class AppShellController implements Initializable {
         if (!ensureAuthenticated())
             return;
         setHeader("Community Forum", "Ask questions, share knowledge, and connect with others");
+        setNavigationState("FORUM", "Home", "Forum");
         loadCenter("/view/forum/forum-home.fxml", null);
     }
 
@@ -676,6 +722,7 @@ public class AppShellController implements Initializable {
         } else {
             setHeader("Job Opportunities", "Browse and apply to job offers");
         }
+        setNavigationState("JOB_OFFERS", "Home", "Job Offers");
         loadCenter("/view/job_offer/job-offers-list.fxml", controller -> {
             if (controller instanceof JobOfferListController c) {
                 c.setCurrentUser(currentUser);
@@ -766,6 +813,21 @@ public class AppShellController implements Initializable {
         });
     }
 
+    public void showAtsApplicationDetailView(JobApplication application) {
+        if (!ensureAuthenticated()) return;
+        if (application == null || application.getId() <= 0) {
+            showWarning("Application unavailable", "Selected application is not available.");
+            return;
+        }
+        setHeader("ATS · Application Detail", "Score breakdown, pipeline stage, and candidate profile");
+        loadCenter("/view/job_offer/ats-application-detail.fxml", controller -> {
+            if (controller instanceof AtsApplicationDetailController c) {
+                c.setApplication(application);
+                c.setCurrentUser(currentUser);
+            }
+        });
+    }
+
     // ==================== FXML Handlers ====================
     @FXML
     private void onNavHome() {
@@ -785,6 +847,11 @@ public class AppShellController implements Initializable {
     @FXML
     private void onNavJobOffers() {
         showJobOffersView();
+    }
+
+    @FXML
+    private void onNavIARooms() {
+        showIARoomsView();
     }
 
     @FXML
@@ -835,6 +902,11 @@ public class AppShellController implements Initializable {
     @FXML
     private void onNavMyLearning() {
         showStudentLearning();
+    }
+
+    @FXML
+    private void onNavQuizzes() {
+        showStudentQuizzesView(currentUser);
     }
 
     @FXML
@@ -913,12 +985,8 @@ public class AppShellController implements Initializable {
 
     public void loadCenter(String fxmlPath, Consumer<Object> controllerInitializer) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
-            Parent content = loader.load();
-            if (controllerInitializer != null)
-                controllerInitializer.accept(loader.getController());
-            contentHost.getChildren().setAll(content);
             ViewRouter.LoadedView loadedView = viewRouter.navigate(fxmlPath, controllerInitializer);
+            contentHost.getChildren().setAll(loadedView.root());
             playViewEnterAnimation(loadedView.root());
         } catch (IOException exception) {
             showError("View loading failed", "Could not load view: " + fxmlPath + "\n" + exception.getMessage());
@@ -979,6 +1047,9 @@ public class AppShellController implements Initializable {
         clearActiveState(navUsersButton);
         clearActiveState(navProfileButton);
         clearActiveState(navChangePasswordButton);
+        clearActiveState(navForumButton);
+        clearActiveState(navJobOffersButton);
+        clearActiveState(navIARoomsButton);
         clearActiveState(navEvaluationButton);
         clearActiveState(navEvaluationGradesButton);
         clearActiveState(navEvaluationRecommendationsButton);
@@ -1007,6 +1078,9 @@ public class AppShellController implements Initializable {
             case "USERS" -> markActive(navUsersButton);
             case "PROFILE" -> markActive(navProfileButton);
             case "CHANGE_PASSWORD" -> markActive(navChangePasswordButton);
+            case "FORUM" -> markActive(navForumButton);
+            case "JOB_OFFERS" -> markActive(navJobOffersButton);
+            case "IAROOMS" -> markActive(navIARoomsButton);
             default -> {
                 // Keep no active item for login/password reset screens.
             }

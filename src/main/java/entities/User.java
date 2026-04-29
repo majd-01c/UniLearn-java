@@ -59,6 +59,15 @@ public class User  implements java.io.Serializable {
      private byte faceEnabled;
      private String faceDescriptors;
      private Timestamp faceEnrolledAt;
+     private String smsPhoneNumber;
+     private byte smsVerified;
+     private Timestamp smsVerifiedAt;
+     private String smsOtpHash;
+     private Timestamp smsOtpExpiresAt;
+     private Integer smsOtpAttempts;
+     private Timestamp smsOtpLastSentAt;
+     private Timestamp smsOtpLockedUntil;
+     private byte firstLoginCompleted;
      private Set<JobOffer> jobOffers = new HashSet<JobOffer>(0);
      private Set<Schedule> schedules = new HashSet<Schedule>(0);
      private Set<FaceVerificationLog> faceVerificationLogs = new HashSet<FaceVerificationLog>(0);
@@ -448,6 +457,109 @@ public class User  implements java.io.Serializable {
 
         String escaped = value.replace("\\", "\\\\").replace("\"", "\\\"");
         this.faceDescriptors = "{\"embedding\":\"" + escaped + "\"}";
+    }
+
+    @Column(name="sms_phone_number", unique=false, length=20)
+    public String getSmsPhoneNumber() {
+        return this.smsPhoneNumber;
+    }
+    
+    public void setSmsPhoneNumber(String smsPhoneNumber) {
+        this.smsPhoneNumber = smsPhoneNumber;
+    }
+
+    @Column(name="sms_verified", nullable=false)
+    public byte getSmsVerified() {
+        return this.smsVerified;
+    }
+    
+    public void setSmsVerified(byte smsVerified) {
+        this.smsVerified = smsVerified;
+    }
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name="sms_verified_at", length=19)
+    public Timestamp getSmsVerifiedAt() {
+        return this.smsVerifiedAt;
+    }
+    
+    public void setSmsVerifiedAt(Timestamp smsVerifiedAt) {
+        this.smsVerifiedAt = smsVerifiedAt;
+    }
+
+    @Column(name="sms_otp_hash", length=255)
+    public String getSmsOtpHash() {
+        return this.smsOtpHash;
+    }
+    
+    public void setSmsOtpHash(String smsOtpHash) {
+        this.smsOtpHash = smsOtpHash;
+    }
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name="sms_otp_expires_at", length=19)
+    public Timestamp getSmsOtpExpiresAt() {
+        return this.smsOtpExpiresAt;
+    }
+    
+    public void setSmsOtpExpiresAt(Timestamp smsOtpExpiresAt) {
+        this.smsOtpExpiresAt = smsOtpExpiresAt;
+    }
+
+    @Column(name="sms_otp_attempts")
+    public Integer getSmsOtpAttempts() {
+        return this.smsOtpAttempts;
+    }
+    
+    public void setSmsOtpAttempts(Integer smsOtpAttempts) {
+        this.smsOtpAttempts = smsOtpAttempts;
+    }
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name="sms_otp_last_sent_at", length=19)
+    public Timestamp getSmsOtpLastSentAt() {
+        return this.smsOtpLastSentAt;
+    }
+    
+    public void setSmsOtpLastSentAt(Timestamp smsOtpLastSentAt) {
+        this.smsOtpLastSentAt = smsOtpLastSentAt;
+    }
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name="sms_otp_locked_until", length=19)
+    public Timestamp getSmsOtpLockedUntil() {
+        return this.smsOtpLockedUntil;
+    }
+    
+    public void setSmsOtpLockedUntil(Timestamp smsOtpLockedUntil) {
+        this.smsOtpLockedUntil = smsOtpLockedUntil;
+    }
+
+    @Column(name="first_login_completed", nullable=false)
+    public byte getFirstLoginCompleted() {
+        return this.firstLoginCompleted;
+    }
+    
+    public void setFirstLoginCompleted(byte firstLoginCompleted) {
+        this.firstLoginCompleted = firstLoginCompleted;
+    }
+
+    @Transient
+    public boolean isSmsVerified() {
+        return this.smsVerified == (byte) 1;
+    }
+
+    public void setSmsVerified(boolean verified) {
+        this.smsVerified = verified ? (byte) 1 : (byte) 0;
+    }
+
+    @Transient
+    public boolean isFirstLoginCompleted() {
+        return this.firstLoginCompleted == (byte) 1;
+    }
+
+    public void setFirstLoginCompleted(boolean completed) {
+        this.firstLoginCompleted = completed ? (byte) 1 : (byte) 0;
     }
 
 @OneToMany(fetch=FetchType.LAZY, mappedBy="user")

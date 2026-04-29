@@ -8,6 +8,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.scene.web.HTMLEditor;
 import service.lms.*;
 import validation.LmsValidator;
 import util.AppNavigator;
@@ -373,7 +374,28 @@ public class TeacherClasseWorkspaceController implements Initializable {
             }
         });
 
-        row.getChildren().addAll(icon, title, typeBadge, visBadge, togBtn, delBtn);
+        row.getChildren().addAll(icon, title, typeBadge, visBadge);
+
+        // Add "View Results" button for quiz-type content
+        if ("QUIZ".equalsIgnoreCase(cx.getType())) {
+            Button resultsBtn = new Button("📊");
+            resultsBtn.getStyleClass().add("icon-button");
+            resultsBtn.setTooltip(new Tooltip("View Quiz Results"));
+            resultsBtn.setOnAction(e -> {
+                // Find quiz by contenu ID
+                var quizOpt = new services.ServiceQuiz().getALL().stream()
+                        .filter(q -> q.getContenu() != null && q.getContenu().getId() == cx.getContenuId())
+                        .findFirst();
+                if (quizOpt.isPresent()) {
+                    AppNavigator.showTeacherQuizResults(quizOpt.get().getId(), tc);
+                } else {
+                    new Alert(Alert.AlertType.WARNING, "No quiz found for this content.").showAndWait();
+                }
+            });
+            row.getChildren().add(resultsBtn);
+        }
+
+        row.getChildren().addAll(togBtn, delBtn);
         return row;
     }
 
@@ -393,12 +415,22 @@ public class TeacherClasseWorkspaceController implements Initializable {
                 "COURS", "QUIZ", "TD", "TP", "EXAM", "VIDEO", "RESOURCE"));
         typeBox.setValue(defaultType);
 
-        // --- File Upload ---
+        ToggleGroup sourceGroup = new ToggleGroup();
+        RadioButton editorMode = new RadioButton("Write in app");
+        editorMode.setToggleGroup(sourceGroup);
+        editorMode.setSelected(true);
+        RadioButton uploadMode = new RadioButton("Upload file");
+        uploadMode.setToggleGroup(sourceGroup);
+
+        HTMLEditor contentEditor = new HTMLEditor();
+        contentEditor.setPrefHeight(240);
+
         Label fileLabel = new Label("No file selected.");
         Button fileBtn = new Button("Choose File");
         fileBtn.getStyleClass().add("ghost-button");
         final java.io.File[] selectedFile = new java.io.File[1];
         fileBtn.setOnAction(e -> {
+            uploadMode.setSelected(true);
             javafx.stage.FileChooser fc = new javafx.stage.FileChooser();
             fc.setTitle("Select Content File");
             java.io.File f = fc.showOpenDialog(dialog.getDialogPane().getScene().getWindow());
@@ -410,26 +442,133 @@ public class TeacherClasseWorkspaceController implements Initializable {
         HBox fileBox = new HBox(8, fileBtn, fileLabel);
         fileBox.setAlignment(Pos.CENTER_LEFT);
 
+        CheckBox aiGenerateCheck = new CheckBox("Generate quiz with AI from this file");
+        aiGenerateCheck.setSelected(true);
+        TextField aiQuestionCountField = new TextField("10");
+        aiQuestionCountField.setPromptText("Questions");
+        aiQuestionCountField.setPrefWidth(80);
+        TextField aiPassingScoreField = new TextField("60");
+        aiPassingScoreField.setPromptText("Pass %");
+        aiPassingScoreField.setPrefWidth(80);
+        TextField aiTimeLimitField = new TextField("20");
+        aiTimeLimitField.setPromptText("Minutes");
+        aiTimeLimitField.setPrefWidth(80);
+        HBox aiSettingsRow = new HBox(10,
+            new Label("Questions:"), aiQuestionCountField,
+            new Label("Pass %:"), aiPassingScoreField,
+            new Label("Time (min):"), aiTimeLimitField);
+        aiSettingsRow.setAlignment(Pos.CENTER_LEFT);
+        VBox aiSection = new VBox(8,
+            new Separator(),
+            aiGenerateCheck,
+            aiSettingsRow,
+            new Label("Requires OPENAI_API_KEY in environment."));
+        aiSection.setVisible(false);
+        aiSection.setManaged(false);
+
+        VBox editorSection = new VBox(8, new Label("Content body:"), contentEditor);
+        VBox fileSection = new VBox(8, new Label("Attachment (Optional):"), fileBox);
+        fileSection.setVisible(false);
+        fileSection.setManaged(false);
+
+        VBox manualQuizNotice = new VBox(8, 
+            new Label("ℹ️ You will be redirected to the full-screen Quiz Builder to add questions and choices.")
+        );
+        manualQuizNotice.setStyle("-fx-padding: 20; -fx-background-color: #f0f4f8; -fx-border-radius: 4; -fx-background-radius: 4;");
+        manualQuizNotice.setVisible(false);
+        manualQuizNotice.setManaged(false);
+
+        Runnable refreshSections = () -> {
+            boolean isQuiz = "QUIZ".equalsIgnoreCase(typeBox.getValue());
+            boolean writeMode = sourceGroup.getSelectedToggle() == editorMode;
+            
+            boolean quizUploadMode = isQuiz && !writeMode;
+            aiSection.setVisible(quizUploadMode);
+            aiSection.setManaged(quizUploadMode);
+
+            boolean showHtmlEditor = writeMode && !isQuiz;
+            editorSection.setVisible(showHtmlEditor);
+            editorSection.setManaged(showHtmlEditor);
+
+            boolean showManualQuizNotice = writeMode && isQuiz;
+            manualQuizNotice.setVisible(showManualQuizNotice);
+            manualQuizNotice.setManaged(showManualQuizNotice);
+
+            fileSection.setVisible(!writeMode);
+            fileSection.setManaged(!writeMode);
+        };
+
+        sourceGroup.selectedToggleProperty().addListener((obs, oldToggle, newToggle) -> {
+            boolean writeMode = newToggle == editorMode;
+            if (writeMode) {
+                selectedFile[0] = null;
+                fileLabel.setText("No file selected.");
+            }
+            refreshSections.run();
+        });
+        typeBox.valueProperty().addListener((obs, oldVal, newVal) -> refreshSections.run());
+        refreshSections.run();
+
         VBox content = new VBox(8,
                 new Label("Title:"), titleField,
                 new Label("Type:"), typeBox,
-                new Label("Attachment (Optional):"), fileBox
+                new Label("Content source:"), new HBox(12, editorMode, uploadMode),
+                editorSection,
+                manualQuizNotice,
+                fileSection,
+                aiSection
         );
         content.setPadding(new Insets(12));
+        content.setPrefWidth(720);
         dialog.getDialogPane().setContent(content);
 
         dialog.showAndWait().ifPresent(btn -> {
             if (btn != ButtonType.OK) return;
             String t = titleField.getText();
             String type = typeBox.getValue();
+            boolean writeMode = editorMode.isSelected();
+            String contentHtml = writeMode ? contentEditor.getHtmlText() : null;
             if (t == null || t.isBlank()) {
                 new Alert(Alert.AlertType.WARNING, "Content title cannot be empty.").showAndWait();
+                return;
+            }
+            if (writeMode && !"QUIZ".equalsIgnoreCase(type) && (contentHtml == null || contentHtml.replaceAll("(?s)<[^>]*>", "").replace("&nbsp;", " ").trim().isEmpty())) {
+                new Alert(Alert.AlertType.WARNING, "Please write some content or switch to file upload.").showAndWait();
+                return;
+            }
+            if (!writeMode && selectedFile[0] == null) {
+                new Alert(Alert.AlertType.WARNING, "Please choose a file or switch to Write in app.").showAndWait();
+                return;
+            }
+
+            if ("QUIZ".equalsIgnoreCase(type) && writeMode) {
+                // Navigate to the manual quiz builder screen
+                AppNavigator.showTeacherQuizBuilder(cc, tc);
                 return;
             }
             try {
                 String storedName = null;
                 String fileType = null;
                 Integer fileSize = null;
+
+                boolean aiQuizRequested = "QUIZ".equalsIgnoreCase(type) && !writeMode && aiGenerateCheck.isSelected();
+                if (aiQuizRequested) {
+                    int questionCount = parseIntInRange(aiQuestionCountField.getText(), "Question count", 3, 25);
+                    int passingScore = parseIntInRange(aiPassingScoreField.getText(), "Passing score", 1, 100);
+                    int timeLimit = parseIntInRange(aiTimeLimitField.getText(), "Time limit", 1, 180);
+
+                    TeacherAiQuizService aiQuizService = new TeacherAiQuizService();
+                    var contenu = aiQuizService.createQuizContenuFromFile(
+                            t.trim(),
+                            selectedFile[0],
+                            questionCount,
+                            passingScore,
+                            timeLimit
+                    );
+                    cdSvc.addContenuToClasseCourse(cc.getClasseCourseId(), contenu.getId());
+                    loadCourses();
+                    return;
+                }
                 
                 if (selectedFile[0] != null) {
                     FileUploadService fus = new FileUploadService();
@@ -446,7 +585,7 @@ public class TeacherClasseWorkspaceController implements Initializable {
                 }
                 
                 // 1. Create the contenu record
-                var contenu = contenuSvc.createContenu(t.trim(), type, true, storedName, fileType, fileSize);
+                var contenu = contenuSvc.createContenu(t.trim(), type, true, storedName, fileType, fileSize, contentHtml);
                 // 2. Link it to this ClasseCourse
                 cdSvc.addContenuToClasseCourse(cc.getClasseCourseId(), contenu.getId());
                 loadCourses();
@@ -456,6 +595,21 @@ public class TeacherClasseWorkspaceController implements Initializable {
                 new Alert(Alert.AlertType.ERROR, e.getMessage()).showAndWait();
             }
         });
+    }
+
+    private int parseIntInRange(String rawValue, String fieldName, int minInclusive, int maxInclusive) {
+        if (rawValue == null || rawValue.trim().isEmpty()) {
+            throw new IllegalArgumentException(fieldName + " is required.");
+        }
+        try {
+            int value = Integer.parseInt(rawValue.trim());
+            if (value < minInclusive || value > maxInclusive) {
+                throw new IllegalArgumentException(fieldName + " must be between " + minInclusive + " and " + maxInclusive + ".");
+            }
+            return value;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(fieldName + " must be a valid number.");
+        }
     }
 
     // ==================== Enrolled Students ====================

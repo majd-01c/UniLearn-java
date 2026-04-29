@@ -14,7 +14,10 @@ public class AdminContenuController implements Initializable {
         colType.setCellFactory(col->new TableCell<>(){@Override protected void updateItem(String i,boolean e){super.updateItem(i,e);if(e||i==null){setGraphic(null);setText(null);return;}Label b=new Label(i);b.getStyleClass().addAll("badge","badge-"+i.toLowerCase());setGraphic(b);setText(null);}});
         colPublished.setCellValueFactory(c->new SimpleStringProperty(c.getValue().getPublished()==1?"Published":"Draft"));
         colPublished.setCellFactory(col->new TableCell<>(){@Override protected void updateItem(String i,boolean e){super.updateItem(i,e);if(e||i==null){setGraphic(null);setText(null);return;}Label b=new Label(i);b.getStyleClass().addAll("badge","Published".equals(i)?"badge-published":"badge-draft");setGraphic(b);setText(null);}});
-        colFile.setCellValueFactory(c->new SimpleStringProperty(c.getValue().getFileName()!=null?c.getValue().getFileName():"—"));
+        colFile.setCellValueFactory(c->new SimpleStringProperty(
+            c.getValue().getFileName()!=null && !c.getValue().getFileName().isBlank() ? c.getValue().getFileName()
+                : c.getValue().getContentHtml()!=null && !c.getValue().getContentHtml().isBlank() ? "In-app content"
+                : "—"));
         colActions.setCellFactory(col->new TableCell<>(){final Button ed=new Button("Edit"),dl=new Button("Delete");final HBox bx=new HBox(6,ed,dl);{ed.getStyleClass().add("ghost-button");dl.getStyleClass().add("danger-button");ed.setOnAction(e->AppNavigator.showContenuForm(getTableView().getItems().get(getIndex())));dl.setOnAction(e->onDel(getTableView().getItems().get(getIndex())));}@Override protected void updateItem(String i,boolean e){super.updateItem(i,e);setGraphic(e?null:bx);setText(null);}});
         searchField.textProperty().addListener((o,ov,nv)->applyFilter());typeFilter.valueProperty().addListener((o,ov,nv)->applyFilter());
         loadData();

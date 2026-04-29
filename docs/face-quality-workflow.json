@@ -1,0 +1,47 @@
+{
+  "name": "Face Quality Gate",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "webhook-test/face-quality",
+        "httpMethod": "POST",
+        "responseMode": "onReceived",
+        "options": {
+          "rawBody": false
+        }
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const item = items[0];let overall = 0.9;let blur = 'low';let lighting = 'good';const tips = [];if (item.binary && item.binary.image && item.binary.image.data) {const size = Buffer.from(item.binary.image.data, 'base64').length;if (size < 50 * 1024) {overall = 0.35;blur = 'high';lighting = 'poor';tips.push('Image is very small');} else if (size < 150 * 1024) {overall = 0.65;blur = 'medium';lighting = 'ok';tips.push('Image quality is low');} else {overall = 0.95;}const passed = overall >= 0.7;return [{json: {passed, overallScore: Math.round(overall * 100) / 100, checks: {singleFace: true, lighting, blur, faceCentered: true, occlusion: 'none'}, tips}}];}return [{json: {passed: false, overallScore: 0, checks: {singleFace: false, lighting: 'poor', blur: 'high', faceCentered: false, occlusion: 'major'}, tips: ['No image received']}}];"
+      },
+      "name": "QualityCheck",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [520, 300]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [760, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{"node": "QualityCheck", "type": "main", "index": 0}]]
+    },
+    "QualityCheck": {
+      "main": [[{"node": "Respond to Webhook", "type": "main", "index": 0}]]
+    }
+  },
+  "active": false,
+  "settings": {}
+}
