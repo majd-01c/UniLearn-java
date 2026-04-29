@@ -137,6 +137,26 @@ public class EvaluationTeacherController {
         refreshTeacherSelectors();
         refreshTeacherSpace();
 
+        // AI Correction Hook for Assessment Title
+        assessmentTitleField.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            if (!newVal) {
+                String original = assessmentTitleField.getText();
+                if (original != null && original.length() > 3) {
+                    new Thread(() -> {
+                        String corrected = aiService.correctSpellingAndGrammar(original);
+                        if (corrected != null && !corrected.isEmpty() && !corrected.startsWith("###")) {
+                            javafx.application.Platform.runLater(() -> {
+                                if (assessmentTitleField.getText().equals(original)) {
+                                    assessmentTitleField.setText(corrected);
+                                    showFeedback("✅ AI refined assessment title and filtered content.", false);
+                                }
+                            });
+                        }
+                    }).start();
+                }
+            }
+        });
+
         // AI Correction Hook for Assessment Description
         assessmentDescriptionArea.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (!newVal) { // Lost focus
@@ -148,7 +168,7 @@ public class EvaluationTeacherController {
                             javafx.application.Platform.runLater(() -> {
                                 if (assessmentDescriptionArea.getText().equals(original)) {
                                     assessmentDescriptionArea.setText(corrected);
-                                    showFeedback("AI refined assessment description.", false);
+                                    showFeedback("✅ AI refined assessment description and filtered content.", false);
                                 }
                             });
                         }
@@ -168,7 +188,7 @@ public class EvaluationTeacherController {
                             javafx.application.Platform.runLater(() -> {
                                 if (gradeCommentInputField.getText().equals(original)) {
                                     gradeCommentInputField.setText(corrected);
-                                    showFeedback("AI refined student feedback.", false);
+                                    showFeedback("✅ AI refined student feedback and filtered content.", false);
                                 }
                             });
                         }
@@ -189,7 +209,7 @@ public class EvaluationTeacherController {
                                 javafx.application.Platform.runLater(() -> {
                                     if (inquiryResponseArea.getText().equals(original)) {
                                         inquiryResponseArea.setText(corrected);
-                                        showFeedback("AI refined inquiry response.", false);
+                                        showFeedback("✅ AI refined inquiry response and filtered content.", false);
                                     }
                                 });
                             }
@@ -467,27 +487,26 @@ public class EvaluationTeacherController {
             dayCard.getStyleClass().add("eval-data-card");
             dayCard.setMinWidth(240);
             dayCard.setPadding(new Insets(12));
-            dayCard.setStyle("-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-background-radius: 16; -fx-border-radius: 16;");
 
             Label dayLabel = new Label(entry.getKey().toUpperCase());
-            dayLabel.setStyle("-fx-font-weight: 900; -fx-text-fill: #1e293b; -fx-font-size: 14px;");
+            dayLabel.setStyle("-fx-font-weight: 900; -fx-text-fill: #7ec4ff; -fx-font-size: 14px; -fx-border-color: transparent transparent rgba(56,139,255,0.5) transparent; -fx-border-width: 0 0 2 0; -fx-padding: 0 0 4 0;");
             dayCard.getChildren().add(dayLabel);
 
             if (entry.getValue().isEmpty()) {
                 Label empty = new Label("No classes");
-                empty.setStyle("-fx-text-fill: #94a3b8; -fx-font-style: italic;");
+                empty.setStyle("-fx-text-fill: rgba(150,190,255,0.4); -fx-font-style: italic;");
                 dayCard.getChildren().add(empty);
             } else {
                 for (Schedule s : entry.getValue()) {
                     VBox item = new VBox(2);
                     item.setPadding(new Insets(8));
-                    item.setStyle("-fx-background-color: #f8fafc; -fx-background-radius: 10;");
+                    item.setStyle("-fx-background-color: rgba(30,60,120,0.35); -fx-background-radius: 10; -fx-border-color: rgba(56,139,255,0.2); -fx-border-radius: 10; -fx-border-width: 1;");
                     String course = s.getCourse() == null ? "Course" : service.resolveCourseTitle(s.getCourse().getId());
                     String classe = s.getClasse() == null ? "Class" : service.resolveClasseName(s.getClasse().getId());
                     Label title = new Label(course + " (" + classe + ")");
-                    title.setStyle("-fx-font-weight: bold; -fx-font-size: 11px;");
+                    title.setStyle("-fx-font-weight: bold; -fx-text-fill: #d0e8ff; -fx-font-size: 11px;");
                     Label time = new Label("🕒 " + s.getStartTime() + " - " + s.getEndTime());
-                    time.setStyle("-fx-text-fill: #64748b; -fx-font-size: 10px;");
+                    time.setStyle("-fx-text-fill: #90c8ff; -fx-font-size: 10px;");
                     item.getChildren().addAll(title, time);
                     dayCard.getChildren().add(item);
                 }
