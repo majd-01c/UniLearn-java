@@ -18,6 +18,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import service.job_offer.ApplicationDocumentStorageService;
 import services.ServiceUser;
 import service.job_offer.GeminiApplicationFeedbackService;
 import services.job_offer.ServiceJobApplication;
@@ -55,6 +56,7 @@ public class MyApplicationsController implements Initializable {
     private ServiceJobApplication serviceJobApplication;
     private ServiceJobOffer serviceJobOffer;
     private ServiceUser serviceUser;
+    private ApplicationDocumentStorageService documentStorageService;
     private GeminiApplicationFeedbackService aiFeedbackService;
     private ObservableList<JobApplication> allApplications;
 
@@ -63,6 +65,7 @@ public class MyApplicationsController implements Initializable {
         serviceJobApplication = new ServiceJobApplication();
         serviceJobOffer = new ServiceJobOffer();
         serviceUser = new ServiceUser();
+        documentStorageService = new ApplicationDocumentStorageService();
         aiFeedbackService = new GeminiApplicationFeedbackService();
         allApplications = FXCollections.observableArrayList();
 
@@ -338,7 +341,7 @@ public class MyApplicationsController implements Initializable {
         }
 
         try {
-            File cvFile = resolveCvFile(application.getCvFileName().trim());
+            File cvFile = documentStorageService.resolveCvFile(application.getCvFileName().trim());
             if (cvFile == null || !cvFile.exists()) {
                 showError("CV not found", "The stored CV file could not be found on this computer.");
                 return;
@@ -353,27 +356,6 @@ public class MyApplicationsController implements Initializable {
         } catch (Exception exception) {
             showError("Open CV failed", exception.getMessage());
         }
-    }
-
-    private File resolveCvFile(String storedValue) {
-        File direct = new File(storedValue);
-        if (direct.exists()) {
-            return direct;
-        }
-
-        String normalized = storedValue.replace("\\", File.separator).replace("/", File.separator);
-        File normalizedFile = new File(normalized);
-        if (normalizedFile.exists()) {
-            return normalizedFile;
-        }
-
-        String fileNameOnly = new File(normalized).getName();
-        if (fileNameOnly.isEmpty()) {
-            return null;
-        }
-
-        File uploadsCv = new File(System.getProperty("user.dir") + File.separator + "uploads" + File.separator + "cvs", fileNameOnly);
-        return uploadsCv.exists() ? uploadsCv : null;
     }
 
     private void showAdviceDialog(JobApplication application) {
@@ -409,7 +391,7 @@ public class MyApplicationsController implements Initializable {
         cvTitle.getStyleClass().add("job-offer-section-title");
 
         Label cvBody = new Label(hasCv(application)
-                ? new File(application.getCvFileName()).getName()
+                ? documentStorageService.extractDisplayName(application.getCvFileName())
                 : "No CV attached to this application.");
         cvBody.getStyleClass().add("job-offer-card-description");
         cvBody.setMaxWidth(Double.MAX_VALUE);

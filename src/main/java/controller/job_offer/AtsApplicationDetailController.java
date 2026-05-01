@@ -80,9 +80,13 @@ public class AtsApplicationDetailController implements Initializable {
     private ServiceJobApplication serviceJobApplication;
     private AtsScoringEngine    scoringEngine;
     private GeminiCvExtractorService geminiService;
+    private ApplicationDocumentStorageService documentStorageService;
     private AtsApplicationScoringService applicationScoringService;
     private AtsAuditService     auditService;
     private final ObjectMapper  objectMapper = new ObjectMapper();
+    private Integer partnerReturnOfferId;
+    private Integer partnerReturnApplicationId;
+    private int partnerReturnStep = 1;
 
     // ── Init ─────────────────────────────────────────────────────────────────
 
@@ -91,6 +95,7 @@ public class AtsApplicationDetailController implements Initializable {
         serviceJobApplication = new ServiceJobApplication();
         scoringEngine         = new AtsScoringEngine();
         geminiService         = new GeminiCvExtractorService();
+        documentStorageService = new ApplicationDocumentStorageService();
         applicationScoringService = new AtsApplicationScoringService();
         auditService          = new AtsAuditService();
         setupBreakdownTable();
@@ -105,6 +110,12 @@ public class AtsApplicationDetailController implements Initializable {
 
     public void setCurrentUser(User user) {
         this.currentUser = user;
+    }
+
+    public void setPartnerReviewReturnContext(Integer offerId, Integer applicationId, int returnStep) {
+        this.partnerReturnOfferId = offerId;
+        this.partnerReturnApplicationId = applicationId;
+        this.partnerReturnStep = Math.max(1, Math.min(returnStep, 5));
     }
 
     // ── Populate ──────────────────────────────────────────────────────────────
@@ -169,7 +180,7 @@ public class AtsApplicationDetailController implements Initializable {
 
     private void populateCvInfo() {
         boolean hasCv = application.getCvFileName() != null && !application.getCvFileName().isBlank();
-        cvFilenameLabel.setText(hasCv ? application.getCvFileName() : "No CV attached");
+        cvFilenameLabel.setText(hasCv ? documentStorageService.extractDisplayName(application.getCvFileName()) : "No CV attached");
         openCvButton.setVisible(hasCv);
         openCvButton.setManaged(hasCv);
     }
@@ -419,7 +430,7 @@ public class AtsApplicationDetailController implements Initializable {
         String cvPath = application.getCvFileName();
         if (cvPath == null || cvPath.isBlank()) return;
         try {
-            File f = geminiService.resolveCvFile(cvPath);
+            File f = documentStorageService.resolveCvFile(cvPath);
             if (Desktop.isDesktopSupported()) { Desktop.getDesktop().open(f); }
         } catch (Exception e) {
             showError("Open failed", e.getMessage());
@@ -428,7 +439,7 @@ public class AtsApplicationDetailController implements Initializable {
 
     @FXML
     private void onBack() {
-        AppNavigator.showPartnerApplications();
+        AppNavigator.showPartnerApplications(partnerReturnOfferId, partnerReturnApplicationId, partnerReturnStep);
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

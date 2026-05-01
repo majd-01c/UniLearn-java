@@ -30,6 +30,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import service.job_offer.ApplicationDocumentStorageService;
 import service.job_offer.AtsApplicationScoringService;
 import service.job_offer.AtsScoringEngine;
 import service.job_offer.GeminiApplicationFeedbackService;
@@ -41,11 +42,7 @@ import util.RoleGuard;
 
 import java.awt.Desktop;
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -137,6 +134,7 @@ public class PartnerApplicationsController implements Initializable {
     private ServiceJobApplication serviceJobApplication;
     private ServiceJobOffer serviceJobOffer;
     private ServiceUser serviceUser;
+    private ApplicationDocumentStorageService documentStorageService;
     private GeminiApplicationFeedbackService aiFeedbackService;
     private AtsScoringEngine atsScoringEngine;
     private AtsApplicationScoringService atsApplicationScoringService;
@@ -149,12 +147,16 @@ public class PartnerApplicationsController implements Initializable {
     private JobOffer selectedOffer;
     private JobApplication selectedApplication;
     private int currentStep = 1;
+    private Integer pendingOfferId;
+    private Integer pendingApplicationId;
+    private Integer pendingStep;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         serviceJobApplication = new ServiceJobApplication();
         serviceJobOffer = new ServiceJobOffer();
         serviceUser = new ServiceUser();
+        documentStorageService = new ApplicationDocumentStorageService();
         aiFeedbackService = new GeminiApplicationFeedbackService();
         atsScoringEngine = new AtsScoringEngine();
         atsApplicationScoringService = new AtsApplicationScoringService();
@@ -176,6 +178,12 @@ public class PartnerApplicationsController implements Initializable {
         pageTitleLabel.setText("Application Review");
         pageSubtitleLabel.setText("Pick an offer, select one candidate, review the dossier, then submit a final decision.");
         loadApplications();
+    }
+
+    public void restoreNavigationState(Integer offerId, Integer applicationId, int step) {
+        pendingOfferId = offerId;
+        pendingApplicationId = applicationId;
+        pendingStep = Math.max(1, Math.min(step, 5));
     }
 
     private void setupFilters() {
@@ -208,8 +216,13 @@ public class PartnerApplicationsController implements Initializable {
             return;
         }
 
-        Integer previousOfferId = selectedOffer != null ? selectedOffer.getId() : null;
-        Integer previousApplicationId = selectedApplication != null ? selectedApplication.getId() : null;
+        Integer previousOfferId = pendingOfferId != null ? pendingOfferId : (selectedOffer != null ? selectedOffer.getId() : null);
+        Integer previousApplicationId = pendingApplicationId != null ? pendingApplicationId : (selectedApplication != null ? selectedApplication.getId() : null);
+        int previousStep = pendingStep != null ? pendingStep : currentStep;
+
+        pendingOfferId = null;
+        pendingApplicationId = null;
+        pendingStep = null;
 
         Thread thread = new Thread(() -> {
             try {
@@ -255,6 +268,7 @@ public class PartnerApplicationsController implements Initializable {
 
                     updateStats();
                     renderOffers();
+                    currentStep = Math.max(1, Math.min(previousStep, 5));
                     restoreSelection(previousOfferId, previousApplicationId);
                 });
             } catch (Exception e) {
@@ -293,6 +307,7 @@ public class PartnerApplicationsController implements Initializable {
                 populateReviewPanel(restoredApplication);
                 populateDecisionPanel(restoredApplication);
             }
+            showStep(currentStep);
         } else {
             selectedApplication = null;
             resetStepTwoSelection();
@@ -300,6 +315,8 @@ public class PartnerApplicationsController implements Initializable {
             resetDecisionPanel();
             if (currentStep > 2) {
                 showStep(2);
+            } else {
+                showStep(currentStep);
             }
         }
     }
@@ -990,7 +1007,12 @@ public class PartnerApplicationsController implements Initializable {
     @FXML
     private void onOpenSelectedAtsDetail() {
         if (selectedApplication != null) {
-            AppNavigator.showAtsApplicationDetail(selectedApplication);
+            AppNavigator.showAtsApplicationDetail(
+                    selectedApplication,
+                    selectedOffer != null ? selectedOffer.getId() : null,
+                    selectedApplication.getId(),
+                    3
+            );
         }
     }
 
@@ -1152,7 +1174,7 @@ public class PartnerApplicationsController implements Initializable {
 
         try {
             String storedValue = application.getCvFileName().trim();
-            File cvFile = resolveCvFile(storedValue);
+            File cvFile = documentStorageService.resolveCvFile(storedValue);
             if (cvFile == null || !cvFile.exists()) {
                 relinkCvFile(application, storedValue);
                 return;
@@ -1192,64 +1214,19 @@ public class PartnerApplicationsController implements Initializable {
         }
 
         try {
-            String managedCvPath = persistCvFile(selected);
+            String managedCvPath = documentStorageService.storeCv(
+                    selected,
+                    application.getUser() != null ? application.getUser().getId() : null,
+                    application.getJobOffer() != null ? application.getJobOffer().getId() : null
+            );
             application.setCvFileName(managedCvPath);
             application.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
             serviceJobApplication.update(application);
-            Desktop.getDesktop().open(new File(managedCvPath));
+            Desktop.getDesktop().open(documentStorageService.resolveCvFile(managedCvPath));
             loadApplications();
         } catch (Exception exception) {
             showError("CV relink failed", exception.getMessage());
         }
-    }
-
-    private String persistCvFile(File source) throws IOException {
-        if (source == null || !source.exists()) {
-            throw new IOException("Selected CV file does not exist.");
-        }
-
-        String sanitizedName = source.getName().replaceAll("[^a-zA-Z0-9._-]", "_");
-        String targetName = System.currentTimeMillis() + "_" + sanitizedName;
-
-        Path targetDir = Path.of(System.getProperty("user.dir"), "uploads", "cvs");
-        Files.createDirectories(targetDir);
-
-        Path targetPath = targetDir.resolve(targetName);
-        Files.copy(source.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-        return targetPath.toAbsolutePath().toString();
-    }
-
-    private File resolveCvFile(String storedValue) {
-        File direct = new File(storedValue);
-        if (direct.exists()) {
-            return direct;
-        }
-
-        String normalized = storedValue.replace("\\", File.separator).replace("/", File.separator);
-        File normalizedFile = new File(normalized);
-        if (normalizedFile.exists()) {
-            return normalizedFile;
-        }
-
-        String filenameOnly = new File(normalized).getName();
-        if (filenameOnly.isEmpty()) {
-            return null;
-        }
-
-        List<File> candidateDirs = new ArrayList<>();
-        candidateDirs.add(new File(System.getProperty("user.dir")));
-        candidateDirs.add(new File(System.getProperty("user.home"), "Downloads"));
-        candidateDirs.add(new File(System.getProperty("user.home"), "Desktop"));
-        candidateDirs.add(new File(System.getProperty("user.home"), "Documents"));
-
-        for (File dir : candidateDirs) {
-            File candidate = new File(dir, filenameOnly);
-            if (candidate.exists()) {
-                return candidate;
-            }
-        }
-
-        return null;
     }
 
     private void enrichApplicationReferences(JobApplication application,
