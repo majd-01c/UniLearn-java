@@ -13,10 +13,10 @@
 /* ── HEADER ───────────────────────────────────────────────────── */
 .eval-shell-header {
     -fx-background-color: linear-gradient(to right,
-    #030a16 0%,
-    #071428 40%,
-    #0a1b36 70%,
-    #071020 100%);
+            #030a16 0%,
+            #071428 40%,
+            #0a1b36 70%,
+            #071020 100%);
     -fx-border-color: rgba(56, 139, 255, 0.28);
     -fx-border-width: 0 0 1 0;
     -fx-effect: dropshadow(gaussian, rgba(30, 100, 255, 0.18), 24, 0.3, 0, 4);
@@ -97,8 +97,8 @@
 
 .eval-student-hero {
     -fx-background-color: linear-gradient(from 0% 0% to 100% 100%,
-    rgba(18, 34, 62, 0.95),
-    rgba(10, 20, 42, 0.92));
+            rgba(18, 34, 62, 0.95),
+            rgba(10, 20, 42, 0.92));
     -fx-border-color: rgba(56, 139, 255, 0.3);
     -fx-border-width: 1;
     -fx-border-radius: 18;
@@ -110,8 +110,8 @@
 /* ── CONTROL ROW ──────────────────────────────────────────────── */
 .eval-control-row {
     -fx-background-color: linear-gradient(to bottom,
-    rgba(25, 50, 90, 0.55),
-    rgba(14, 28, 55, 0.55));
+            rgba(25, 50, 90, 0.55),
+            rgba(14, 28, 55, 0.55));
     -fx-background-radius: 12;
     -fx-border-color: rgba(56, 139, 255, 0.18);
     -fx-border-radius: 12;
@@ -138,9 +138,9 @@
 /* Primary CTA Button */
 .eval-primary-btn {
     -fx-background-color: linear-gradient(from 0% 0% to 100% 100%,
-    #2a82ff,
-    #1460ee,
-    #0f4fd8);
+            #2a82ff,
+            #1460ee,
+            #0f4fd8);
     -fx-text-fill: #ffffff;
     -fx-font-weight: 800;
     -fx-background-radius: 12;
@@ -154,17 +154,17 @@
 
 .eval-primary-btn:hover {
     -fx-background-color: linear-gradient(from 0% 0% to 100% 100%,
-    #3d96ff,
-    #1f70ff,
-    #1460ee);
+            #3d96ff,
+            #1f70ff,
+            #1460ee);
     -fx-effect: dropshadow(gaussian, rgba(50, 140, 255, 0.75), 24, 0.45, 0, 6);
 }
 
 /* Section Buttons — Pill-style with glow */
 .eval-section-btn {
     -fx-background-color: linear-gradient(to bottom,
-    rgba(30, 65, 120, 0.7),
-    rgba(18, 42, 88, 0.7));
+            rgba(30, 65, 120, 0.7),
+            rgba(18, 42, 88, 0.7));
     -fx-border-color: rgba(80, 150, 255, 0.38);
     -fx-border-width: 1;
     -fx-border-radius: 999;
@@ -178,8 +178,8 @@
 
 .eval-section-btn:hover {
     -fx-background-color: linear-gradient(to bottom,
-    rgba(48, 100, 190, 0.75),
-    rgba(30, 70, 150, 0.75));
+            rgba(48, 100, 190, 0.75),
+            rgba(30, 70, 150, 0.75));
     -fx-effect: dropshadow(gaussian, rgba(50, 140, 255, 0.38), 14, 0.3, 0, 3);
     -fx-border-color: rgba(100, 180, 255, 0.55);
 }
@@ -226,9 +226,9 @@
    ══════════════════════════════════════════════════════════════ */
 .eval-nav-bar {
     -fx-background-color: linear-gradient(from 0% 0% to 100% 0%,
-    rgba(6, 12, 26, 0.96),
-    rgba(8, 18, 38, 0.96),
-    rgba(6, 14, 30, 0.96));
+            rgba(6, 12, 26, 0.96),
+            rgba(8, 18, 38, 0.96),
+            rgba(6, 14, 30, 0.96));
     -fx-border-color: rgba(56, 139, 255, 0.32);
     -fx-border-width: 1;
     -fx-border-radius: 16;
@@ -261,9 +261,9 @@
 /* Active nav button — electric cyan-blue glow */
 .eval-nav-btn-active {
     -fx-background-color: linear-gradient(from 0% 0% to 100% 100%,
-    #00c6ff,
-    #2575fc,
-    #1a4fd8);
+            #00c6ff,
+            #2575fc,
+            #1a4fd8);
     -fx-border-color: rgba(0, 210, 255, 0.6);
     -fx-border-width: 1;
     -fx-text-fill: #ffffff;
@@ -277,8 +277,8 @@
 
 .eval-kpi-card {
     -fx-background-color: linear-gradient(from 0% 0% to 100% 100%,
-    rgba(18, 38, 75, 0.9),
-    rgba(10, 22, 50, 0.9));
+            rgba(18, 38, 75, 0.9),
+            rgba(10, 22, 50, 0.9));
     -fx-border-color: rgba(56, 139, 255, 0.28);
     -fx-border-width: 1;
     -fx-border-radius: 16;
@@ -327,8 +327,8 @@
 .eval-root .table-view .column-header-background,
 .eval-shell-root .table-view .column-header-background {
     -fx-background-color: linear-gradient(to bottom,
-    rgba(18, 40, 80, 0.98),
-    rgba(12, 26, 58, 0.98));
+            rgba(18, 40, 80, 0.98),
+            rgba(12, 26, 58, 0.98));
 }
 
 .eval-root .table-view .column-header,
@@ -390,8 +390,8 @@
 .eval-root .tab-pane .tab:selected,
 .eval-shell-root .tab-pane .tab:selected {
     -fx-background-color: linear-gradient(to bottom,
-    rgba(30, 70, 140, 0.95),
-    rgba(14, 38, 85, 0.95));
+            rgba(30, 70, 140, 0.95),
+            rgba(14, 38, 85, 0.95));
     -fx-border-color: rgba(60, 160, 255, 0.45) rgba(60, 160, 255, 0.45) transparent rgba(60, 160, 255, 0.45);
     -fx-effect: dropshadow(gaussian, rgba(30, 110, 255, 0.3), 10, 0.2, 0, -2);
 }
@@ -412,9 +412,9 @@
 /* ── RECOMMENDATIONS PANEL ────────────────────────────────────── */
 .eval-recommendations-panel {
     -fx-background-color: linear-gradient(from 0% 0% to 100% 100%,
-    #050e1e 0%,
-    #081527 50%,
-    #060d1c 100%);
+            #050e1e 0%,
+            #081527 50%,
+            #060d1c 100%);
     -fx-border-color: rgba(40, 90, 180, 0.4);
     -fx-border-width: 1;
     -fx-background-radius: 20;
@@ -424,8 +424,8 @@
 
 .eval-recommendations-hero {
     -fx-background-color: linear-gradient(from 0% 0% to 100% 0%,
-    rgba(30, 100, 255, 0.15),
-    rgba(0, 200, 255, 0.08));
+            rgba(30, 100, 255, 0.15),
+            rgba(0, 200, 255, 0.08));
     -fx-border-color: rgba(60, 160, 255, 0.25);
     -fx-border-width: 1;
     -fx-border-radius: 16;
@@ -464,8 +464,8 @@
 /* ── RESOURCE CARDS ───────────────────────────────────────────── */
 .eval-resource-card {
     -fx-background-color: linear-gradient(from 0% 0% to 100% 100%,
-    rgba(12, 26, 52, 0.98),
-    rgba(7, 16, 36, 0.98));
+            rgba(12, 26, 52, 0.98),
+            rgba(7, 16, 36, 0.98));
     -fx-border-color: rgba(56, 120, 220, 0.28);
     -fx-border-width: 1;
     -fx-border-radius: 18;
@@ -502,8 +502,8 @@
 /* ── SECTION MENU ─────────────────────────────────────────────── */
 .eval-section-menu {
     -fx-background-color: linear-gradient(to bottom,
-    rgba(12, 26, 55, 0.92),
-    rgba(7, 16, 40, 0.92));
+            rgba(12, 26, 55, 0.92),
+            rgba(7, 16, 40, 0.92));
     -fx-border-color: rgba(56, 139, 255, 0.25);
     -fx-border-width: 1;
     -fx-border-radius: 14;
@@ -526,8 +526,8 @@
 /* ── DATA CARDS ───────────────────────────────────────────────── */
 .eval-data-card {
     -fx-background-color: linear-gradient(to bottom,
-    rgba(14, 30, 60, 0.9) 0%,
-    rgba(8, 18, 42, 0.9) 100%);
+            rgba(14, 30, 60, 0.9) 0%,
+            rgba(8, 18, 42, 0.9) 100%);
     -fx-border-color: rgba(56, 139, 255, 0.22);
     -fx-border-width: 1;
     -fx-border-radius: 14;
@@ -624,8 +624,8 @@
 /* ── FORM CARD ─────────────────────────────────────────────── */
 .eval-form-card {
     -fx-background-color: linear-gradient(from 0% 0% to 100% 100%,
-    rgba(16, 32, 64, 0.92),
-    rgba(10, 20, 44, 0.92));
+            rgba(16, 32, 64, 0.92),
+            rgba(10, 20, 44, 0.92));
     -fx-border-color: rgba(56, 139, 255, 0.28);
     -fx-border-width: 1;
     -fx-border-radius: 16;
@@ -725,8 +725,8 @@
 
 .eval-tabpane .tab:selected {
     -fx-background-color: linear-gradient(to bottom,
-    rgba(28, 65, 130, 0.98),
-    rgba(16, 40, 90, 0.98));
+            rgba(28, 65, 130, 0.98),
+            rgba(16, 40, 90, 0.98));
     -fx-border-color: rgba(60, 160, 255, 0.5) rgba(60, 160, 255, 0.5) transparent rgba(60, 160, 255, 0.5);
     -fx-effect: dropshadow(gaussian, rgba(30, 110, 255, 0.35), 12, 0.25, 0, -2);
 }
@@ -752,9 +752,9 @@
 .eval-nav-btn.eval-nav-btn-active,
 .eval-nav-btn-active {
     -fx-background-color: linear-gradient(from 0% 0% to 100% 100%,
-    #00c6ff,
-    #2575fc,
-    #1a4fd8) !important;
+            #00c6ff,
+            #2575fc,
+            #1a4fd8) !important;
     -fx-border-color: rgba(0, 210, 255, 0.65) !important;
     -fx-border-width: 1;
     -fx-text-fill: #ffffff !important;
@@ -813,4 +813,4 @@
     -fx-text-fill: #c8e0ff;
     -fx-background-color: transparent;
     -fx-prompt-text-fill: rgba(140, 180, 255, 0.5);
-}
+}

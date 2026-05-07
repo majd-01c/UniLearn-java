@@ -64,11 +64,11 @@
                                             <HBox spacing="12.0" alignment="CENTER_LEFT">
                                                 <children>
                                                     <VBox prefWidth="200.0">
-                                                        <Label text="Set Status" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                        <Label text="Set Status" styleClass="eval-label"/>
                                                         <ComboBox fx:id="reclamationStatusCombo" maxWidth="Infinity"/>
                                                     </VBox>
                                                     <VBox HBox.hgrow="ALWAYS">
-                                                        <Label text="Response Message" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                        <Label text="Response Message" styleClass="eval-label"/>
                                                         <TextArea fx:id="reclamationResponseArea" promptText="Write your response to the student..." prefHeight="70.0" styleClass="eval-textarea"/>
                                                     </VBox>
                                                 </children>
@@ -107,14 +107,14 @@
                                             <HBox spacing="16.0">
                                                 <children>
                                                     <VBox spacing="8.0" prefWidth="240.0">
-                                                        <Label text="Update Status" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                        <Label text="Update Status" styleClass="eval-label"/>
                                                         <ComboBox fx:id="documentStatusCombo" maxWidth="Infinity"/>
                                                         <Region VBox.vgrow="ALWAYS"/>
                                                         <Button text="📁 Browse PDF" onAction="#onBrowsePdf" styleClass="eval-ghost-btn" maxWidth="Infinity"/>
                                                         <Button text="✅ Finalize Request" onAction="#onUpdateDocumentRequest" styleClass="eval-primary-btn" maxWidth="Infinity"/>
                                                     </VBox>
                                                     <VBox spacing="8.0" HBox.hgrow="ALWAYS">
-                                                        <Label text="PDF Attachment Workspace" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                        <Label text="PDF Attachment Workspace" styleClass="eval-label"/>
                                                         <VBox fx:id="pdfDropZone" styleClass="eval-pdf-dropzone" alignment="CENTER" VBox.vgrow="ALWAYS" onDragOver="#onPdfDragOver" onDragDropped="#onPdfDropped">
                                                             <children>
                                                                 <Label text="📂" style="-fx-font-size: 28px;"/>
@@ -163,41 +163,41 @@
                                                 </columnConstraints>
                                                 <children>
                                                     <VBox GridPane.columnIndex="0" GridPane.rowIndex="0">
-                                                        <Label text="Teacher Name" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                        <Label text="Teacher Name" styleClass="eval-label"/>
                                                         <TextField fx:id="scheduleTeacherNameField" promptText="Full name or Email" styleClass="eval-pill-input"/>
                                                     </VBox>
                                                     <VBox GridPane.columnIndex="1" GridPane.rowIndex="0">
-                                                        <Label text="Course Name *" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                        <Label text="Course Name *" styleClass="eval-label"/>
                                                         <TextField fx:id="scheduleCourseNameField" promptText="e.g. Advanced Java" styleClass="eval-pill-input"/>
                                                     </VBox>
                                                     <VBox GridPane.columnIndex="2" GridPane.rowIndex="0">
-                                                        <Label text="Target Class *" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                        <Label text="Target Class *" styleClass="eval-label"/>
                                                         <TextField fx:id="scheduleClassNameField" promptText="e.g. 3A57" styleClass="eval-pill-input"/>
                                                     </VBox>
                                                     <VBox GridPane.columnIndex="3" GridPane.rowIndex="0">
-                                                        <Label text="Day of Week *" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                        <Label text="Day of Week *" styleClass="eval-label"/>
                                                         <TextField fx:id="scheduleDayField" promptText="e.g. Monday" styleClass="eval-pill-input"/>
                                                     </VBox>
 
                                                     <VBox GridPane.columnIndex="0" GridPane.rowIndex="1">
-                                                        <Label text="Start Time *" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                        <Label text="Start Time *" styleClass="eval-label"/>
                                                         <TextField fx:id="scheduleStartTimeField" promptText="HH:mm" styleClass="eval-pill-input"/>
                                                     </VBox>
                                                     <VBox GridPane.columnIndex="1" GridPane.rowIndex="1">
-                                                        <Label text="End Time *" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                        <Label text="End Time *" styleClass="eval-label"/>
                                                         <TextField fx:id="scheduleEndTimeField" promptText="HH:mm" styleClass="eval-pill-input"/>
                                                     </VBox>
                                                     <VBox GridPane.columnIndex="2" GridPane.rowIndex="1">
-                                                        <Label text="Start Date" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                        <Label text="Start Date" styleClass="eval-label"/>
                                                         <DatePicker fx:id="scheduleStartDatePicker" maxWidth="Infinity"/>
                                                     </VBox>
                                                     <VBox GridPane.columnIndex="3" GridPane.rowIndex="1">
-                                                        <Label text="End Date" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                        <Label text="End Date" styleClass="eval-label"/>
                                                         <DatePicker fx:id="scheduleEndDatePicker" maxWidth="Infinity"/>
                                                     </VBox>
 
                                                     <VBox GridPane.columnIndex="0" GridPane.rowIndex="2">
-                                                        <Label text="Room / Location" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                        <Label text="Room / Location" styleClass="eval-label"/>
                                                         <TextField fx:id="scheduleRoomField" promptText="e.g. Lab 402" styleClass="eval-pill-input"/>
                                                     </VBox>
                                                 </children>

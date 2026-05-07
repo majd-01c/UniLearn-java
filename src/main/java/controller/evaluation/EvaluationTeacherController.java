@@ -544,11 +544,11 @@ public class EvaluationTeacherController {
         studentLabel.getStyleClass().add("eval-data-card-title");
         
         Label subjectLabel = new Label("Subject: " + safe(r.getSubject()));
-        subjectLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #1e293b;");
+        subjectLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #d0e8ff;");
         
         Label descLabel = new Label(safe(r.getDescription()));
         descLabel.setWrapText(true);
-        descLabel.setStyle("-fx-text-fill: #475569; -fx-font-style: italic;");
+        descLabel.setStyle("-fx-text-fill: #94a3b8; -fx-font-style: italic;");
         
         Label statusLabel = new Label("Status: " + safe(r.getStatus()).toUpperCase());
         String statusColor = switch(safe(r.getStatus()).toLowerCase()) {
