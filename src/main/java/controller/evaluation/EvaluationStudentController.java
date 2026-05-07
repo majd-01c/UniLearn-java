@@ -6,7 +6,6 @@ import entities.Grade;
 import entities.Reclamation;
 import entities.Schedule;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -14,29 +13,17 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputControl;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.stage.FileChooser;
 import security.UserSession;
 import service.evaluation.EvaluationService;
-import service.evaluation.ai.GroqAiService;
 
 import java.awt.Desktop;
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Comparator; // Added import for Comparator
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.function.UnaryOperator;
 
 import javafx.scene.control.TextFormatter;
@@ -69,29 +56,16 @@ public class EvaluationStudentController {
     private VBox documentsPane;
 
     @FXML
-    private Button gradesNavBtn;
-    @FXML
-    private Button recommendationsNavBtn;
-    @FXML
-    private Button scheduleNavBtn;
-    @FXML
-    private Button complaintsNavBtn;
-    @FXML
-    private Button documentsNavBtn;
-
-    @FXML
     private VBox gradesCardsBox;
     @FXML
     private VBox recommendationsCardsBox;
-    @FXML
-    private HBox recommendationResourcesBox;
     @FXML
     private VBox scheduleCardsBox;
 
     @FXML
     private TextField complaintSubjectField;
     @FXML
-    private ComboBox<String> complaintCourseBox;
+    private TextField complaintCourseNameField;
     @FXML
     private TextArea complaintDescriptionArea;
     @FXML
@@ -105,23 +79,10 @@ public class EvaluationStudentController {
     private VBox docRequestsCardsBox;
 
     @FXML
-    private TextArea aiRecommendationArea;
-    @FXML
-    private TextArea aiTeacherMessageArea;
-    @FXML
-    private Label selectedPdfLabel;
-    @FXML
-    private ComboBox<String> pdfTargetLanguageBox;
-    @FXML
-    private TextArea pdfTranslationArea;
-
-    @FXML
     private Label feedbackLabel;
 
     private final EvaluationService service = new EvaluationService();
-    private final GroqAiService aiService = new GroqAiService();
     private final DecimalFormat df = new DecimalFormat("0.00");
-    private String selectedPdfPath;
 
     @FXML
     public void initialize() {
@@ -131,18 +92,10 @@ public class EvaluationStudentController {
             studentIdField.setEditable(false);
             studentIdField.setDisable(true);
         }
-        Integer classId = service.resolvePrimaryClassIdForStudent(currentStudentId);
         if (classIdField != null) {
-            classIdField.setText(classId == null ? "" : String.valueOf(classId));
+            classIdField.setText("1");
         }
         installInputValidation();
-
-        if (complaintCourseBox != null) {
-            complaintCourseBox.getItems().setAll(service.getCourseNamesForStudent(currentStudentId));
-            if (!complaintCourseBox.getItems().isEmpty()) {
-                complaintCourseBox.getSelectionModel().selectFirst();
-            }
-        }
 
         docTypeBox.getItems().setAll(
                 "attestation_stage",
@@ -154,44 +107,8 @@ public class EvaluationStudentController {
         );
         docTypeBox.getSelectionModel().selectFirst();
 
-        if (pdfTargetLanguageBox != null) {
-            pdfTargetLanguageBox.getItems().setAll("French", "English", "Arabic", "Spanish", "German");
-            pdfTargetLanguageBox.getSelectionModel().select("French");
-        }
-        if (selectedPdfLabel != null) {
-            selectedPdfLabel.setText("Selected PDF: none");
-        }
-        if (aiRecommendationArea != null) {
-            aiRecommendationArea.setEditable(false);
-            aiRecommendationArea.setText("Click Generate AI Recommendations to create a personalized study plan.");
-        }
-        if (pdfTranslationArea != null) {
-            pdfTranslationArea.setEditable(false);
-            pdfTranslationArea.setText("Select a delivered PDF request and click Translate PDF.");
-        }
-
         showSection(gradesPane);
         refreshAll();
-
-        // AI Correction for Student Message to Teacher (including profanity filter)
-        complaintDescriptionArea.focusedProperty().addListener((obs, oldVal, newVal) -> {
-            if (!newVal) {
-                String original = complaintDescriptionArea.getText();
-                if (original != null && original.length() > 5) {
-                    new Thread(() -> {
-                        String corrected = aiService.correctSpellingAndGrammar(original);
-                        if (corrected != null && !corrected.isEmpty() && !corrected.startsWith("###")) {
-                            javafx.application.Platform.runLater(() -> {
-                                if (complaintDescriptionArea.getText().equals(original)) {
-                                    complaintDescriptionArea.setText(corrected);
-                                    showFeedback("AI auto-corrected your message spelling and filtered content.", false);
-                                }
-                            });
-                        }
-                    }).start();
-                }
-            }
-        });
     }
 
     @FXML
@@ -202,11 +119,6 @@ public class EvaluationStudentController {
     @FXML
     private void showSchedule() {
         onOpenSchedule();
-    }
-
-    @FXML
-    private void showRecommendations() {
-        onOpenRecommendations();
     }
 
     @FXML
@@ -264,25 +176,28 @@ public class EvaluationStudentController {
     private void onCreateComplaint() {
         try {
             int studentId = resolveStudentId();
-            String courseName = complaintCourseBox == null ? null : complaintCourseBox.getValue();
-            courseName = requireNotBlank(courseName, "Course");
-            String subject = requireNotBlank(complaintSubjectField.getText(), "Subject");
-            String description = requireNotBlank(complaintDescriptionArea.getText(), "Message content");
+            String courseName = requireNotBlank(complaintCourseNameField.getText(), "Course name");
+            String subject = requireNotBlank(complaintSubjectField.getText(), "Complaint subject");
+            String description = requireNotBlank(complaintDescriptionArea.getText(), "Complaint description");
 
             if (subject.length() < 3) {
-                throw new IllegalArgumentException("Subject must have at least 3 characters.");
+                throw new IllegalArgumentException("Complaint subject must have at least 3 characters.");
             }
-            if (description.length() < 5) {
-                throw new IllegalArgumentException("Message must have at least 5 characters.");
+            if (description.length() < 10) {
+                throw new IllegalArgumentException("Complaint description must have at least 10 characters.");
+            }
+            if (service.findCourseIdByName(courseName) == null) {
+                throw new IllegalArgumentException("Course name is invalid. Please enter an existing course title.");
             }
 
             service.createReclamation(studentId, courseName, subject, description);
             complaintSubjectField.clear();
             complaintDescriptionArea.clear();
+            complaintCourseNameField.clear();
             refreshComplaints(studentId);
-            showFeedback("Message sent to teacher.", false);
+            showFeedback("Complaint created.");
         } catch (Exception e) {
-            showFeedback("Failed to send message: " + e.getMessage(), true);
+            showFeedback("Create complaint failed: " + e.getMessage());
         }
     }
 
@@ -302,103 +217,9 @@ public class EvaluationStudentController {
             service.createDocumentRequest(studentId, docType, additionalInfo);
             docInfoArea.clear();
             refreshDocRequests(studentId);
-            showFeedback("Document request created.", false);
+            showFeedback("Document request created.");
         } catch (Exception e) {
-            showFeedback("Create document request failed: " + e.getMessage(), true);
-        }
-    }
-
-    @FXML
-    private void onGenerateAiRecommendations() {
-        try {
-            int studentId = resolveStudentId();
-            String recommendation = service.generateAiStudentRecommendations(studentId);
-            if (aiRecommendationArea != null) {
-                aiRecommendationArea.setText(recommendation);
-            }
-            renderRecommendationResources(service.buildLearningResources(studentId));
-            showFeedback("AI recommendations generated.", false);
-        } catch (Exception e) {
-            showFeedback("AI recommendation failed: " + e.getMessage(), true);
-        }
-    }
-
-    @FXML
-    private void onTranslateSelectedPdf() {
-        try {
-            if (selectedPdfPath == null || selectedPdfPath.isBlank()) {
-                throw new IllegalArgumentException("Please select a delivered PDF from the list first.");
-            }
-            String targetLanguage = (pdfTargetLanguageBox == null || pdfTargetLanguageBox.getValue() == null)
-                    ? "English"
-                    : pdfTargetLanguageBox.getValue();
-            
-            String translatedText = service.translatePdfDocument(selectedPdfPath, targetLanguage);
-            if (pdfTranslationArea != null) {
-                pdfTranslationArea.setText(translatedText);
-            }
-
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Save Translated PDF");
-            fileChooser.setInitialFileName("translated_document_" + targetLanguage + ".pdf");
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
-            File file = fileChooser.showSaveDialog(pdfTranslationArea.getScene().getWindow());
-
-            if (file != null) {
-                service.saveTextAsPdf(translatedText, file);
-                showFeedback("Translated PDF saved: " + file.getName(), false);
-                if (Desktop.isDesktopSupported()) {
-                    Desktop.getDesktop().open(file);
-                }
-            } else {
-                showFeedback("Translation complete, but save was cancelled.", false);
-            }
-        } catch (Exception e) {
-            showFeedback("PDF translation/save failed: " + e.getMessage(), true);
-        }
-    }
-
-    @FXML
-    private void onDownloadTranscript() {
-        try {
-            int studentId = resolveStudentId();
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Save Academic Transcript");
-            fileChooser.setInitialFileName("Transcript_" + studentId + ".pdf");
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
-            File file = fileChooser.showSaveDialog(feedbackLabel.getScene().getWindow());
-
-            if (file != null) {
-                service.downloadStudentTranscript(studentId, file);
-                showFeedback("Transcript downloaded: " + file.getName(), false);
-                if (Desktop.isDesktopSupported()) {
-                    Desktop.getDesktop().open(file);
-                }
-            }
-        } catch (Exception e) {
-            showFeedback("Download transcript failed: " + e.getMessage(), true);
-        }
-    }
-
-    @FXML
-    private void onDownloadStudentSchedule() {
-        try {
-            int studentId = resolveStudentId();
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Save My Academic Schedule");
-            fileChooser.setInitialFileName("Student_Schedule_" + studentId + ".pdf");
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
-            File file = fileChooser.showSaveDialog(feedbackLabel.getScene().getWindow());
-
-            if (file != null) {
-                service.downloadStudentSchedule(studentId, file);
-                showFeedback("Schedule downloaded: " + file.getName(), false);
-                if (Desktop.isDesktopSupported()) {
-                    Desktop.getDesktop().open(file);
-                }
-            }
-        } catch (Exception e) {
-            showFeedback("Download schedule failed: " + e.getMessage(), true);
+            showFeedback("Create document request failed: " + e.getMessage());
         }
     }
 
@@ -406,16 +227,6 @@ public class EvaluationStudentController {
         try {
             int studentId = resolveStudentId();
             int classId = resolveClassId();
-
-            if (complaintCourseBox != null) {
-                String previousSelection = complaintCourseBox.getValue();
-                complaintCourseBox.getItems().setAll(service.getCourseNamesForStudent(studentId));
-                if (previousSelection != null && complaintCourseBox.getItems().contains(previousSelection)) {
-                    complaintCourseBox.getSelectionModel().select(previousSelection);
-                } else if (!complaintCourseBox.getItems().isEmpty()) {
-                    complaintCourseBox.getSelectionModel().selectFirst();
-                }
-            }
 
             List<Grade> grades = service.getGradesByStudent(studentId);
             renderGrades(grades);
@@ -427,13 +238,12 @@ public class EvaluationStudentController {
             averageLabel.setText(df.format(summary.getAverage()));
 
             renderRecommendations(service.buildRecommendations(studentId));
-            renderRecommendationResources(service.buildLearningResources(studentId));
             renderSchedule(service.getScheduleByClasse(classId));
             refreshComplaints(studentId);
             refreshDocRequests(studentId);
-            showFeedback("Evaluation data refreshed.", false);
+            showFeedback("Evaluation data refreshed.");
         } catch (Exception e) {
-            showFeedback("Refresh failed: " + e.getMessage(), true);
+            showFeedback("Refresh failed: " + e.getMessage());
         }
     }
 
@@ -441,16 +251,17 @@ public class EvaluationStudentController {
         List<Reclamation> rows = service.getReclamationsByStudent(studentId);
         complaintsCardsBox.getChildren().clear();
         if (rows.isEmpty()) {
-            complaintsCardsBox.getChildren().add(emptyCard("No messages yet"));
+            complaintsCardsBox.getChildren().add(emptyCard("No complaints yet"));
             return;
         }
         for (Reclamation row : rows) {
             String courseTitle = row.getCourse() == null ? null : service.resolveCourseTitle(row.getCourse().getId());
             complaintsCardsBox.getChildren().add(dataCard(
-                    "Topic: " + safe(row.getSubject()),
-                "Regarding Course: " + safe(courseTitle),
-                    "Status: " + safe(row.getStatus()).toUpperCase(),
-                    "Teacher Reply: " + safe(row.getAdminResponse())
+                    "Complaint #" + row.getId(),
+                "Course: " + safe(courseTitle),
+                    "Subject: " + safe(row.getSubject()),
+                    "Status: " + safe(row.getStatus()),
+                    "Response: " + safe(row.getAdminResponse())
             ));
         }
     }
@@ -471,21 +282,10 @@ public class EvaluationStudentController {
                     "Path: " + safe(documentPath)
             );
             if (documentPath != null && !documentPath.isBlank()) {
-                Button downloadButton = new Button("Download / Open Original");
+                Button downloadButton = new Button("Download / Open");
                 downloadButton.getStyleClass().add("eval-ghost-btn");
                 downloadButton.setOnAction(event -> openDocument(documentPath));
-
-                Button selectForTranslateButton = new Button("Use for AI Translation");
-                selectForTranslateButton.getStyleClass().add("eval-primary-btn");
-                selectForTranslateButton.setOnAction(event -> {
-                    selectedPdfPath = documentPath;
-                    if (selectedPdfLabel != null) {
-                        selectedPdfLabel.setText("Selected PDF: " + documentPath);
-                    }
-                    showFeedback("PDF selected for AI translation.", false);
-                });
-
-                HBox actions = new HBox(8, downloadButton, selectForTranslateButton);
+                HBox actions = new HBox(downloadButton);
                 actions.setAlignment(Pos.CENTER_LEFT);
                 card.getChildren().add(actions);
             }
@@ -499,68 +299,14 @@ public class EvaluationStudentController {
             gradesCardsBox.getChildren().add(emptyCard("No grades available"));
             return;
         }
-
-        Map<String, List<Grade>> grouped = new LinkedHashMap<>();
         for (Grade grade : grades) {
-            if (grade.getAssessment() == null) continue;
-            String courseName = resolveAssessmentCourseTitle(grade.getAssessment());
-            String title = safe(grade.getAssessment().getTitle());
-            String key = courseName + " - " + title;
-            grouped.computeIfAbsent(key, k -> new ArrayList<>()).add(grade);
-        }
-
-        for (Map.Entry<String, List<Grade>> entry : grouped.entrySet()) {
-            String key = entry.getKey();
-            List<Grade> courseGrades = entry.getValue();
-
-            VBox card = new VBox(6);
-            card.getStyleClass().add("eval-data-card");
-
-            HBox header = new HBox();
-            header.setAlignment(Pos.CENTER_LEFT);
-            Label titleLabel = new Label(key);
-            titleLabel.getStyleClass().add("eval-data-card-title");
-            
-            Region spacer = new Region();
-            HBox.setHgrow(spacer, Priority.ALWAYS);
-            
-            double sum = 0;
-            int count = 0;
-            for (Grade g : courseGrades) {
-                sum += g.getScore();
-                count++;
-            }
-            double moyenne = count > 0 ? sum / count : 0;
-            Label moyenneLabel = new Label("MOYENNE: " + df.format(moyenne));
-            moyenneLabel.getStyleClass().add("eval-resource-badge");
-            moyenneLabel.setStyle("-fx-background-color: #0ea5e9; -fx-font-size: 13px;");
-
-            header.getChildren().addAll(titleLabel, spacer, moyenneLabel);
-            card.getChildren().add(header);
-
-            for (Grade grade : courseGrades) {
-                String type = safe(grade.getAssessment().getType());
-                String scoreStr = df.format(grade.getScore());
-                String status = grade.getScore() >= 10.0 ? "PASSED" : "FAILED";
-                
-                HBox row = new HBox(12);
-                row.setAlignment(Pos.CENTER_LEFT);
-                Label typeLabel = new Label(type.toUpperCase());
-                typeLabel.setMinWidth(60);
-                typeLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #475569;");
-                
-                Label scoreLabel = new Label("Score: " + scoreStr);
-                scoreLabel.setMinWidth(100);
-                
-                Label statusLabel = new Label(status);
-                statusLabel.setStyle(status.equals("PASSED") ? "-fx-text-fill: #10b981;" : "-fx-text-fill: #ef4444;");
-                statusLabel.setStyle(statusLabel.getStyle() + " -fx-font-weight: bold;");
-
-                row.getChildren().addAll(typeLabel, scoreLabel, statusLabel);
-                card.getChildren().add(row);
-            }
-            
-            gradesCardsBox.getChildren().add(card);
+            String status = grade.getScore() >= 10.0 ? "Passed" : "Failed";
+            gradesCardsBox.getChildren().add(dataCard(
+                    resolveAssessmentCourseTitle(grade.getAssessment()),
+                    "Type: " + safe(grade.getAssessment() == null ? null : grade.getAssessment().getType()),
+                    "Assessment: " + safe(grade.getAssessment() == null ? null : grade.getAssessment().getTitle()),
+                    "Score: " + df.format(grade.getScore()) + " | " + status
+            ));
         }
     }
 
@@ -582,132 +328,20 @@ public class EvaluationStudentController {
         }
     }
 
-    private void renderRecommendationResources(List<EvaluationService.LearningResourceRow> rows) {
-        if (recommendationResourcesBox == null) {
-            return;
-        }
-        recommendationResourcesBox.getChildren().clear();
-        if (rows.isEmpty()) {
-            recommendationResourcesBox.getChildren().add(emptyCard("No learning resources available"));
-            return;
-        }
-
-        for (EvaluationService.LearningResourceRow row : rows) {
-            recommendationResourcesBox.getChildren().add(resourceCard(row));
-        }
-    }
-
-    private VBox resourceCard(EvaluationService.LearningResourceRow row) {
-        VBox card = new VBox(8);
-        card.getStyleClass().add("eval-resource-card");
-        card.setPrefWidth(280);
-
-        HBox header = new HBox(8);
-        header.setAlignment(Pos.CENTER_LEFT);
-
-        Label title = new Label(safe(row.getCourseName()));
-        title.getStyleClass().add("eval-resource-title");
-
-        Label badge = new Label(safe(row.getPriority()));
-        badge.getStyleClass().add("eval-resource-badge");
-
-        header.getChildren().addAll(title, badge);
-
-        Label guidance = new Label(safe(row.getGuidance()));
-        guidance.getStyleClass().add("eval-resource-text");
-        guidance.setWrapText(true);
-        guidance.setMinHeight(40);
-
-        HBox links = new HBox(8);
-        links.setAlignment(Pos.CENTER_LEFT);
-        links.getStyleClass().add("eval-resource-links");
-        links.getChildren().addAll(
-                createResourceButton("YouTube", row.getYoutubeUrl(), "eval-link-youtube"),
-                createResourceButton("Udemy", row.getUdemyUrl(), "eval-link-udemy"),
-                createResourceButton("Coursera", row.getCourseraUrl(), "eval-link-coursera")
-        );
-
-        card.getChildren().addAll(header, guidance, links);
-        return card;
-    }
-
-    private Button createResourceButton(String text, String url, String styleClass) {
-        Button button = new Button(text);
-        button.getStyleClass().addAll("eval-link-btn", styleClass);
-        button.setOnAction(event -> openExternalLink(url));
-        return button;
-    }
-
     private void renderSchedule(List<Schedule> rows) {
         scheduleCardsBox.getChildren().clear();
         if (rows.isEmpty()) {
             scheduleCardsBox.getChildren().add(emptyCard("No schedule entries available"));
             return;
         }
-
-        Map<String, List<Schedule>> byDay = new LinkedHashMap<>();
-        String[] daysOrder = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
-        for (String d : daysOrder) byDay.put(d, new ArrayList<>());
-
-        for (Schedule s : rows) {
-            String day = s.getDayOfWeek() == null ? "Monday" : s.getDayOfWeek().trim();
-            String normalized = day.substring(0, 1).toUpperCase() + day.substring(1).toLowerCase();
-            if (byDay.containsKey(normalized)) {
-                byDay.get(normalized).add(s);
-            }
-        }
-
-        for (Map.Entry<String, List<Schedule>> entry : byDay.entrySet()) {
-            String dayName = entry.getKey();
-            List<Schedule> dayClasses = entry.getValue();
-
-            VBox dayCard = new VBox(10);
-            dayCard.getStyleClass().add("eval-data-card");
-            dayCard.setMinWidth(280);
-            dayCard.setPadding(new Insets(14));
-            dayCard.setStyle("-fx-background-color: #ffffff; -fx-border-color: #d1d5db; -fx-background-radius: 12; -fx-border-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 8, 0, 0, 2);");
-
-            Label dayLabel = new Label(dayName.toUpperCase());
-            dayLabel.setStyle("-fx-font-weight: 900; -fx-text-fill: #111827; -fx-font-size: 15px; -fx-border-color: transparent transparent #3b82f6 transparent; -fx-border-width: 0 0 2 0; -fx-padding: 0 0 4 0;");
-            dayCard.getChildren().add(dayLabel);
-
-            if (dayClasses.isEmpty()) {
-                Label empty = new Label("No sessions scheduled");
-                empty.setStyle("-fx-text-fill: #9ca3af; -fx-font-style: italic; -fx-font-size: 12px;");
-                dayCard.getChildren().add(empty);
-            } else {
-                dayClasses.sort(Comparator.comparing(Schedule::getStartTime));
-                for (Schedule s : dayClasses) {
-                    VBox classItem = new VBox(4);
-                    classItem.setPadding(new Insets(10));
-                    classItem.setStyle("-fx-background-color: #f9fafb; -fx-background-radius: 8; -fx-border-color: #e5e7eb; -fx-border-radius: 8;");
-                    
-                    String courseTitle = s.getCourse() == null ? "Unknown Course" : service.resolveCourseTitle(s.getCourse().getId());
-                    Label title = new Label(courseTitle);
-                    title.setStyle("-fx-font-weight: bold; -fx-text-fill: #1f2937; -fx-font-size: 13px;");
-                    title.setWrapText(true);
-
-                    HBox timeRow = new HBox(6);
-                    timeRow.setAlignment(Pos.CENTER_LEFT);
-                    Label clock = new Label("🕒");
-                    clock.setStyle("-fx-font-size: 12px;");
-                    Label time = new Label(s.getStartTime() + " - " + s.getEndTime());
-                    time.setStyle("-fx-text-fill: #4b5563; -fx-font-size: 12px; -fx-font-weight: 600;");
-                    timeRow.getChildren().addAll(clock, time);
-
-                    HBox roomRow = new HBox(6);
-                    roomRow.setAlignment(Pos.CENTER_LEFT);
-                    Label map = new Label("📍");
-                    map.setStyle("-fx-font-size: 12px;");
-                    Label room = new Label(safe(s.getRoom()));
-                    room.setStyle("-fx-text-fill: #6b7280; -fx-font-size: 12px;");
-                    roomRow.getChildren().addAll(map, room);
-
-                    classItem.getChildren().addAll(title, timeRow, roomRow);
-                    dayCard.getChildren().add(classItem);
-                }
-            }
-            scheduleCardsBox.getChildren().add(dayCard);
+        for (Schedule row : rows) {
+            String courseTitle = row.getCourse() == null ? null : service.resolveCourseTitle(row.getCourse().getId());
+            scheduleCardsBox.getChildren().add(dataCard(
+                    safe(row.getDayOfWeek()),
+                    "Time: " + row.getStartTime() + " - " + row.getEndTime(),
+                "Course: " + safe(courseTitle),
+                    "Room: " + safe(row.getRoom())
+            ));
         }
     }
 
@@ -743,28 +377,6 @@ public class EvaluationStudentController {
         setVisibleManaged(schedulePane, target == schedulePane);
         setVisibleManaged(complaintsPane, target == complaintsPane);
         setVisibleManaged(documentsPane, target == documentsPane);
-        updateNavSelection(target);
-    }
-
-    private void updateNavSelection(VBox target) {
-        setNavActive(gradesNavBtn, target == gradesPane);
-        setNavActive(recommendationsNavBtn, target == recommendationsPane);
-        setNavActive(scheduleNavBtn, target == schedulePane);
-        setNavActive(complaintsNavBtn, target == complaintsPane);
-        setNavActive(documentsNavBtn, target == documentsPane);
-    }
-
-    private void setNavActive(Button button, boolean active) {
-        if (button == null) {
-            return;
-        }
-        if (active) {
-            if (!button.getStyleClass().contains("eval-nav-btn-active")) {
-                button.getStyleClass().add("eval-nav-btn-active");
-            }
-        } else {
-            button.getStyleClass().remove("eval-nav-btn-active");
-        }
     }
 
     private void setVisibleManaged(VBox pane, boolean visible) {
@@ -786,17 +398,14 @@ public class EvaluationStudentController {
         if (complaintSubjectField != null) {
             setLengthField(complaintSubjectField, 150);
         }
+        if (complaintCourseNameField != null) {
+            setLengthField(complaintCourseNameField, 150);
+        }
         if (docInfoArea != null) {
             setLengthField(docInfoArea, 500);
         }
         if (complaintDescriptionArea != null) {
             setLengthField(complaintDescriptionArea, 1000);
-        }
-        if (aiRecommendationArea != null) {
-            setLengthField(aiRecommendationArea, 12000);
-        }
-        if (pdfTranslationArea != null) {
-            setLengthField(pdfTranslationArea, 20000);
         }
     }
 
@@ -813,12 +422,7 @@ public class EvaluationStudentController {
         if (classIdField != null && classIdField.getText() != null && !classIdField.getText().isBlank()) {
             return requirePositiveInt(classIdField.getText(), "Class ID");
         }
-        int studentId = resolveStudentId();
-        Integer classId = service.resolvePrimaryClassIdForStudent(studentId);
-        if (classId == null) {
-            throw new IllegalStateException("No active class found for this student.");
-        }
-        return classId;
+        return 1;
     }
 
     private void setIntegerField(TextField field) {
@@ -877,14 +481,8 @@ public class EvaluationStudentController {
         return safe(assessment.getTitle());
     }
 
-    private void showFeedback(String text, boolean isError) {
+    private void showFeedback(String text) {
         feedbackLabel.setText(new SimpleDateFormat("HH:mm:ss").format(new java.util.Date()) + " - " + text);
-        feedbackLabel.getStyleClass().removeAll("eval-feedback", "eval-feedback-error");
-        if (isError) {
-            feedbackLabel.getStyleClass().add("eval-feedback-error");
-        } else {
-            feedbackLabel.getStyleClass().add("eval-feedback");
-        }
     }
 
     private void openDocument(String documentPath) {
@@ -901,7 +499,7 @@ public class EvaluationStudentController {
 
             if (normalized.startsWith("http://") || normalized.startsWith("https://")) {
                 desktop.browse(URI.create(normalized));
-                showFeedback("Opened document URL.", false);
+                showFeedback("Opened document URL.");
                 return;
             }
 
@@ -910,24 +508,9 @@ public class EvaluationStudentController {
                 throw new IllegalArgumentException("Document file not found: " + normalized);
             }
             desktop.open(file);
-            showFeedback("Opened document file.", false);
+            showFeedback("Opened document file.");
         } catch (Exception exception) {
-            showFeedback("Unable to open document: " + exception.getMessage(), true);
-        }
-    }
-
-    private void openExternalLink(String url) {
-        try {
-            if (url == null || url.isBlank()) {
-                throw new IllegalArgumentException("No resource link available.");
-            }
-            if (!Desktop.isDesktopSupported()) {
-                throw new IllegalStateException("Desktop actions are not supported on this system.");
-            }
-            Desktop.getDesktop().browse(URI.create(url.trim()));
-            showFeedback("Opened learning resource.", false);
-        } catch (Exception exception) {
-            showFeedback("Unable to open learning resource: " + exception.getMessage(), true);
+            showFeedback("Unable to open document: " + exception.getMessage());
         }
     }
 }

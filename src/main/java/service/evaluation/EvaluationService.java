@@ -75,17 +75,14 @@ public class EvaluationService {
     private final ServiceContenu contenuService = new ServiceContenu();
     private final ServiceUser userService = new ServiceUser();
     private final ClasseService classeService = new ClasseService();
-<<<<<<< HEAD
     private final ServiceQuiz quizService = new ServiceQuiz();
     private final ServiceQuestion questionService = new ServiceQuestion();
     private final ServiceChoice choiceService = new ServiceChoice();
     private final ContenuService contenuWriteService = new ContenuService();
     private final FileUploadService fileUploadService = new FileUploadService();
     private final AiQuizGenerationService aiQuizGenerationService = new AiQuizGenerationService();
-=======
     private final StudentClasseRepository studentClasseRepository = new StudentClasseRepository();
     private final GroqAiService groqAiService = new GroqAiService();
->>>>>>> 2c8168d08353ec1c98a3f47dfc3d08ce9a82403c
 
     public List<Grade> getGradesByStudent(int studentId) {
         List<Grade> rawGrades = gradeService.getALL().stream()
@@ -1399,7 +1396,6 @@ public class EvaluationService {
         }
     }
 
-<<<<<<< HEAD
     public static class CreatedQuizResult {
         private final Integer contenuId;
         private final Integer quizId;
@@ -1427,7 +1423,9 @@ public class EvaluationService {
 
         public String getTitle() {
             return title;
-=======
+        }
+    }
+
     public static class LearningResourceRow {
         private final String courseName;
         private final String priority;
@@ -1467,7 +1465,6 @@ public class EvaluationService {
 
         public String getCourseraUrl() {
             return courseraUrl;
->>>>>>> 2c8168d08353ec1c98a3f47dfc3d08ce9a82403c
         }
     }
 }
