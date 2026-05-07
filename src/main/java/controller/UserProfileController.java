@@ -22,6 +22,25 @@ import service.faceid.FaceRecognitionService;
 import service.UserService;
 import util.AppNavigator;
 
+import com.github.sarxos.webcam.Webcam;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.io.File;
 import java.net.URL;
 import java.sql.Timestamp;
@@ -214,19 +233,129 @@ public class UserProfileController implements Initializable {
             return;
         }
 
-        setFaceProcessing(true);
-        CameraCaptureResult captureResult = cameraService.captureToTempImage();
+        // Show an interactive camera preview so users can confirm before capture.
+        try {
+            showCameraPreviewAndCapture();
+        } catch (Exception e) {
+            // Fallback to single-frame capture if preview cannot be opened
+            setFaceProcessing(true);
+            CameraCaptureResult captureResult = cameraService.captureToTempImage();
 
-        if (!captureResult.success() || captureResult.imagePath() == null) {
-            setFaceMessage(captureResult.reason(), true);
-            setFaceProcessing(false);
-            return;
+            if (!captureResult.success() || captureResult.imagePath() == null) {
+                setFaceMessage(captureResult.reason(), true);
+                setFaceProcessing(false);
+                return;
+            }
+
+            enrollFaceFromFile(
+                    captureResult.imagePath().toFile(),
+                    () -> cameraService.cleanupCapturedFile(captureResult.imagePath())
+            );
+        }
+    }
+
+    /**
+     * Opens a modal with live camera preview and allows the user to capture an image.
+     * Captured image is stored to a temporary file and enrolled using existing flow.
+     */
+    private void showCameraPreviewAndCapture() {
+        List<Webcam> webcams = null;
+        try {
+            webcams = Webcam.getWebcams();
+        } catch (Throwable ignored) {}
+
+        if (webcams == null || webcams.isEmpty()) {
+            throw new IllegalStateException("No camera available for preview");
         }
 
-        enrollFaceFromFile(
-                captureResult.imagePath().toFile(),
-                () -> cameraService.cleanupCapturedFile(captureResult.imagePath())
-        );
+        Webcam webcam = webcams.get(0);
+        // Try to configure a reasonable resolution if supported
+        try {
+            if (webcam.getViewSizes() != null && webcam.getViewSizes().length > 0) {
+                webcam.setViewSize(webcam.getViewSizes()[0]);
+            }
+        } catch (Throwable ignored) {}
+
+        final ImageView preview = new ImageView();
+        preview.setFitWidth(640);
+        preview.setFitHeight(480);
+        preview.setPreserveRatio(true);
+
+        Button captureBtn = new Button("Capture");
+        Button cancelBtn = new Button("Cancel");
+
+        HBox actions = new HBox(10, captureBtn, cancelBtn);
+        actions.setAlignment(Pos.CENTER);
+
+        VBox root = new VBox(8, preview, actions);
+        root.setStyle("-fx-padding: 12; -fx-background-color: #111;");
+
+        Scene scene = new Scene(root);
+        Stage stage = new Stage();
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.setTitle("Camera Preview — Align your face and press Capture");
+        stage.setScene(scene);
+
+        final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+
+        try {
+            webcam.open(true);
+
+            // Periodically grab frames and update the ImageView
+            Runnable grabFrame = () -> {
+                try {
+                    BufferedImage img = webcam.getImage();
+                    if (img != null) {
+                        WritableImage fxImg = SwingFXUtils.toFXImage(img, null);
+                        Platform.runLater(() -> preview.setImage(fxImg));
+                    }
+                } catch (Throwable t) {
+                    // ignore individual frame errors
+                }
+            };
+
+            executor.scheduleAtFixedRate(grabFrame, 0, 100, TimeUnit.MILLISECONDS);
+
+            captureBtn.setOnAction(evt -> {
+                setFaceProcessing(true);
+                try {
+                    BufferedImage img = webcam.getImage();
+                    if (img == null) {
+                        setFaceMessage("Failed to capture image from camera.", true);
+                        return;
+                    }
+
+                    Path tempFile = Files.createTempFile("unilearn-face-capture-", ".png");
+                    ImageIO.write(img, "png", tempFile.toFile());
+
+                    // Close preview and executor before continuing
+                    try { executor.shutdownNow(); } catch (Exception ignored) {}
+                    try { if (webcam.isOpen()) webcam.close(); } catch (Exception ignored) {}
+                    stage.close();
+
+                    enrollFaceFromFile(tempFile.toFile(), () -> {
+                        try { Files.deleteIfExists(tempFile); } catch (IOException ignored) {}
+                    });
+                } catch (Exception ex) {
+                    setFaceMessage(safeErrorMessage(new Exception(ex)), true);
+                    setFaceProcessing(false);
+                }
+            });
+
+            cancelBtn.setOnAction(evt -> {
+                try { executor.shutdownNow(); } catch (Exception ignored) {}
+                try { if (webcam.isOpen()) webcam.close(); } catch (Exception ignored) {}
+                stage.close();
+                setFaceProcessing(false);
+            });
+
+            // Show preview modal
+            stage.showAndWait();
+        } catch (Exception e) {
+            try { executor.shutdownNow(); } catch (Exception ignored) {}
+            try { if (webcam.isOpen()) webcam.close(); } catch (Exception ignored) {}
+            throw new RuntimeException(e);
+        }
     }
 
     @FXML

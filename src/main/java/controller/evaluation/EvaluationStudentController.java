@@ -6,7 +6,6 @@ import entities.Grade;
 import entities.Reclamation;
 import entities.Schedule;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -15,10 +14,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextInputControl;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
@@ -27,21 +23,13 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import security.UserSession;
 import service.evaluation.EvaluationService;
-import service.evaluation.ai.GroqAiService;
 
 import java.awt.Desktop;
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Comparator; // Added import for Comparator
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.function.UnaryOperator;
 
 import javafx.scene.control.TextFormatter;
@@ -74,29 +62,16 @@ public class EvaluationStudentController {
     private VBox documentsPane;
 
     @FXML
-    private Button gradesNavBtn;
-    @FXML
-    private Button recommendationsNavBtn;
-    @FXML
-    private Button scheduleNavBtn;
-    @FXML
-    private Button complaintsNavBtn;
-    @FXML
-    private Button documentsNavBtn;
-
-    @FXML
     private VBox gradesCardsBox;
     @FXML
     private VBox recommendationsCardsBox;
-    @FXML
-    private HBox recommendationResourcesBox;
     @FXML
     private VBox scheduleCardsBox;
 
     @FXML
     private TextField complaintSubjectField;
     @FXML
-    private ComboBox<String> complaintCourseBox;
+    private TextField complaintCourseNameField;
     @FXML
     private TextArea complaintDescriptionArea;
     @FXML
@@ -110,23 +85,10 @@ public class EvaluationStudentController {
     private VBox docRequestsCardsBox;
 
     @FXML
-    private TextArea aiRecommendationArea;
-    @FXML
-    private TextArea aiTeacherMessageArea;
-    @FXML
-    private Label selectedPdfLabel;
-    @FXML
-    private ComboBox<String> pdfTargetLanguageBox;
-    @FXML
-    private TextArea pdfTranslationArea;
-
-    @FXML
     private Label feedbackLabel;
 
     private final EvaluationService service = new EvaluationService();
-    private final GroqAiService aiService = new GroqAiService();
     private final DecimalFormat df = new DecimalFormat("0.00");
-    private String selectedPdfPath;
 
     @FXML
     public void initialize() {
@@ -136,18 +98,10 @@ public class EvaluationStudentController {
             studentIdField.setEditable(false);
             studentIdField.setDisable(true);
         }
-        Integer classId = service.resolvePrimaryClassIdForStudent(currentStudentId);
         if (classIdField != null) {
-            classIdField.setText(classId == null ? "" : String.valueOf(classId));
+            classIdField.setText("1");
         }
         installInputValidation();
-
-        if (complaintCourseBox != null) {
-            complaintCourseBox.getItems().setAll(service.getCourseNamesForStudent(currentStudentId));
-            if (!complaintCourseBox.getItems().isEmpty()) {
-                complaintCourseBox.getSelectionModel().selectFirst();
-            }
-        }
 
         docTypeBox.getItems().setAll(
                 "attestation_stage",
@@ -158,22 +112,6 @@ public class EvaluationStudentController {
                 "autre"
         );
         docTypeBox.getSelectionModel().selectFirst();
-
-        if (pdfTargetLanguageBox != null) {
-            pdfTargetLanguageBox.getItems().setAll("French", "English", "Arabic", "Spanish", "German");
-            pdfTargetLanguageBox.getSelectionModel().select("French");
-        }
-        if (selectedPdfLabel != null) {
-            selectedPdfLabel.setText("Selected PDF: none");
-        }
-        if (aiRecommendationArea != null) {
-            aiRecommendationArea.setEditable(false);
-            aiRecommendationArea.setText("Click Generate AI Recommendations to create a personalized study plan.");
-        }
-        if (pdfTranslationArea != null) {
-            pdfTranslationArea.setEditable(false);
-            pdfTranslationArea.setText("Select a delivered PDF request and click Translate PDF.");
-        }
 
         showSection(gradesPane);
         refreshAll();
@@ -227,11 +165,6 @@ public class EvaluationStudentController {
     @FXML
     private void showSchedule() {
         onOpenSchedule();
-    }
-
-    @FXML
-    private void showRecommendations() {
-        onOpenRecommendations();
     }
 
     @FXML
@@ -289,25 +222,28 @@ public class EvaluationStudentController {
     private void onCreateComplaint() {
         try {
             int studentId = resolveStudentId();
-            String courseName = complaintCourseBox == null ? null : complaintCourseBox.getValue();
-            courseName = requireNotBlank(courseName, "Course");
-            String subject = requireNotBlank(complaintSubjectField.getText(), "Subject");
-            String description = requireNotBlank(complaintDescriptionArea.getText(), "Message content");
+            String courseName = requireNotBlank(complaintCourseNameField.getText(), "Course name");
+            String subject = requireNotBlank(complaintSubjectField.getText(), "Complaint subject");
+            String description = requireNotBlank(complaintDescriptionArea.getText(), "Complaint description");
 
             if (subject.length() < 3) {
-                throw new IllegalArgumentException("Subject must have at least 3 characters.");
+                throw new IllegalArgumentException("Complaint subject must have at least 3 characters.");
             }
-            if (description.length() < 5) {
-                throw new IllegalArgumentException("Message must have at least 5 characters.");
+            if (description.length() < 10) {
+                throw new IllegalArgumentException("Complaint description must have at least 10 characters.");
+            }
+            if (service.findCourseIdByName(courseName) == null) {
+                throw new IllegalArgumentException("Course name is invalid. Please enter an existing course title.");
             }
 
             service.createReclamation(studentId, courseName, subject, description);
             complaintSubjectField.clear();
             complaintDescriptionArea.clear();
+            complaintCourseNameField.clear();
             refreshComplaints(studentId);
-            showFeedback("Message sent to teacher.", false);
+            showFeedback("Complaint created.");
         } catch (Exception e) {
-            showFeedback("Failed to send message: " + e.getMessage(), true);
+            showFeedback("Create complaint failed: " + e.getMessage());
         }
     }
 
@@ -327,103 +263,9 @@ public class EvaluationStudentController {
             service.createDocumentRequest(studentId, docType, additionalInfo);
             docInfoArea.clear();
             refreshDocRequests(studentId);
-            showFeedback("Document request created.", false);
+            showFeedback("Document request created.");
         } catch (Exception e) {
-            showFeedback("Create document request failed: " + e.getMessage(), true);
-        }
-    }
-
-    @FXML
-    private void onGenerateAiRecommendations() {
-        try {
-            int studentId = resolveStudentId();
-            String recommendation = service.generateAiStudentRecommendations(studentId);
-            if (aiRecommendationArea != null) {
-                aiRecommendationArea.setText(recommendation);
-            }
-            renderRecommendationResources(service.buildLearningResources(studentId));
-            showFeedback("AI recommendations generated.", false);
-        } catch (Exception e) {
-            showFeedback("AI recommendation failed: " + e.getMessage(), true);
-        }
-    }
-
-    @FXML
-    private void onTranslateSelectedPdf() {
-        try {
-            if (selectedPdfPath == null || selectedPdfPath.isBlank()) {
-                throw new IllegalArgumentException("Please select a delivered PDF from the list first.");
-            }
-            String targetLanguage = (pdfTargetLanguageBox == null || pdfTargetLanguageBox.getValue() == null)
-                    ? "English"
-                    : pdfTargetLanguageBox.getValue();
-            
-            String translatedText = service.translatePdfDocument(selectedPdfPath, targetLanguage);
-            if (pdfTranslationArea != null) {
-                pdfTranslationArea.setText(translatedText);
-            }
-
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Save Translated PDF");
-            fileChooser.setInitialFileName("translated_document_" + targetLanguage + ".pdf");
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
-            File file = fileChooser.showSaveDialog(pdfTranslationArea.getScene().getWindow());
-
-            if (file != null) {
-                service.saveTextAsPdf(translatedText, file);
-                showFeedback("Translated PDF saved: " + file.getName(), false);
-                if (Desktop.isDesktopSupported()) {
-                    Desktop.getDesktop().open(file);
-                }
-            } else {
-                showFeedback("Translation complete, but save was cancelled.", false);
-            }
-        } catch (Exception e) {
-            showFeedback("PDF translation/save failed: " + e.getMessage(), true);
-        }
-    }
-
-    @FXML
-    private void onDownloadTranscript() {
-        try {
-            int studentId = resolveStudentId();
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Save Academic Transcript");
-            fileChooser.setInitialFileName("Transcript_" + studentId + ".pdf");
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
-            File file = fileChooser.showSaveDialog(feedbackLabel.getScene().getWindow());
-
-            if (file != null) {
-                service.downloadStudentTranscript(studentId, file);
-                showFeedback("Transcript downloaded: " + file.getName(), false);
-                if (Desktop.isDesktopSupported()) {
-                    Desktop.getDesktop().open(file);
-                }
-            }
-        } catch (Exception e) {
-            showFeedback("Download transcript failed: " + e.getMessage(), true);
-        }
-    }
-
-    @FXML
-    private void onDownloadStudentSchedule() {
-        try {
-            int studentId = resolveStudentId();
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Save My Academic Schedule");
-            fileChooser.setInitialFileName("Student_Schedule_" + studentId + ".pdf");
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
-            File file = fileChooser.showSaveDialog(feedbackLabel.getScene().getWindow());
-
-            if (file != null) {
-                service.downloadStudentSchedule(studentId, file);
-                showFeedback("Schedule downloaded: " + file.getName(), false);
-                if (Desktop.isDesktopSupported()) {
-                    Desktop.getDesktop().open(file);
-                }
-            }
-        } catch (Exception e) {
-            showFeedback("Download schedule failed: " + e.getMessage(), true);
+            showFeedback("Create document request failed: " + e.getMessage());
         }
     }
 
@@ -431,16 +273,6 @@ public class EvaluationStudentController {
         try {
             int studentId = resolveStudentId();
             int classId = resolveClassId();
-
-            if (complaintCourseBox != null) {
-                String previousSelection = complaintCourseBox.getValue();
-                complaintCourseBox.getItems().setAll(service.getCourseNamesForStudent(studentId));
-                if (previousSelection != null && complaintCourseBox.getItems().contains(previousSelection)) {
-                    complaintCourseBox.getSelectionModel().select(previousSelection);
-                } else if (!complaintCourseBox.getItems().isEmpty()) {
-                    complaintCourseBox.getSelectionModel().selectFirst();
-                }
-            }
 
             List<Grade> grades = service.getGradesByStudent(studentId);
             renderGrades(grades);
@@ -452,13 +284,12 @@ public class EvaluationStudentController {
             averageLabel.setText(df.format(summary.getAverage()));
 
             renderRecommendations(service.buildRecommendations(studentId));
-            renderRecommendationResources(service.buildLearningResources(studentId));
             renderSchedule(service.getScheduleByClasse(classId));
             refreshComplaints(studentId);
             refreshDocRequests(studentId);
-            showFeedback("Evaluation data refreshed.", false);
+            showFeedback("Evaluation data refreshed.");
         } catch (Exception e) {
-            showFeedback("Refresh failed: " + e.getMessage(), true);
+            showFeedback("Refresh failed: " + e.getMessage());
         }
     }
 
@@ -466,16 +297,17 @@ public class EvaluationStudentController {
         List<Reclamation> rows = service.getReclamationsByStudent(studentId);
         complaintsCardsBox.getChildren().clear();
         if (rows.isEmpty()) {
-            complaintsCardsBox.getChildren().add(emptyCard("No messages yet"));
+            complaintsCardsBox.getChildren().add(emptyCard("No complaints yet"));
             return;
         }
         for (Reclamation row : rows) {
             String courseTitle = row.getCourse() == null ? null : service.resolveCourseTitle(row.getCourse().getId());
             complaintsCardsBox.getChildren().add(dataCard(
-                    "Topic: " + safe(row.getSubject()),
-                "Regarding Course: " + safe(courseTitle),
-                    "Status: " + safe(row.getStatus()).toUpperCase(),
-                    "Teacher Reply: " + safe(row.getAdminResponse())
+                    "Complaint #" + row.getId(),
+                "Course: " + safe(courseTitle),
+                    "Subject: " + safe(row.getSubject()),
+                    "Status: " + safe(row.getStatus()),
+                    "Response: " + safe(row.getAdminResponse())
             ));
         }
     }
@@ -496,21 +328,10 @@ public class EvaluationStudentController {
                     "Path: " + safe(documentPath)
             );
             if (documentPath != null && !documentPath.isBlank()) {
-                Button downloadButton = new Button("Download / Open Original");
+                Button downloadButton = new Button("Download / Open");
                 downloadButton.getStyleClass().add("eval-ghost-btn");
                 downloadButton.setOnAction(event -> openDocument(documentPath));
-
-                Button selectForTranslateButton = new Button("Use for AI Translation");
-                selectForTranslateButton.getStyleClass().add("eval-primary-btn");
-                selectForTranslateButton.setOnAction(event -> {
-                    selectedPdfPath = documentPath;
-                    if (selectedPdfLabel != null) {
-                        selectedPdfLabel.setText("Selected PDF: " + documentPath);
-                    }
-                    showFeedback("PDF selected for AI translation.", false);
-                });
-
-                HBox actions = new HBox(8, downloadButton, selectForTranslateButton);
+                HBox actions = new HBox(downloadButton);
                 actions.setAlignment(Pos.CENTER_LEFT);
                 card.getChildren().add(actions);
             }
@@ -524,8 +345,6 @@ public class EvaluationStudentController {
             gradesCardsBox.getChildren().add(emptyCard("No grades available"));
             return;
         }
-
-        Map<String, List<Grade>> grouped = new LinkedHashMap<>();
         for (Grade grade : grades) {
             if (grade.getAssessment() == null) continue;
             String courseName = resolveAssessmentCourseTitle(grade.getAssessment());
@@ -888,28 +707,6 @@ public class EvaluationStudentController {
         setVisibleManaged(schedulePane, target == schedulePane);
         setVisibleManaged(complaintsPane, target == complaintsPane);
         setVisibleManaged(documentsPane, target == documentsPane);
-        updateNavSelection(target);
-    }
-
-    private void updateNavSelection(VBox target) {
-        setNavActive(gradesNavBtn, target == gradesPane);
-        setNavActive(recommendationsNavBtn, target == recommendationsPane);
-        setNavActive(scheduleNavBtn, target == schedulePane);
-        setNavActive(complaintsNavBtn, target == complaintsPane);
-        setNavActive(documentsNavBtn, target == documentsPane);
-    }
-
-    private void setNavActive(Button button, boolean active) {
-        if (button == null) {
-            return;
-        }
-        if (active) {
-            if (!button.getStyleClass().contains("eval-nav-btn-active")) {
-                button.getStyleClass().add("eval-nav-btn-active");
-            }
-        } else {
-            button.getStyleClass().remove("eval-nav-btn-active");
-        }
     }
 
     private void setVisibleManaged(VBox pane, boolean visible) {
@@ -931,17 +728,14 @@ public class EvaluationStudentController {
         if (complaintSubjectField != null) {
             setLengthField(complaintSubjectField, 150);
         }
+        if (complaintCourseNameField != null) {
+            setLengthField(complaintCourseNameField, 150);
+        }
         if (docInfoArea != null) {
             setLengthField(docInfoArea, 500);
         }
         if (complaintDescriptionArea != null) {
             setLengthField(complaintDescriptionArea, 1000);
-        }
-        if (aiRecommendationArea != null) {
-            setLengthField(aiRecommendationArea, 12000);
-        }
-        if (pdfTranslationArea != null) {
-            setLengthField(pdfTranslationArea, 20000);
         }
     }
 
@@ -958,12 +752,7 @@ public class EvaluationStudentController {
         if (classIdField != null && classIdField.getText() != null && !classIdField.getText().isBlank()) {
             return requirePositiveInt(classIdField.getText(), "Class ID");
         }
-        int studentId = resolveStudentId();
-        Integer classId = service.resolvePrimaryClassIdForStudent(studentId);
-        if (classId == null) {
-            throw new IllegalStateException("No active class found for this student.");
-        }
-        return classId;
+        return 1;
     }
 
     private void setIntegerField(TextField field) {
@@ -1022,14 +811,8 @@ public class EvaluationStudentController {
         return safe(assessment.getTitle());
     }
 
-    private void showFeedback(String text, boolean isError) {
+    private void showFeedback(String text) {
         feedbackLabel.setText(new SimpleDateFormat("HH:mm:ss").format(new java.util.Date()) + " - " + text);
-        feedbackLabel.getStyleClass().removeAll("eval-feedback", "eval-feedback-error");
-        if (isError) {
-            feedbackLabel.getStyleClass().add("eval-feedback-error");
-        } else {
-            feedbackLabel.getStyleClass().add("eval-feedback");
-        }
     }
 
     private void openDocument(String documentPath) {
@@ -1046,7 +829,7 @@ public class EvaluationStudentController {
 
             if (normalized.startsWith("http://") || normalized.startsWith("https://")) {
                 desktop.browse(URI.create(normalized));
-                showFeedback("Opened document URL.", false);
+                showFeedback("Opened document URL.");
                 return;
             }
 
@@ -1055,24 +838,9 @@ public class EvaluationStudentController {
                 throw new IllegalArgumentException("Document file not found: " + normalized);
             }
             desktop.open(file);
-            showFeedback("Opened document file.", false);
+            showFeedback("Opened document file.");
         } catch (Exception exception) {
-            showFeedback("Unable to open document: " + exception.getMessage(), true);
-        }
-    }
-
-    private void openExternalLink(String url) {
-        try {
-            if (url == null || url.isBlank()) {
-                throw new IllegalArgumentException("No resource link available.");
-            }
-            if (!Desktop.isDesktopSupported()) {
-                throw new IllegalStateException("Desktop actions are not supported on this system.");
-            }
-            Desktop.getDesktop().browse(URI.create(url.trim()));
-            showFeedback("Opened learning resource.", false);
-        } catch (Exception exception) {
-            showFeedback("Unable to open learning resource: " + exception.getMessage(), true);
+            showFeedback("Unable to open document: " + exception.getMessage());
         }
     }
 }
