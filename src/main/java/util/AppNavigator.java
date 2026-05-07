@@ -184,6 +184,12 @@ public final class AppNavigator {
         }
     }
 
+    public static void showPartnerApplications(Integer offerId, Integer applicationId, int step) {
+        if (appShellController != null) {
+            appShellController.showPartnerApplicationsView(offerId, applicationId, step);
+        }
+    }
+
     public static void showJobApplicationReview(JobApplication application) {
         if (appShellController != null) {
             appShellController.showJobApplicationReviewView(application);
@@ -193,6 +199,15 @@ public final class AppNavigator {
     public static void showAtsApplicationDetail(JobApplication application) {
         if (appShellController != null) {
             appShellController.showAtsApplicationDetailView(application);
+        }
+    }
+
+    public static void showAtsApplicationDetail(JobApplication application,
+                                                Integer offerId,
+                                                Integer applicationId,
+                                                int returnStep) {
+        if (appShellController != null) {
+            appShellController.showAtsApplicationDetailView(application, offerId, applicationId, returnStep);
         }
     }
 }

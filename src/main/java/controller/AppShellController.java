@@ -781,6 +781,10 @@ public class AppShellController implements Initializable {
     }
 
     public void showPartnerApplicationsView() {
+        showPartnerApplicationsView(null, null, 1);
+    }
+
+    public void showPartnerApplicationsView(Integer offerId, Integer applicationId, int step) {
         if (!ensureAuthenticated())
             return;
         if (RoleGuard.isStudent(currentUser)) {
@@ -793,6 +797,7 @@ public class AppShellController implements Initializable {
         loadCenter("/view/job_offer/partner-applications.fxml", controller -> {
             if (controller instanceof PartnerApplicationsController c) {
                 c.setCurrentUser(currentUser);
+                c.restoreNavigationState(offerId, applicationId, step);
             }
         });
     }
@@ -814,6 +819,13 @@ public class AppShellController implements Initializable {
     }
 
     public void showAtsApplicationDetailView(JobApplication application) {
+        showAtsApplicationDetailView(application, null, null, 1);
+    }
+
+    public void showAtsApplicationDetailView(JobApplication application,
+                                             Integer offerId,
+                                             Integer applicationId,
+                                             int returnStep) {
         if (!ensureAuthenticated()) return;
         if (application == null || application.getId() <= 0) {
             showWarning("Application unavailable", "Selected application is not available.");
@@ -824,6 +836,7 @@ public class AppShellController implements Initializable {
             if (controller instanceof AtsApplicationDetailController c) {
                 c.setApplication(application);
                 c.setCurrentUser(currentUser);
+                c.setPartnerReviewReturnContext(offerId, applicationId, returnStep);
             }
         });
     }
