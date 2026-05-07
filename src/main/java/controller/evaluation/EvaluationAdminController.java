@@ -387,10 +387,10 @@ public class EvaluationAdminController {
         dayCard.getStyleClass().add("eval-data-card");
         dayCard.setMinWidth(240);
         dayCard.setPadding(new Insets(12));
-        dayCard.setStyle("-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-background-radius: 16; -fx-border-radius: 16;");
+        dayCard.setStyle("-fx-background-color: rgba(30,60,120,0.35); -fx-border-color: rgba(56,139,255,0.2); -fx-background-radius: 16; -fx-border-radius: 16; -fx-border-width: 1;");
 
         Label dayLabel = new Label(dayName.toUpperCase());
-        dayLabel.setStyle("-fx-font-weight: 900; -fx-text-fill: #1e293b; -fx-font-size: 14px;");
+        dayLabel.setStyle("-fx-font-weight: 900; -fx-text-fill: #7ec4ff; -fx-font-size: 14px;");
         dayCard.getChildren().add(dayLabel);
 
         if (dayClasses.isEmpty()) {
@@ -410,7 +410,7 @@ public class EvaluationAdminController {
                 Label title = new Label(course);
                 title.setStyle("-fx-font-weight: bold; -fx-font-size: 11px;");
                 Label sub = new Label(classe + " | " + teacher);
-                sub.setStyle("-fx-text-fill: #475569; -fx-font-size: 10px;");
+                sub.setStyle("-fx-text-fill: #90c8ff; -fx-font-size: 10px;");
                 Label time = new Label("🕒 " + s.getStartTime() + " - " + s.getEndTime());
                 time.setStyle("-fx-text-fill: #64748b; -fx-font-size: 10px;");
 
@@ -445,7 +445,7 @@ public class EvaluationAdminController {
 
         String studentName = row.getUser() == null ? null : service.resolveUserDisplayName(row.getUser().getId());
         Label studentLabel = new Label("STUDENT: " + safe(studentName));
-        studentLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #475569;");
+        studentLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #d0e8ff;");
         Label descriptionLabel = new Label(safe(row.getDescription()));
         descriptionLabel.setWrapText(true);
         descriptionLabel.setStyle("-fx-text-fill: #64748b; -fx-font-style: italic;");
@@ -482,7 +482,7 @@ public class EvaluationAdminController {
 
         String studentName = row.getUser() == null ? null : service.resolveUserDisplayName(row.getUser().getId());
         Label studentLabel = new Label("STUDENT: " + safe(studentName));
-        studentLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #475569;");
+        studentLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #d0e8ff;");
 
         Label infoLabel = new Label("DETAILS: " + safe(row.getAdditionalInfo()));
         infoLabel.setWrapText(true);

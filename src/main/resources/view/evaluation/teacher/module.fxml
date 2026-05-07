@@ -38,7 +38,7 @@
                     <Region HBox.hgrow="ALWAYS"/>
                     <VBox alignment="CENTER_RIGHT" spacing="5.0">
                         <HBox spacing="8.0" alignment="CENTER_RIGHT">
-                            <Label text="Logged in as:" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                            <Label text="Logged in as:" styleClass="eval-label"/>
                             <Label fx:id="teacherNameLabel" styleClass="eval-user-chip"/>
                         </HBox>
                         <Button text="🔄 Sync Module" onAction="#onRefreshTeacherSpace" styleClass="eval-primary-btn" style="-fx-background-radius: 30;"/>
@@ -66,38 +66,38 @@
                                             <GridPane hgap="12.0" vgap="12.0">
                                                 <children>
                                                     <VBox GridPane.columnIndex="0" GridPane.rowIndex="0">
-                                                        <Label text="Title" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                        <Label text="Title" styleClass="eval-label"/>
                                                         <TextField fx:id="assessmentTitleField" promptText="Exam / Quiz title" styleClass="eval-pill-input"/>
                                                     </VBox>
                                                     <VBox GridPane.columnIndex="1" GridPane.rowIndex="0">
-                                                        <Label text="Type" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                        <Label text="Type" styleClass="eval-label"/>
                                                         <ComboBox fx:id="assessmentTypeBox" maxWidth="Infinity"/>
                                                     </VBox>
                                                     <VBox GridPane.columnIndex="2" GridPane.rowIndex="0">
-                                                        <Label text="Max Score" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                        <Label text="Max Score" styleClass="eval-label"/>
                                                         <TextField fx:id="assessmentMaxScoreField" styleClass="eval-pill-input"/>
                                                     </VBox>
                                                     <VBox GridPane.columnIndex="3" GridPane.rowIndex="0">
-                                                        <Label text="Date" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                        <Label text="Date" styleClass="eval-label"/>
                                                         <DatePicker fx:id="assessmentDatePicker" maxWidth="Infinity"/>
                                                     </VBox>
 
                                                     <VBox GridPane.columnIndex="0" GridPane.rowIndex="1">
-                                                        <Label text="Course" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                        <Label text="Course" styleClass="eval-label"/>
                                                         <ComboBox fx:id="assessmentCourseBox" maxWidth="Infinity"/>
                                                     </VBox>
                                                     <VBox GridPane.columnIndex="1" GridPane.rowIndex="1">
-                                                        <Label text="Target Class" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                        <Label text="Target Class" styleClass="eval-label"/>
                                                         <ComboBox fx:id="assessmentClassBox" maxWidth="Infinity"/>
                                                     </VBox>
                                                     <VBox GridPane.columnIndex="2" GridPane.rowIndex="1" GridPane.columnSpan="2">
-                                                        <Label text="Lesson Content (Optional)" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                        <Label text="Lesson Content (Optional)" styleClass="eval-label"/>
                                                         <ComboBox fx:id="assessmentContenuBox" maxWidth="Infinity"/>
                                                     </VBox>
                                                 </children>
                                             </GridPane>
                                             <VBox>
-                                                <Label text="Assessment Description" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                <Label text="Assessment Description" styleClass="eval-label"/>
                                                 <TextArea fx:id="assessmentDescriptionArea" prefHeight="70.0" promptText="Additional details about the evaluation..." styleClass="eval-textarea"/>
                                             </VBox>
                                             <HBox spacing="10.0">
@@ -114,7 +114,7 @@
                                         <children>
                                             <Label text="Active Assessments" styleClass="eval-section-label"/>
                                             <Region HBox.hgrow="ALWAYS"/>
-                                            <Label text="Sort:" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                            <Label text="Sort:" styleClass="eval-label"/>
                                             <ComboBox fx:id="assessmentsSortBox" prefWidth="130.0" onAction="#onSortAssessmentsChanged"/>
                                         </children>
                                     </HBox>
@@ -143,15 +143,15 @@
                                             <HBox spacing="12.0" alignment="BOTTOM_LEFT">
                                                 <children>
                                                     <VBox HBox.hgrow="ALWAYS">
-                                                        <Label text="Student" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                        <Label text="Student" styleClass="eval-label"/>
                                                         <ComboBox fx:id="gradeStudentBox" maxWidth="Infinity" promptText="Select student"/>
                                                     </VBox>
                                                     <VBox prefWidth="120.0">
-                                                        <Label text="Score" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                        <Label text="Score" styleClass="eval-label"/>
                                                         <TextField fx:id="gradeScoreInputField" styleClass="eval-pill-input"/>
                                                     </VBox>
                                                     <VBox HBox.hgrow="ALWAYS">
-                                                        <Label text="Feedback/Comment" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                        <Label text="Feedback/Comment" styleClass="eval-label"/>
                                                         <TextField fx:id="gradeCommentInputField" styleClass="eval-pill-input" promptText="Well done / Improvement needed"/>
                                                     </VBox>
                                                     <Button text="💾 Save Grade" onAction="#onSaveGrade" styleClass="eval-primary-btn" minWidth="120.0"/>
@@ -164,7 +164,7 @@
                                         <children>
                                             <Label text="Recorded Student Grades" styleClass="eval-section-label"/>
                                             <Region HBox.hgrow="ALWAYS"/>
-                                            <Label text="Sort:" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                            <Label text="Sort:" styleClass="eval-label"/>
                                             <ComboBox fx:id="gradesSortBox" prefWidth="130.0" onAction="#onSortGradesChanged"/>
                                         </children>
                                     </HBox>
@@ -187,10 +187,10 @@
                                 <children>
                                     <HBox spacing="12.0" alignment="CENTER_LEFT">
                                         <children>
-                                            <Label text="Quick Class Filter:" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                            <Label text="Quick Class Filter:" styleClass="eval-label"/>
                                             <TextField fx:id="classNameField" prefWidth="180.0" styleClass="eval-pill-input" promptText="Enter class name..."/>
                                             <Region HBox.hgrow="ALWAYS"/>
-                                            <Label text="Sort:" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                            <Label text="Sort:" styleClass="eval-label"/>
                                             <ComboBox fx:id="scheduleSortBox" prefWidth="130.0" onAction="#onSortScheduleChanged"/>
                                             <Button text="⬇️ Download My Schedule" onAction="#onDownloadTeacherSchedule" styleClass="eval-primary-btn" style="-fx-background-color: #0ea5e9; -fx-background-radius: 20;"/>
                                         </children>
@@ -225,7 +225,7 @@
                                             <Label text="Selected Inquiry Response" styleClass="eval-section-label"/>
                                             <Label fx:id="selectedInquiryLabel" text="Select a student complaint from the list below to respond." styleClass="eval-page-subtitle" style="-fx-text-fill: #0ea5e9;"/>
                                             <VBox spacing="8.0">
-                                                <Label text="Official Teacher Response" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                <Label text="Official Teacher Response" styleClass="eval-label"/>
                                                 <TextArea fx:id="inquiryResponseArea" prefHeight="100.0" promptText="Write your professional response here... (AI will assist with spelling)" styleClass="eval-textarea"/>
                                             </VBox>
                                             <HBox spacing="10.0">

@@ -572,7 +572,7 @@ public class EvaluationStudentController {
                 row.setAlignment(Pos.CENTER_LEFT);
                 Label typeLabel = new Label(type.toUpperCase());
                 typeLabel.setMinWidth(60);
-                typeLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #475569;");
+                typeLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #94a3b8;");
                 
                 Label scoreLabel = new Label("Score: " + scoreStr);
                 scoreLabel.setMinWidth(100);

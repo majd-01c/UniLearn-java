@@ -76,7 +76,7 @@
     <!-- Modern Module Navigation Bar -->
     <HBox alignment="CENTER" styleClass="eval-nav-bar">
         <children>
-            <Button fx:id="gradesNavBtn" text="📋 My Grades" onAction="#showGrades" styleClass="eval-nav-btn eval-nav-btn-active" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+            <Button fx:id="gradesNavBtn" text="📋 My Grades" onAction="#showGrades" styleClass="eval-nav-btn" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
             <Button fx:id="recommendationsNavBtn" text="💡 AI Insights" onAction="#showRecommendations" styleClass="eval-nav-btn" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
             <Button fx:id="scheduleNavBtn" text="📅 Schedule" onAction="#showSchedule" styleClass="eval-nav-btn" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
             <Button fx:id="complaintsNavBtn" text="📝 Support &amp; Chat" onAction="#showComplaints" styleClass="eval-nav-btn" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
@@ -242,13 +242,13 @@
                                                     <HBox spacing="12.0" alignment="CENTER_LEFT">
                                                         <children>
                                                             <VBox HBox.hgrow="ALWAYS">
-                                                                <Label text="Document Type" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                                <Label text="Document Type" styleClass="eval-label"/>
                                                                 <ComboBox fx:id="docTypeBox" maxWidth="Infinity" promptText="Choose type"/>
                                                             </VBox>
                                                         </children>
                                                     </HBox>
                                                     <VBox>
-                                                        <Label text="Additional Details" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                        <Label text="Additional Details" styleClass="eval-label"/>
                                                         <TextArea fx:id="docInfoArea" promptText="Why do you need this? (Optional)" prefHeight="60.0" styleClass="eval-textarea"/>
                                                     </VBox>
                                                     <Button text="📂 Request Document" onAction="#onCreateDocumentRequest" styleClass="eval-primary-btn" maxWidth="Infinity"/>
@@ -259,7 +259,7 @@
                                                     <Label text="AI PDF Workspace" styleClass="eval-section-label"/>
                                                     <Label fx:id="selectedPdfLabel" text="Selected: none" styleClass="eval-page-subtitle"/>
                                                     <VBox spacing="8.0">
-                                                        <Label text="Target Language" styleClass="eval-label" style="-fx-text-fill: #475569;"/>
+                                                        <Label text="Target Language" styleClass="eval-label"/>
                                                         <ComboBox fx:id="pdfTargetLanguageBox" maxWidth="Infinity"/>
                                                         <Button text="🌐 Translate Content" onAction="#onTranslateSelectedPdf" styleClass="eval-primary-btn" maxWidth="Infinity" style="-fx-background-color: #0ea5e9;"/>
                                                     </VBox>
