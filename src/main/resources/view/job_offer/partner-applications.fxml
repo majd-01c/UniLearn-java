@@ -236,6 +236,30 @@
                 <ComboBox fx:id="feedbackDecisionCombo" prefWidth="220" styleClass="job-offer-filter-combo"/>
             </VBox>
 
+            <VBox fx:id="meetingScheduleCard" spacing="10" styleClass="job-offer-review-info-card" visible="false" managed="false">
+                <Label text="Interview meeting schedule" styleClass="job-offer-section-title"/>
+                <Label fx:id="meetingScheduleHelperLabel"
+                       text="Accepted candidates need a scheduled meeting date and time before submission."
+                       styleClass="job-offer-card-meta"
+                       wrapText="true"/>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <DatePicker fx:id="meetingDatePicker"
+                                promptText="24/05/2026"
+                                prefWidth="180"
+                                styleClass="lms-input job-offer-input job-offer-date-picker"/>
+                    <TextField fx:id="meetingTimeField"
+                               promptText="HH:mm"
+                               prefWidth="120"
+                               styleClass="job-offer-search-field"/>
+                </HBox>
+                <Button fx:id="meetingJoinButton"
+                        text="Join Meeting"
+                        styleClass="primary-button"
+                        onAction="#onJoinSelectedMeeting"
+                        visible="false"
+                        managed="false"/>
+            </VBox>
+
             <VBox spacing="10" styleClass="job-offer-review-info-card">
                 <HBox spacing="8" alignment="CENTER_LEFT">
                     <Label text="Feedback to candidate" styleClass="job-offer-section-title"/>

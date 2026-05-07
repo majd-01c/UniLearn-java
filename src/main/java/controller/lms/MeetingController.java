@@ -4,6 +4,7 @@ import dto.lms.StudentClasseRowDto;
 import dto.lms.TeacherAssignmentRowDto;
 import entities.ClassMeeting;
 import entities.User;
+import entities.job_offer.JobOfferMeeting;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
@@ -23,6 +24,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
 import service.lms.MeetingService;
+import service.job_offer.JobOfferMeetingService;
 import util.AppNavigator;
 import util.JcefMeetingWindow;
 
@@ -58,6 +60,7 @@ public class MeetingController implements Initializable {
     @FXML private WebView meetingWebView;
 
     private final MeetingService meetingService = new MeetingService();
+    private final JobOfferMeetingService jobOfferMeetingService = new JobOfferMeetingService();
     private final SimpleDateFormat dateTimeFormat = new SimpleDateFormat("MMM dd, yyyy HH:mm");
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy");
 
@@ -65,7 +68,10 @@ public class MeetingController implements Initializable {
     private TeacherAssignmentRowDto teacherClasse;
     private User currentUser;
     private ClassMeeting currentMeeting;
+    private JobOfferMeeting currentJobOfferMeeting;
     private boolean teacherRoom;
+    private boolean jobOfferRoom;
+    private boolean jobOfferPartnerRoom;
     private boolean browserOpenedForCurrentRoom;
     private boolean jcefOpenedForCurrentRoom;
 
@@ -97,10 +103,13 @@ public class MeetingController implements Initializable {
                         User user,
                         boolean isTeacher) {
         this.currentMeeting = meeting;
+        this.currentJobOfferMeeting = null;
         this.teacherClasse = teacherContext;
         this.studentClasse = studentContext;
         this.currentUser = user;
         this.teacherRoom = isTeacher;
+        this.jobOfferRoom = false;
+        this.jobOfferPartnerRoom = false;
         this.browserOpenedForCurrentRoom = false;
         this.jcefOpenedForCurrentRoom = false;
 
@@ -116,6 +125,34 @@ public class MeetingController implements Initializable {
         if (roomEndButton != null) {
             roomEndButton.setVisible(isTeacher);
             roomEndButton.setManaged(isTeacher);
+        }
+        loadMeetingWebView();
+    }
+
+    public void setJobOfferRoom(JobOfferMeeting meeting, User user, boolean isPartner) {
+        this.currentMeeting = null;
+        this.currentJobOfferMeeting = meeting;
+        this.teacherClasse = null;
+        this.studentClasse = null;
+        this.currentUser = user;
+        this.teacherRoom = false;
+        this.jobOfferRoom = true;
+        this.jobOfferPartnerRoom = isPartner;
+        this.browserOpenedForCurrentRoom = false;
+        this.jcefOpenedForCurrentRoom = false;
+
+        if (roomTitleLabel != null) {
+            roomTitleLabel.setText(meeting != null ? meeting.getTitle() : "Interview Meeting");
+        }
+        if (roomClasseLabel != null) {
+            roomClasseLabel.setText(resolveJobOfferMeetingContext(meeting));
+        }
+        if (roomUserLabel != null) {
+            roomUserLabel.setText(resolveJobOfferUserName(user, isPartner));
+        }
+        if (roomEndButton != null) {
+            roomEndButton.setVisible(isPartner);
+            roomEndButton.setManaged(isPartner);
         }
         loadMeetingWebView();
     }
@@ -440,6 +477,14 @@ public class MeetingController implements Initializable {
 
     @FXML
     private void onLeaveRoom() {
+        if (jobOfferRoom) {
+            if (jobOfferPartnerRoom) {
+                AppNavigator.showPartnerApplications();
+            } else {
+                AppNavigator.showMyJobApplications();
+            }
+            return;
+        }
         if (teacherRoom) {
             onBackFromTeacherMeetings();
         } else {
@@ -453,7 +498,7 @@ public class MeetingController implements Initializable {
     }
 
     private boolean openCurrentMeetingInBrowser(boolean showFailureDialog) {
-        if (currentMeeting == null) {
+        if (!hasCurrentRoom()) {
             return false;
         }
         try {
@@ -463,7 +508,7 @@ public class MeetingController implements Initializable {
                 }
                 return false;
             }
-            Desktop.getDesktop().browse(new URI(meetingService.buildDirectMeetingUrl(currentMeeting)));
+            Desktop.getDesktop().browse(new URI(buildCurrentDirectMeetingUrl()));
             browserOpenedForCurrentRoom = true;
             return true;
         } catch (Exception e) {
@@ -475,13 +520,13 @@ public class MeetingController implements Initializable {
     }
 
     private void openCurrentMeetingInJcef() {
-        if (currentMeeting == null || jcefOpenedForCurrentRoom) {
+        if (!hasCurrentRoom() || jcefOpenedForCurrentRoom) {
             return;
         }
 
         jcefOpenedForCurrentRoom = true;
-        String url = meetingService.buildDirectMeetingUrl(currentMeeting);
-        String title = "UniLearn Meeting - " + firstNonBlank(currentMeeting.getTitle(), resolveClasseName(currentMeeting), "Meeting");
+        String url = buildCurrentDirectMeetingUrl();
+        String title = "UniLearn Meeting - " + resolveCurrentRoomTitle();
         updateJcefStatus("Preparing embedded Chromium...");
         JcefMeetingWindow.openAsync(url, title, this::updateJcefStatus, throwable -> {
             String message = throwable.getMessage();
@@ -511,6 +556,21 @@ public class MeetingController implements Initializable {
 
     @FXML
     private void onEndCurrentMeeting() {
+        if (jobOfferRoom) {
+            if (currentJobOfferMeeting == null) {
+                return;
+            }
+            if (!confirm("End meeting", "End meeting for all participants?")) {
+                return;
+            }
+            try {
+                jobOfferMeetingService.endMeeting(currentJobOfferMeeting.getId());
+                AppNavigator.showPartnerApplications();
+            } catch (Exception e) {
+                showError("Cannot end meeting", e.getMessage());
+            }
+            return;
+        }
         if (currentMeeting == null || teacherClasse == null) {
             return;
         }
@@ -526,7 +586,7 @@ public class MeetingController implements Initializable {
     }
 
     private void loadMeetingWebView() {
-        if (meetingWebView == null || currentMeeting == null) {
+        if (meetingWebView == null || !hasCurrentRoom()) {
             return;
         }
         meetingWebView.setContextMenuEnabled(false);
@@ -547,7 +607,7 @@ public class MeetingController implements Initializable {
     }
 
     private String buildBrowserMeetingHtml() {
-        String directUrl = html(meetingService.buildDirectMeetingUrl(currentMeeting));
+        String directUrl = html(buildCurrentDirectMeetingUrl());
         return """
                 <!doctype html>
                 <html>
@@ -574,7 +634,7 @@ public class MeetingController implements Initializable {
     }
 
     private String buildJcefMeetingHtml() {
-        String directUrl = html(meetingService.buildDirectMeetingUrl(currentMeeting));
+        String directUrl = html(buildCurrentDirectMeetingUrl());
         return """
                 <!doctype html>
                 <html>
@@ -603,12 +663,13 @@ public class MeetingController implements Initializable {
     private String buildJitsiHtml() {
         String host = jsString(meetingService.getJitsiHost());
         String externalApiUrl = jsString(meetingService.buildJitsiExternalApiUrl());
-        String directMeetingUrl = html(meetingService.buildDirectMeetingUrl(currentMeeting));
-        String room = jsString(currentMeeting.getRoomCode());
-        String username = jsString(resolveUserName(currentUser, teacherRoom));
-        String loadingText = teacherRoom ? "Connecting to meeting..." : "Joining meeting...";
-        String audioMuted = teacherRoom ? "false" : "true";
-        String toolbarButtons = teacherRoom
+        String directMeetingUrl = html(buildCurrentDirectMeetingUrl());
+        String room = jsString(resolveCurrentRoomCode());
+        String username = jsString(resolveCurrentUserName());
+        boolean hostRoom = teacherRoom || jobOfferPartnerRoom;
+        String loadingText = hostRoom ? "Connecting to meeting..." : "Joining meeting...";
+        String audioMuted = hostRoom ? "false" : "true";
+        String toolbarButtons = hostRoom
                 ? "'microphone','camera','closedcaptions','desktop','fullscreen','fodeviceselection','hangup','chat','recording','livestreaming','etherpad','sharedvideo','settings','raisehand','videoquality','filmstrip','participants-pane','tileview','select-background','mute-everyone','security'"
                 : "'microphone','camera','closedcaptions','desktop','fullscreen','fodeviceselection','hangup','chat','settings','raisehand','videoquality','filmstrip','participants-pane','tileview','select-background'";
         String connectionErrorHtml = jsString("""
@@ -733,6 +794,40 @@ public class MeetingController implements Initializable {
                 );
     }
 
+    private boolean hasCurrentRoom() {
+        return currentMeeting != null || currentJobOfferMeeting != null;
+    }
+
+    private String buildCurrentDirectMeetingUrl() {
+        if (currentJobOfferMeeting != null) {
+            return jobOfferMeetingService.buildDirectMeetingUrl(currentJobOfferMeeting);
+        }
+        return meetingService.buildDirectMeetingUrl(currentMeeting);
+    }
+
+    private String resolveCurrentRoomCode() {
+        if (currentJobOfferMeeting != null) {
+            return currentJobOfferMeeting.getRoomCode();
+        }
+        return currentMeeting != null ? currentMeeting.getRoomCode() : "";
+    }
+
+    private String resolveCurrentRoomTitle() {
+        if (currentJobOfferMeeting != null) {
+            return firstNonBlank(currentJobOfferMeeting.getTitle(), resolveJobOfferMeetingContext(currentJobOfferMeeting), "Meeting");
+        }
+        return firstNonBlank(currentMeeting != null ? currentMeeting.getTitle() : null,
+                resolveClasseName(currentMeeting),
+                "Meeting");
+    }
+
+    private String resolveCurrentUserName() {
+        if (jobOfferRoom) {
+            return resolveJobOfferUserName(currentUser, jobOfferPartnerRoom);
+        }
+        return resolveUserName(currentUser, teacherRoom);
+    }
+
     private Timestamp parseScheduledAt(LocalDate date, String rawTime) {
         if (date == null) {
             return null;
@@ -796,12 +891,31 @@ public class MeetingController implements Initializable {
         return "Class Meeting";
     }
 
+    private String resolveJobOfferMeetingContext(JobOfferMeeting meeting) {
+        if (meeting == null || meeting.getJobOffer() == null) {
+            return "Job Interview Meeting";
+        }
+        String offerTitle = firstNonBlank(meeting.getJobOffer().getTitle(), meeting.getJobOffer().getType(), "Job Offer");
+        String studentName = meeting.getStudent() == null
+                ? "Candidate"
+                : firstNonBlank(meeting.getStudent().getName(), meeting.getStudent().getEmail(), "Candidate");
+        return offerTitle + " | " + studentName;
+    }
+
     private String resolveUserName(User user, boolean teacher) {
         String name = user == null ? null : firstNonBlank(user.getName(), user.getEmail(), null);
         if (name == null) {
             name = teacher ? "Teacher" : "Student";
         }
         return teacher ? name + " (Teacher)" : name;
+    }
+
+    private String resolveJobOfferUserName(User user, boolean partner) {
+        String name = user == null ? null : firstNonBlank(user.getName(), user.getEmail(), null);
+        if (name == null) {
+            name = partner ? "Partner" : "Student";
+        }
+        return partner ? name + " (Partner)" : name;
     }
 
     private String firstNonBlank(String first, String second, String fallback) {

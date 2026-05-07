@@ -10,6 +10,7 @@ import entities.forum.ForumComment;
 import entities.forum.ForumTopic;
 import entities.job_offer.JobOffer;
 import entities.job_offer.JobApplication;
+import entities.job_offer.JobOfferMeeting;
 import javafx.animation.FadeTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -667,6 +668,26 @@ public class AppShellController implements Initializable {
         loadCenter("/view/lms/meeting-room.fxml", controller -> {
             if (controller instanceof MeetingController mc)
                 mc.setRoom(meeting, teacherContext, studentContext, currentUser, isTeacher);
+        });
+    }
+
+    public void showJobOfferMeetingRoom(JobOfferMeeting meeting, boolean isPartner) {
+        if (!ensureAuthenticated())
+            return;
+        if (isPartner && RoleGuard.isStudent(currentUser)) {
+            showWarning("Access Denied", "Only partners can access this meeting as host.");
+            showJobOffersView();
+            return;
+        }
+        if (!isPartner && !RoleGuard.isStudent(currentUser)) {
+            showWarning("Access Denied", "Only students can access this meeting as attendee.");
+            showJobOffersView();
+            return;
+        }
+        setHeader(meeting != null ? meeting.getTitle() : "Interview Meeting", "Job offer video meeting");
+        loadCenter("/view/lms/meeting-room.fxml", controller -> {
+            if (controller instanceof MeetingController mc)
+                mc.setJobOfferRoom(meeting, currentUser, isPartner);
         });
     }
 

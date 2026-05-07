@@ -4,6 +4,7 @@ import entities.User;
 import entities.job_offer.JobApplication;
 import entities.job_offer.JobApplicationStatus;
 import entities.job_offer.JobOffer;
+import entities.job_offer.JobOfferMeeting;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -21,6 +22,7 @@ import javafx.scene.layout.VBox;
 import service.job_offer.ApplicationDocumentStorageService;
 import services.ServiceUser;
 import service.job_offer.GeminiApplicationFeedbackService;
+import service.job_offer.JobOfferMeetingService;
 import services.job_offer.ServiceJobApplication;
 import services.job_offer.ServiceJobOffer;
 import util.AppNavigator;
@@ -39,6 +41,7 @@ import java.util.LinkedHashMap;
 public class MyApplicationsController implements Initializable {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMM yyyy");
+    private static final DateTimeFormatter MEETING_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     @FXML
     private VBox rootContainer;
@@ -58,7 +61,9 @@ public class MyApplicationsController implements Initializable {
     private ServiceUser serviceUser;
     private ApplicationDocumentStorageService documentStorageService;
     private GeminiApplicationFeedbackService aiFeedbackService;
+    private JobOfferMeetingService jobOfferMeetingService;
     private ObservableList<JobApplication> allApplications;
+    private Map<Integer, JobOfferMeeting> meetingsByApplicationId;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -67,7 +72,9 @@ public class MyApplicationsController implements Initializable {
         serviceUser = new ServiceUser();
         documentStorageService = new ApplicationDocumentStorageService();
         aiFeedbackService = new GeminiApplicationFeedbackService();
+        jobOfferMeetingService = new JobOfferMeetingService();
         allApplications = FXCollections.observableArrayList();
+        meetingsByApplicationId = new LinkedHashMap<>();
 
         setupFilters();
         setupListView();
@@ -103,6 +110,7 @@ public class MyApplicationsController implements Initializable {
                 List<JobApplication> applications = serviceJobApplication.getALL();
                 List<JobOffer> offers = serviceJobOffer.getALL();
                 List<User> users = serviceUser.getALL();
+                List<JobOfferMeeting> meetings = jobOfferMeetingService.getMeetingsForStudent(currentUser.getId());
 
                 Map<Integer, JobOffer> offersById = offers.stream()
                         .filter(offer -> offer != null && offer.getId() > 0)
@@ -118,7 +126,17 @@ public class MyApplicationsController implements Initializable {
                         .sorted(Comparator.comparing(JobApplication::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
                         .collect(Collectors.toList());
 
+                Map<Integer, JobOfferMeeting> meetingMap = meetings.stream()
+                        .filter(meeting -> meeting != null && meeting.getApplication() != null)
+                        .collect(Collectors.toMap(
+                                meeting -> meeting.getApplication().getId(),
+                                meeting -> meeting,
+                                (left, right) -> left,
+                                LinkedHashMap::new
+                        ));
+
                 Platform.runLater(() -> {
+                    meetingsByApplicationId = meetingMap;
                     allApplications.setAll(userApps);
                     applyFilters();
                     noAppsLabel.setVisible(userApps.isEmpty());
@@ -262,7 +280,12 @@ public class MyApplicationsController implements Initializable {
 
             actionsBar.getChildren().addAll(viewOfferButton, openCvButton, adviceButton);
 
-            cellContent.getChildren().addAll(titleBar, metaBar, partnerMessageCard, actionsBar);
+            cellContent.getChildren().addAll(titleBar, metaBar, partnerMessageCard);
+            JobOfferMeeting meeting = meetingsByApplicationId.get(app.getId());
+            if (isAccepted(app) && meeting != null) {
+                cellContent.getChildren().add(buildMeetingCard(meeting));
+            }
+            cellContent.getChildren().add(actionsBar);
             setGraphic(cellContent);
             setText(null);
             setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
@@ -322,6 +345,60 @@ public class MyApplicationsController implements Initializable {
             case "REVIEWED" -> card.getStyleClass().add("student-application-card-reviewed");
             default -> card.getStyleClass().add("student-application-card-submitted");
         }
+    }
+
+    private VBox buildMeetingCard(JobOfferMeeting meeting) {
+        VBox meetingCard = new VBox(8);
+        meetingCard.getStyleClass().add("student-application-message-card");
+        meetingCard.setMaxWidth(Double.MAX_VALUE);
+
+        Label title = new Label("Interview meeting");
+        title.getStyleClass().add("job-offer-section-label");
+
+        Label details = new Label("Scheduled: " + formatMeetingDateTime(meeting)
+                + " | Status: " + safeText(meeting.getStatus(), "scheduled").toUpperCase());
+        details.getStyleClass().add("job-offer-card-description");
+        details.setWrapText(true);
+        details.setMaxWidth(Double.MAX_VALUE);
+
+        Button joinButton = new Button("Join Meeting");
+        joinButton.getStyleClass().addAll("primary-button", "job-offer-card-button");
+        boolean canJoin = jobOfferMeetingService.canJoinNow(meeting);
+        joinButton.setDisable(!canJoin);
+        if (!canJoin) {
+            joinButton.setTooltip(new Tooltip(resolveMeetingLockedText(meeting)));
+        }
+        joinButton.setOnAction(event -> joinMeeting(meeting));
+
+        meetingCard.getChildren().addAll(title, details, joinButton);
+        return meetingCard;
+    }
+
+    private void joinMeeting(JobOfferMeeting meeting) {
+        try {
+            JobOfferMeeting joinedMeeting = jobOfferMeetingService.joinStudentMeeting(meeting.getId());
+            AppNavigator.showJobOfferMeetingRoom(joinedMeeting, false);
+        } catch (Exception exception) {
+            showInfo("Cannot join meeting", exception.getMessage());
+            loadApplications();
+        }
+    }
+
+    private String resolveMeetingLockedText(JobOfferMeeting meeting) {
+        if (meeting != null && meeting.isEnded()) {
+            return "This meeting has ended.";
+        }
+        return "Meeting opens on " + formatMeetingDateTime(meeting) + ".";
+    }
+
+    private boolean isAccepted(JobApplication application) {
+        return JobApplicationStatus.fromString(application == null ? null : application.getStatus()) == JobApplicationStatus.ACCEPTED;
+    }
+
+    private String formatMeetingDateTime(JobOfferMeeting meeting) {
+        return meeting != null && meeting.getScheduledAt() != null
+                ? meeting.getScheduledAt().toLocalDateTime().format(MEETING_DATE_TIME_FORMATTER)
+                : "Not scheduled";
     }
 
     private boolean hasCv(JobApplication application) {

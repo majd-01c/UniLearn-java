@@ -9,6 +9,7 @@ import entities.forum.ForumComment;
 import entities.forum.ForumTopic;
 import entities.job_offer.JobOffer;
 import entities.job_offer.JobApplication;
+import entities.job_offer.JobOfferMeeting;
 
 import java.util.List;
 
@@ -96,6 +97,10 @@ public final class AppNavigator {
     public static void showMeetingRoom(ClassMeeting meeting, dto.lms.TeacherAssignmentRowDto teacherContext,
                                        dto.lms.StudentClasseRowDto studentContext, boolean isTeacher) {
         if (appShellController != null) appShellController.showMeetingRoom(meeting, teacherContext, studentContext, isTeacher);
+    }
+
+    public static void showJobOfferMeetingRoom(JobOfferMeeting meeting, boolean isPartner) {
+        if (appShellController != null) appShellController.showJobOfferMeetingRoom(meeting, isPartner);
     }
 
     // Direct access to load custom content

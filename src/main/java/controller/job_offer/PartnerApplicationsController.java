@@ -6,6 +6,7 @@ import entities.job_offer.CandidateProfile;
 import entities.job_offer.JobApplication;
 import entities.job_offer.JobApplicationStatus;
 import entities.job_offer.JobOffer;
+import entities.job_offer.JobOfferMeeting;
 import entities.job_offer.ScoreBreakdown;
 import entities.job_offer.ScoreCriteria;
 import javafx.application.Platform;
@@ -19,6 +20,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
@@ -34,6 +36,7 @@ import service.job_offer.ApplicationDocumentStorageService;
 import service.job_offer.AtsApplicationScoringService;
 import service.job_offer.AtsScoringEngine;
 import service.job_offer.GeminiApplicationFeedbackService;
+import service.job_offer.JobOfferMeetingService;
 import services.ServiceUser;
 import services.job_offer.ServiceJobApplication;
 import services.job_offer.ServiceJobOffer;
@@ -45,7 +48,11 @@ import java.io.File;
 import java.net.URL;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -58,6 +65,8 @@ import java.util.stream.Collectors;
 public class PartnerApplicationsController implements Initializable {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMM yyyy");
+    private static final DateTimeFormatter MEETING_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    private static final DateTimeFormatter MEETING_TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
     @FXML private Label pageTitleLabel;
     @FXML private Label pageSubtitleLabel;
@@ -122,6 +131,11 @@ public class PartnerApplicationsController implements Initializable {
     @FXML private Label decisionCandidateLabel;
     @FXML private Label decisionOfferLabel;
     @FXML private ComboBox<String> feedbackDecisionCombo;
+    @FXML private VBox meetingScheduleCard;
+    @FXML private DatePicker meetingDatePicker;
+    @FXML private TextField meetingTimeField;
+    @FXML private Label meetingScheduleHelperLabel;
+    @FXML private Button meetingJoinButton;
     @FXML private Button generateFeedbackButton;
     @FXML private Label feedbackHelperLabel;
     @FXML private TextArea feedbackArea;
@@ -136,6 +150,7 @@ public class PartnerApplicationsController implements Initializable {
     private ServiceUser serviceUser;
     private ApplicationDocumentStorageService documentStorageService;
     private GeminiApplicationFeedbackService aiFeedbackService;
+    private JobOfferMeetingService jobOfferMeetingService;
     private AtsScoringEngine atsScoringEngine;
     private AtsApplicationScoringService atsApplicationScoringService;
     private ObjectMapper objectMapper;
@@ -143,6 +158,7 @@ public class PartnerApplicationsController implements Initializable {
     private final ObservableList<JobApplication> allApplications = FXCollections.observableArrayList();
     private final ObservableList<JobOffer> ownedOffers = FXCollections.observableArrayList();
     private final Map<Integer, List<JobApplication>> applicationsByOfferId = new LinkedHashMap<>();
+    private final Map<Integer, JobOfferMeeting> meetingsByApplicationId = new LinkedHashMap<>();
 
     private JobOffer selectedOffer;
     private JobApplication selectedApplication;
@@ -158,6 +174,7 @@ public class PartnerApplicationsController implements Initializable {
         serviceUser = new ServiceUser();
         documentStorageService = new ApplicationDocumentStorageService();
         aiFeedbackService = new GeminiApplicationFeedbackService();
+        jobOfferMeetingService = new JobOfferMeetingService();
         atsScoringEngine = new AtsScoringEngine();
         atsApplicationScoringService = new AtsApplicationScoringService();
         objectMapper = new ObjectMapper();
@@ -206,6 +223,7 @@ public class PartnerApplicationsController implements Initializable {
     private void setupInteraction() {
         offerSearchField.textProperty().addListener((obs, oldValue, newValue) -> renderOffers());
         statusFilterCombo.setOnAction(event -> renderApplicationsForSelection());
+        feedbackDecisionCombo.valueProperty().addListener((obs, oldValue, newValue) -> updateMeetingScheduleVisibility());
         messageArea.setEditable(false);
         messageArea.setWrapText(true);
         feedbackArea.setWrapText(true);
@@ -229,6 +247,7 @@ public class PartnerApplicationsController implements Initializable {
                 List<JobApplication> applications = serviceJobApplication.getALL();
                 List<JobOffer> offers = serviceJobOffer.getALL();
                 List<User> users = serviceUser.getALL();
+                List<JobOfferMeeting> meetings = jobOfferMeetingService.getMeetingsForReviewer(currentUser.getId());
 
                 Map<Integer, JobOffer> offersById = offers.stream()
                         .filter(offer -> offer != null && offer.getId() > 0)
@@ -260,11 +279,22 @@ public class PartnerApplicationsController implements Initializable {
                                 LinkedHashMap::new,
                                 Collectors.toList()));
 
+                Map<Integer, JobOfferMeeting> meetingMap = meetings.stream()
+                        .filter(meeting -> meeting != null && meeting.getApplication() != null)
+                        .collect(Collectors.toMap(
+                                meeting -> meeting.getApplication().getId(),
+                                meeting -> meeting,
+                                (left, right) -> left,
+                                LinkedHashMap::new
+                        ));
+
                 Platform.runLater(() -> {
                     ownedOffers.setAll(accessibleOffers);
                     allApplications.setAll(partnerApplications);
                     applicationsByOfferId.clear();
                     applicationsByOfferId.putAll(grouped);
+                    meetingsByApplicationId.clear();
+                    meetingsByApplicationId.putAll(meetingMap);
 
                     updateStats();
                     renderOffers();
@@ -768,9 +798,57 @@ public class PartnerApplicationsController implements Initializable {
         }
 
         feedbackArea.setText(safeText(application.getStatusMessage(), ""));
+        populateMeetingScheduleFields(application);
         generateFeedbackButton.setDisable(false);
         submitDecisionButton.setDisable(false);
         feedbackHelperLabel.setText("Pick a status, generate AI feedback if needed, then submit.");
+    }
+
+    private void populateMeetingScheduleFields(JobApplication application) {
+        if (meetingDatePicker == null || meetingTimeField == null) {
+            return;
+        }
+
+        JobOfferMeeting meeting = application == null ? null : meetingsByApplicationId.get(application.getId());
+        if (meeting != null && meeting.getScheduledAt() != null) {
+            LocalDateTime scheduled = meeting.getScheduledAt().toLocalDateTime();
+            meetingDatePicker.setValue(scheduled.toLocalDate());
+            meetingTimeField.setText(scheduled.toLocalTime().format(MEETING_TIME_FORMATTER));
+            meetingScheduleHelperLabel.setText("Existing meeting: " + scheduled.format(MEETING_DATE_TIME_FORMATTER)
+                    + ". Update it here if needed.");
+            setMeetingJoinButtonState(true, jobOfferMeetingService.canJoinNow(meeting));
+        } else {
+            meetingDatePicker.setValue(null);
+            meetingTimeField.setText("");
+            meetingScheduleHelperLabel.setText("Accepted candidates need a scheduled meeting date and time before submission.");
+            setMeetingJoinButtonState(false, false);
+        }
+        updateMeetingScheduleVisibility();
+    }
+
+    private void updateMeetingScheduleVisibility() {
+        if (meetingScheduleCard == null || feedbackDecisionCombo == null) {
+            return;
+        }
+        boolean acceptedDecision = JobApplicationStatus.fromString(feedbackDecisionCombo.getValue()) == JobApplicationStatus.ACCEPTED
+                && selectedApplication != null;
+        meetingScheduleCard.setVisible(acceptedDecision);
+        meetingScheduleCard.setManaged(acceptedDecision);
+        if (!acceptedDecision) {
+            setMeetingJoinButtonState(false, false);
+        } else {
+            JobOfferMeeting meeting = meetingsByApplicationId.get(selectedApplication.getId());
+            setMeetingJoinButtonState(meeting != null, meeting != null && jobOfferMeetingService.canJoinNow(meeting));
+        }
+    }
+
+    private void setMeetingJoinButtonState(boolean visible, boolean canJoin) {
+        if (meetingJoinButton == null) {
+            return;
+        }
+        meetingJoinButton.setVisible(visible);
+        meetingJoinButton.setManaged(visible);
+        meetingJoinButton.setDisable(!canJoin);
     }
 
     private void showStep(int step) {
@@ -889,6 +967,13 @@ public class PartnerApplicationsController implements Initializable {
         decisionOfferLabel.setText("Pick a candidate in step 2 first.");
         feedbackDecisionCombo.setValue(JobApplicationStatus.REVIEWED.name());
         feedbackArea.setText("");
+        if (meetingDatePicker != null) {
+            meetingDatePicker.setValue(null);
+        }
+        if (meetingTimeField != null) {
+            meetingTimeField.setText("");
+        }
+        updateMeetingScheduleVisibility();
         generateFeedbackButton.setDisable(true);
         submitDecisionButton.setDisable(true);
         feedbackHelperLabel.setText("Step 4 unlocks after you review a selected candidate.");
@@ -1017,6 +1102,28 @@ public class PartnerApplicationsController implements Initializable {
     }
 
     @FXML
+    private void onJoinSelectedMeeting() {
+        if (selectedApplication == null) {
+            showError("No application selected", "Select an accepted application first.");
+            return;
+        }
+
+        JobOfferMeeting meeting = meetingsByApplicationId.get(selectedApplication.getId());
+        if (meeting == null) {
+            showError("Meeting not scheduled", "Create a meeting schedule before joining.");
+            return;
+        }
+
+        try {
+            JobOfferMeeting joinedMeeting = jobOfferMeetingService.joinPartnerMeeting(meeting.getId());
+            AppNavigator.showJobOfferMeetingRoom(joinedMeeting, true);
+        } catch (Exception exception) {
+            showError("Cannot join meeting", exception.getMessage());
+            populateMeetingScheduleFields(selectedApplication);
+        }
+    }
+
+    @FXML
     private void onGenerateFeedback() {
         if (selectedApplication == null) {
             showError("No application selected", "Select an application before generating AI feedback.");
@@ -1121,6 +1228,11 @@ public class PartnerApplicationsController implements Initializable {
         }
 
         try {
+            Timestamp meetingScheduledAt = null;
+            if (targetStatus == JobApplicationStatus.ACCEPTED) {
+                meetingScheduledAt = parseMeetingSchedule();
+            }
+
             String feedback = resolveFeedbackForSubmission(targetStatus);
             if (feedback == null) {
                 return;
@@ -1137,10 +1249,25 @@ public class PartnerApplicationsController implements Initializable {
 
             serviceJobApplication.update(selectedApplication);
 
+            JobOfferMeeting scheduledMeeting = null;
+            if (targetStatus == JobApplicationStatus.ACCEPTED) {
+                scheduledMeeting = jobOfferMeetingService.scheduleMeetingForPartner(
+                        selectedApplication.getId(),
+                        "Interview - " + safeText(selectedApplication.getJobOffer() != null ? selectedApplication.getJobOffer().getTitle() : null, "Job offer"),
+                        buildMeetingDescription(selectedApplication),
+                        meetingScheduledAt
+                );
+                meetingsByApplicationId.put(selectedApplication.getId(), scheduledMeeting);
+            }
+
             doneTitleLabel.setText("Decision submitted");
-            doneSummaryLabel.setText("Candidate: " + resolveCandidateName(selectedApplication)
+            String summary = "Candidate: " + resolveCandidateName(selectedApplication)
                     + "\nOffer: " + safeText(selectedApplication.getJobOffer() != null ? selectedApplication.getJobOffer().getTitle() : null, "Unknown offer")
-                    + "\nStatus: " + targetStatus.getLabel());
+                    + "\nStatus: " + targetStatus.getLabel();
+            if (scheduledMeeting != null && scheduledMeeting.getScheduledAt() != null) {
+                summary += "\nMeeting: " + scheduledMeeting.getScheduledAt().toLocalDateTime().format(MEETING_DATE_TIME_FORMATTER);
+            }
+            doneSummaryLabel.setText(summary);
 
             feedbackHelperLabel.setText("Submitted status: " + targetStatus.getLabel());
             loadApplications();
@@ -1164,6 +1291,31 @@ public class PartnerApplicationsController implements Initializable {
         feedbackArea.setText(generatedFeedback);
         feedbackHelperLabel.setText("AI feedback was generated automatically before submission.");
         return generatedFeedback == null ? "" : generatedFeedback.trim();
+    }
+
+    private Timestamp parseMeetingSchedule() {
+        LocalDate date = meetingDatePicker == null ? null : meetingDatePicker.getValue();
+        String rawTime = meetingTimeField == null ? "" : meetingTimeField.getText();
+        String cleanTime = rawTime == null ? "" : rawTime.trim();
+
+        if (date == null || cleanTime.isEmpty()) {
+            throw new IllegalArgumentException("Choose a meeting date and time before accepting the candidate.");
+        }
+
+        LocalTime time;
+        try {
+            time = LocalTime.parse(cleanTime, DateTimeFormatter.ofPattern("H:mm"));
+        } catch (DateTimeParseException exception) {
+            throw new IllegalArgumentException("Meeting time must use HH:mm format.");
+        }
+
+        return Timestamp.valueOf(LocalDateTime.of(date, time));
+    }
+
+    private String buildMeetingDescription(JobApplication application) {
+        String candidate = resolveCandidateName(application);
+        String offer = safeText(application != null && application.getJobOffer() != null ? application.getJobOffer().getTitle() : null, "the job offer");
+        return "Interview meeting for " + candidate + " about " + offer + ".";
     }
 
     private void openCvFile(JobApplication application) {

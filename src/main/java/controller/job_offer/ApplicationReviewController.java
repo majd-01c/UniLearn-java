@@ -6,9 +6,13 @@ import entities.job_offer.JobApplicationStatus;
 import entities.job_offer.JobOffer;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import service.job_offer.GeminiApplicationFeedbackService;
+import service.job_offer.JobOfferMeetingService;
 import services.job_offer.ServiceJobApplication;
 import services.job_offer.ServiceJobOffer;
 import util.AppNavigator;
@@ -17,6 +21,11 @@ import util.RoleGuard;
 import java.net.URL;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ResourceBundle;
 
 public class ApplicationReviewController implements Initializable {
@@ -59,12 +68,14 @@ public class ApplicationReviewController implements Initializable {
     private ServiceJobApplication serviceJobApplication;
     private ServiceJobOffer serviceJobOffer;
     private GeminiApplicationFeedbackService aiFeedbackService;
+    private JobOfferMeetingService jobOfferMeetingService;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         serviceJobApplication = new ServiceJobApplication();
         serviceJobOffer = new ServiceJobOffer();
         aiFeedbackService = new GeminiApplicationFeedbackService();
+        jobOfferMeetingService = new JobOfferMeetingService();
 
         // Ensure reject button keeps themed style even if FXML class parsing is inconsistent.
         if (rejectButton != null) {
@@ -168,9 +179,19 @@ public class ApplicationReviewController implements Initializable {
                 if (feedback == null) {
                     return;
                 }
+                Timestamp scheduledAt = promptForMeetingSchedule();
+                if (scheduledAt == null) {
+                    return;
+                }
                 application.setStatusMessage(feedback);
 
                 serviceJobApplication.update(application);
+                jobOfferMeetingService.scheduleMeetingForPartner(
+                        application.getId(),
+                        "Interview - " + (application.getJobOffer() != null ? application.getJobOffer().getTitle() : "Job offer"),
+                        "Interview meeting for " + (application.getUser() != null ? application.getUser().getEmail() : "candidate") + ".",
+                        scheduledAt
+                );
                 showInfo("Success", "Application approved successfully");
                 AppNavigator.showPartnerApplications();
             } catch (NumberFormatException e) {
@@ -282,5 +303,59 @@ public class ApplicationReviewController implements Initializable {
         }
 
         return aiFeedbackService.generateFeedback(application, decision);
+    }
+
+    private Timestamp promptForMeetingSchedule() {
+        Dialog<Timestamp> dialog = new Dialog<>();
+        dialog.setTitle("Interview Meeting");
+        dialog.setHeaderText("Schedule the meeting for this accepted application.");
+
+        ButtonType saveButtonType = new ButtonType("Save Schedule", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+
+        DatePicker datePicker = new DatePicker();
+        datePicker.setPromptText("24/05/2026");
+
+        TextField timeField = new TextField();
+        timeField.setPromptText("HH:mm");
+        timeField.setPrefWidth(120);
+
+        HBox scheduleRow = new HBox(8, datePicker, timeField);
+        scheduleRow.setAlignment(Pos.CENTER_LEFT);
+
+        VBox content = new VBox(8,
+                new Label("Meeting date and time"),
+                scheduleRow,
+                new Label("Students can join only on the scheduled date and time."));
+        content.setPadding(new Insets(12));
+        content.setPrefWidth(460);
+        dialog.getDialogPane().setContent(content);
+
+        dialog.setResultConverter(buttonType -> {
+            if (buttonType != saveButtonType) {
+                return null;
+            }
+            try {
+                return parseMeetingSchedule(datePicker.getValue(), timeField.getText());
+            } catch (IllegalArgumentException exception) {
+                showError("Validation", exception.getMessage());
+                return null;
+            }
+        });
+
+        return dialog.showAndWait().orElse(null);
+    }
+
+    private Timestamp parseMeetingSchedule(LocalDate date, String rawTime) {
+        String cleanTime = rawTime == null ? "" : rawTime.trim();
+        if (date == null || cleanTime.isEmpty()) {
+            throw new IllegalArgumentException("Choose a meeting date and time.");
+        }
+        try {
+            LocalTime time = LocalTime.parse(cleanTime, DateTimeFormatter.ofPattern("H:mm"));
+            return Timestamp.valueOf(LocalDateTime.of(date, time));
+        } catch (DateTimeParseException exception) {
+            throw new IllegalArgumentException("Meeting time must use HH:mm format.");
+        }
     }
 }

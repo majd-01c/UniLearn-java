@@ -45,7 +45,15 @@ public class JobApplicationRepository implements IJobApplicationRepository {
 
         Session session = HibernateSessionFactory.getSession();
         try {
-            return Optional.ofNullable(session.get(JobApplication.class, applicationId));
+            return session.createQuery("""
+                            SELECT a FROM JobApplication a
+                            JOIN FETCH a.user
+                            JOIN FETCH a.jobOffer offer
+                            JOIN FETCH offer.user
+                            WHERE a.id = :applicationId
+                            """, JobApplication.class)
+                    .setParameter("applicationId", applicationId)
+                    .uniqueResultOptional();
         } catch (Exception exception) {
             LOGGER.error("Failed to find application by id {}", applicationId, exception);
             throw new IllegalStateException("Unable to query application by id", exception);
