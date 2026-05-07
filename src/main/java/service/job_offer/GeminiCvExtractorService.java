@@ -48,6 +48,7 @@ public class GeminiCvExtractorService {
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
     private final CvParserService cvParserService;
+    private final ApplicationDocumentStorageService documentStorageService;
     private final CustomSkillRepository customSkillRepository;
     private final List<String> modelOrder;
 
@@ -65,6 +66,7 @@ public class GeminiCvExtractorService {
                 .build();
         this.objectMapper = new ObjectMapper();
         this.cvParserService = new CvParserService();
+        this.documentStorageService = new ApplicationDocumentStorageService();
         this.customSkillRepository = new CustomSkillRepository();
         this.modelOrder = resolveModelOrder(config.getProperty("gemini.model", "").trim());
     }
@@ -92,30 +94,14 @@ public class GeminiCvExtractorService {
     }
 
     public File resolveCvFile(String storedValue) {
-        if (storedValue == null || storedValue.isBlank()) {
-            throw new IllegalArgumentException("No CV file attached.");
+        try {
+            return documentStorageService.resolveCvFile(storedValue);
+        } catch (IOException exception) {
+            throw new IllegalArgumentException(exception.getMessage(), exception);
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("CV download interrupted.", exception);
         }
-
-        File direct = new File(storedValue.trim());
-        if (direct.exists()) {
-            return direct;
-        }
-
-        String normalized = storedValue.trim()
-                .replace("\\", File.separator)
-                .replace("/", File.separator);
-        File normalizedFile = new File(normalized);
-        if (normalizedFile.exists()) {
-            return normalizedFile;
-        }
-
-        String fileNameOnly = new File(normalized).getName();
-        File uploadsCv = new File(System.getProperty("user.dir") + File.separator + "uploads" + File.separator + "cvs", fileNameOnly);
-        if (uploadsCv.exists()) {
-            return uploadsCv;
-        }
-
-        throw new IllegalArgumentException("CV file not found: " + storedValue);
     }
 
     private String callGeminiWithFallbacks(String prompt) throws Exception {

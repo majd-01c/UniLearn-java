@@ -18,6 +18,7 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import service.job_offer.ApplicationDocumentStorageService;
 import service.job_offer.GeminiApplicationFeedbackService;
 import services.job_offer.ServiceJobApplication;
 import services.job_offer.ServiceJobOffer;
@@ -25,11 +26,7 @@ import util.AppNavigator;
 import util.RoleGuard;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -129,6 +126,7 @@ public class JobOfferDetailController implements Initializable {
     private User currentUser;
     private ServiceJobOffer serviceJobOffer;
     private ServiceJobApplication serviceJobApplication;
+    private ApplicationDocumentStorageService documentStorageService;
     private GeminiApplicationFeedbackService aiFeedbackService;
     private boolean mapLoaded;
 
@@ -136,6 +134,7 @@ public class JobOfferDetailController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         serviceJobOffer = new ServiceJobOffer();
         serviceJobApplication = new ServiceJobApplication();
+        documentStorageService = new ApplicationDocumentStorageService();
         aiFeedbackService = new GeminiApplicationFeedbackService();
         setupMap();
     }
@@ -339,7 +338,11 @@ public class JobOfferDetailController implements Initializable {
         }
 
         try {
-            String managedCvPath = persistCvFile(sourcePath);
+            String managedCvPath = documentStorageService.storeCv(
+                    new File(sourcePath),
+                    currentUser.getId(),
+                    jobOffer.getId()
+            );
 
             JobApplication application = new JobApplication();
             application.setUser(currentUser);
@@ -532,23 +535,6 @@ public class JobOfferDetailController implements Initializable {
             case "CLOSED" -> label.getStyleClass().add("job-offer-status-closed");
             default -> label.getStyleClass().add("job-offer-status-info");
         }
-    }
-
-    private String persistCvFile(String sourcePath) throws IOException {
-        File source = new File(sourcePath);
-        if (!source.exists()) {
-            throw new IOException("Selected CV file does not exist: " + sourcePath);
-        }
-
-        String sanitizedName = source.getName().replaceAll("[^a-zA-Z0-9._-]", "_");
-        String targetName = System.currentTimeMillis() + "_" + sanitizedName;
-
-        Path targetDir = Path.of(System.getProperty("user.dir"), "uploads", "cvs");
-        Files.createDirectories(targetDir);
-
-        Path targetPath = targetDir.resolve(targetName);
-        Files.copy(source.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-        return targetPath.toAbsolutePath().toString();
     }
 
     private String formatTimestamp(Timestamp timestamp) {

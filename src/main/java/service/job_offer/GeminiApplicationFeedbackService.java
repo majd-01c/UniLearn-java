@@ -136,6 +136,7 @@ public class GeminiApplicationFeedbackService {
     private final String model;
     private final boolean enabled;
     private final HttpClient httpClient;
+    private final ApplicationDocumentStorageService documentStorageService;
 
     public GeminiApplicationFeedbackService() {
         Properties config = loadConfig();
@@ -147,6 +148,7 @@ public class GeminiApplicationFeedbackService {
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(timeoutSec))
                 .build();
+        this.documentStorageService = new ApplicationDocumentStorageService();
     }
 
     public boolean isEnabled() {
@@ -299,10 +301,7 @@ public class GeminiApplicationFeedbackService {
         }
 
         try {
-            File file = new File(cvPath.trim());
-            if (!file.exists() || !file.isFile()) {
-                return "CV file not available on disk.";
-            }
+            File file = documentStorageService.resolveCvFile(cvPath.trim());
 
             String lowerName = file.getName().toLowerCase();
             if (!(lowerName.endsWith(".txt") || lowerName.endsWith(".md") || lowerName.endsWith(".csv")

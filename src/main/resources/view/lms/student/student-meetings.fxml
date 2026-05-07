@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="controller.lms.MeetingController"
+            styleClass="lms-scroll" fitToWidth="true">
+    <VBox styleClass="lms-root" spacing="16">
+        <padding>
+            <Insets top="12" right="16" bottom="16" left="16"/>
+        </padding>
+
+        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="breadcrumb-bar">
+            <Button text="Back" onAction="#onBackFromStudentMeetings" styleClass="ghost-button"/>
+            <VBox spacing="2">
+                <Label text="Class Meetings" styleClass="lms-page-title"/>
+                <Label fx:id="studentClasseNameLabel" styleClass="card-text"/>
+            </VBox>
+        </HBox>
+
+        <VBox styleClass="lms-card" spacing="12">
+            <padding>
+                <Insets top="16" right="16" bottom="16" left="16"/>
+            </padding>
+            <HBox spacing="8" alignment="CENTER_LEFT">
+                <Label text="Live Now" styleClass="card-title"/>
+            </HBox>
+            <VBox fx:id="studentLiveContainer" spacing="12"/>
+        </VBox>
+
+        <VBox styleClass="lms-card" spacing="12">
+            <padding>
+                <Insets top="16" right="16" bottom="16" left="16"/>
+            </padding>
+            <Label text="Upcoming Meetings" styleClass="card-title"/>
+            <VBox fx:id="studentScheduledContainer" spacing="10"/>
+            <Label fx:id="studentEmptyLabel" text="No meetings scheduled yet."
+                   styleClass="empty-state" visible="false" managed="false"/>
+        </VBox>
+    </VBox>
+</ScrollPane>

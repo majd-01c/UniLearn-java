@@ -1131,6 +1131,14 @@
     -fx-text-fill: -ul-text-heading;
 }
 
+.job-offer-time-picker-combo {
+    -fx-font-weight: 700;
+}
+
+.job-offer-time-picker-combo .list-cell {
+    -fx-alignment: center;
+}
+
 .job-offer-list-view {
     -fx-background-color: transparent;
     -fx-background-insets: 0;
