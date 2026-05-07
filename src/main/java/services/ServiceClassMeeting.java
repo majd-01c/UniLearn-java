@@ -5,6 +5,7 @@ import entities.ClassMeeting;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,19 +13,23 @@ public class ServiceClassMeeting extends ServiceSupport implements IService<Clas
 
     @Override
     public void add(ClassMeeting meeting) {
-        String sql = "INSERT INTO class_meeting (id, teacher_classe_id, title, description, room_code, status, scheduled_at, started_at, ended_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, meeting.getId());
-            statement.setInt(2, meeting.getTeacherClasse().getId());
-            statement.setString(3, meeting.getTitle());
-            setNullableString(statement, 4, meeting.getDescription());
-            statement.setString(5, meeting.getRoomCode());
-            statement.setString(6, meeting.getStatus());
-            setNullableTimestamp(statement, 7, meeting.getScheduledAt());
-            setNullableTimestamp(statement, 8, meeting.getStartedAt());
-            setNullableTimestamp(statement, 9, meeting.getEndedAt());
-            statement.setTimestamp(10, meeting.getCreatedAt());
+        String sql = "INSERT INTO class_meeting (teacher_classe_id, title, description, room_code, status, scheduled_at, started_at, ended_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            statement.setInt(1, meeting.getTeacherClasse().getId());
+            statement.setString(2, meeting.getTitle());
+            setNullableString(statement, 3, meeting.getDescription());
+            statement.setString(4, meeting.getRoomCode());
+            statement.setString(5, meeting.getStatus());
+            setNullableTimestamp(statement, 6, meeting.getScheduledAt());
+            setNullableTimestamp(statement, 7, meeting.getStartedAt());
+            setNullableTimestamp(statement, 8, meeting.getEndedAt());
+            statement.setTimestamp(9, meeting.getCreatedAt());
             statement.executeUpdate();
+            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    meeting.setId(generatedKeys.getInt(1));
+                }
+            }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
