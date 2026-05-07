@@ -29,7 +29,8 @@ import static jakarta.persistence.GenerationType.IDENTITY;
                 @Index(name = "idx_job_offer_meeting_student", columnList = "student_id"),
                 @Index(name = "idx_job_offer_meeting_partner", columnList = "partner_id"),
                 @Index(name = "idx_job_offer_meeting_status", columnList = "status"),
-                @Index(name = "idx_job_offer_meeting_scheduled", columnList = "scheduled_at")
+                @Index(name = "idx_job_offer_meeting_scheduled", columnList = "scheduled_at"),
+                @Index(name = "idx_job_offer_meeting_window", columnList = "scheduled_at, scheduled_end_at")
         })
 public class JobOfferMeeting implements java.io.Serializable {
 
@@ -37,6 +38,7 @@ public class JobOfferMeeting implements java.io.Serializable {
     public static final String STATUS_LIVE = "live";
     public static final String STATUS_ENDED = "ended";
     public static final String STATUS_CANCELLED = "cancelled";
+    public static final long DEFAULT_DURATION_MINUTES = 30;
 
     private static final SecureRandom ROOM_RANDOM = new SecureRandom();
 
@@ -50,6 +52,7 @@ public class JobOfferMeeting implements java.io.Serializable {
     private String roomCode;
     private String status;
     private Timestamp scheduledAt;
+    private Timestamp scheduledEndAt;
     private Timestamp startedAt;
     private Timestamp endedAt;
     private Timestamp createdAt;
@@ -161,6 +164,16 @@ public class JobOfferMeeting implements java.io.Serializable {
     }
 
     @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "scheduled_end_at", nullable = false, length = 19)
+    public Timestamp getScheduledEndAt() {
+        return scheduledEndAt;
+    }
+
+    public void setScheduledEndAt(Timestamp scheduledEndAt) {
+        this.scheduledEndAt = scheduledEndAt;
+    }
+
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "started_at", length = 19)
     public Timestamp getStartedAt() {
         return startedAt;
@@ -226,8 +239,9 @@ public class JobOfferMeeting implements java.io.Serializable {
             return false;
         }
 
-        LocalDateTime scheduled = scheduledAt.toLocalDateTime();
-        return scheduled.toLocalDate().equals(now.toLocalDate()) && !now.isBefore(scheduled);
+        LocalDateTime start = scheduledAt.toLocalDateTime();
+        LocalDateTime end = resolveScheduledEndAt().toLocalDateTime();
+        return !now.isBefore(start) && !now.isAfter(end);
     }
 
     public void markLive() {
@@ -239,7 +253,21 @@ public class JobOfferMeeting implements java.io.Serializable {
     }
 
     public void reschedule(Timestamp scheduledAt) {
+        reschedule(scheduledAt, defaultScheduledEndAt(scheduledAt));
+    }
+
+    public void reschedule(Timestamp scheduledAt, Timestamp scheduledEndAt) {
+        if (scheduledAt == null) {
+            throw new IllegalArgumentException("Meeting start time is required.");
+        }
+        if (scheduledEndAt == null) {
+            throw new IllegalArgumentException("Meeting end time is required.");
+        }
+        if (!scheduledEndAt.after(scheduledAt)) {
+            throw new IllegalArgumentException("Meeting end time must be after the start time.");
+        }
         this.scheduledAt = scheduledAt;
+        this.scheduledEndAt = scheduledEndAt;
         this.status = STATUS_SCHEDULED;
         this.startedAt = null;
         this.endedAt = null;
@@ -250,6 +278,17 @@ public class JobOfferMeeting implements java.io.Serializable {
         this.status = STATUS_ENDED;
         this.endedAt = new Timestamp(System.currentTimeMillis());
         this.updatedAt = this.endedAt;
+    }
+
+    public Timestamp resolveScheduledEndAt() {
+        return scheduledEndAt != null ? scheduledEndAt : defaultScheduledEndAt(scheduledAt);
+    }
+
+    private Timestamp defaultScheduledEndAt(Timestamp scheduledAt) {
+        if (scheduledAt == null) {
+            return null;
+        }
+        return Timestamp.valueOf(scheduledAt.toLocalDateTime().plusMinutes(DEFAULT_DURATION_MINUTES));
     }
 
     private String generateRoomCode() {

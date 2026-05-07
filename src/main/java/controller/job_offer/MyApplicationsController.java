@@ -5,6 +5,9 @@ import entities.job_offer.JobApplication;
 import entities.job_offer.JobApplicationStatus;
 import entities.job_offer.JobOffer;
 import entities.job_offer.JobOfferMeeting;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -30,6 +33,7 @@ import util.AppNavigator;
 import java.awt.Desktop;
 import java.io.File;
 import java.net.URL;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
@@ -42,6 +46,7 @@ public class MyApplicationsController implements Initializable {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMM yyyy");
     private static final DateTimeFormatter MEETING_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    private static final DateTimeFormatter MEETING_TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
     @FXML
     private VBox rootContainer;
@@ -64,6 +69,7 @@ public class MyApplicationsController implements Initializable {
     private JobOfferMeetingService jobOfferMeetingService;
     private ObservableList<JobApplication> allApplications;
     private Map<Integer, JobOfferMeeting> meetingsByApplicationId;
+    private Timeline meetingAccessRefreshTimeline;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -78,6 +84,7 @@ public class MyApplicationsController implements Initializable {
 
         setupFilters();
         setupListView();
+        startMeetingAccessRefresh();
         filterStatus.setOnAction(e -> applyFilters());
     }
 
@@ -365,12 +372,19 @@ public class MyApplicationsController implements Initializable {
         joinButton.getStyleClass().addAll("primary-button", "job-offer-card-button");
         boolean canJoin = jobOfferMeetingService.canJoinNow(meeting);
         joinButton.setDisable(!canJoin);
-        if (!canJoin) {
-            joinButton.setTooltip(new Tooltip(resolveMeetingLockedText(meeting)));
-        }
+        joinButton.setVisible(canJoin);
+        joinButton.setManaged(canJoin);
+        joinButton.setTooltip(new Tooltip(canJoin ? "Meeting is open now." : resolveMeetingLockedText(meeting)));
         joinButton.setOnAction(event -> joinMeeting(meeting));
 
-        meetingCard.getChildren().addAll(title, details, joinButton);
+        meetingCard.getChildren().addAll(title, details);
+        if (!canJoin) {
+            Label accessLabel = new Label(resolveMeetingLockedText(meeting));
+            accessLabel.getStyleClass().add("job-offer-card-meta");
+            accessLabel.setWrapText(true);
+            meetingCard.getChildren().add(accessLabel);
+        }
+        meetingCard.getChildren().add(joinButton);
         return meetingCard;
     }
 
@@ -388,7 +402,20 @@ public class MyApplicationsController implements Initializable {
         if (meeting != null && meeting.isEnded()) {
             return "This meeting has ended.";
         }
-        return "Meeting opens on " + formatMeetingDateTime(meeting) + ".";
+        if (meeting == null || meeting.getScheduledAt() == null) {
+            return "Meeting is not scheduled yet.";
+        }
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime start = meeting.getScheduledAt().toLocalDateTime();
+        LocalDateTime end = meeting.resolveScheduledEndAt().toLocalDateTime();
+        String currentTime = now.format(MEETING_DATE_TIME_FORMATTER);
+        if (now.isAfter(end)) {
+            return "This meeting window ended at " + formatMeetingWindow(meeting) + ". Current app time: " + currentTime + ".";
+        }
+        if (now.isBefore(start)) {
+            return "Meeting opens from " + formatMeetingWindow(meeting) + ". Current app time: " + currentTime + ".";
+        }
+        return "This meeting is not available right now.";
     }
 
     private boolean isAccepted(JobApplication application) {
@@ -396,9 +423,30 @@ public class MyApplicationsController implements Initializable {
     }
 
     private String formatMeetingDateTime(JobOfferMeeting meeting) {
-        return meeting != null && meeting.getScheduledAt() != null
-                ? meeting.getScheduledAt().toLocalDateTime().format(MEETING_DATE_TIME_FORMATTER)
-                : "Not scheduled";
+        return formatMeetingWindow(meeting);
+    }
+
+    private String formatMeetingWindow(JobOfferMeeting meeting) {
+        if (meeting == null || meeting.getScheduledAt() == null) {
+            return "Not scheduled";
+        }
+
+        LocalDateTime startsAt = meeting.getScheduledAt().toLocalDateTime();
+        LocalDateTime endsAt = meeting.resolveScheduledEndAt().toLocalDateTime();
+        if (startsAt.toLocalDate().equals(endsAt.toLocalDate())) {
+            return startsAt.format(MEETING_DATE_TIME_FORMATTER) + " - " + endsAt.format(MEETING_TIME_FORMATTER);
+        }
+        return startsAt.format(MEETING_DATE_TIME_FORMATTER) + " - " + endsAt.format(MEETING_DATE_TIME_FORMATTER);
+    }
+
+    private void startMeetingAccessRefresh() {
+        meetingAccessRefreshTimeline = new Timeline(new KeyFrame(javafx.util.Duration.seconds(30), event -> {
+            if (applicationListView != null) {
+                applicationListView.refresh();
+            }
+        }));
+        meetingAccessRefreshTimeline.setCycleCount(Animation.INDEFINITE);
+        meetingAccessRefreshTimeline.play();
     }
 
     private boolean hasCv(JobApplication application) {

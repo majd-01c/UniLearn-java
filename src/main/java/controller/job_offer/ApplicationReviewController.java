@@ -4,6 +4,7 @@ import entities.User;
 import entities.job_offer.JobApplication;
 import entities.job_offer.JobApplicationStatus;
 import entities.job_offer.JobOffer;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
@@ -24,11 +25,23 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.stream.IntStream;
 
 public class ApplicationReviewController implements Initializable {
+
+    private static final int DEFAULT_MEETING_DURATION_MINUTES = 30;
+    private static final List<String> MEETING_HOURS = IntStream.rangeClosed(1, 12)
+            .mapToObj(value -> String.format("%02d", value))
+            .toList();
+    private static final List<String> MEETING_MINUTES = IntStream.range(0, 60)
+            .mapToObj(value -> String.format("%02d", value))
+            .toList();
+    private static final List<String> MEETING_MERIDIEMS = List.of("AM", "PM");
+
+    private record MeetingSchedule(Timestamp startsAt, Timestamp endsAt) {
+    }
 
     @FXML
     private VBox rootContainer;
@@ -179,8 +192,8 @@ public class ApplicationReviewController implements Initializable {
                 if (feedback == null) {
                     return;
                 }
-                Timestamp scheduledAt = promptForMeetingSchedule();
-                if (scheduledAt == null) {
+                MeetingSchedule meetingSchedule = promptForMeetingSchedule();
+                if (meetingSchedule == null) {
                     return;
                 }
                 application.setStatusMessage(feedback);
@@ -190,7 +203,8 @@ public class ApplicationReviewController implements Initializable {
                         application.getId(),
                         "Interview - " + (application.getJobOffer() != null ? application.getJobOffer().getTitle() : "Job offer"),
                         "Interview meeting for " + (application.getUser() != null ? application.getUser().getEmail() : "candidate") + ".",
-                        scheduledAt
+                        meetingSchedule.startsAt(),
+                        meetingSchedule.endsAt()
                 );
                 showInfo("Success", "Application approved successfully");
                 AppNavigator.showPartnerApplications();
@@ -305,8 +319,8 @@ public class ApplicationReviewController implements Initializable {
         return aiFeedbackService.generateFeedback(application, decision);
     }
 
-    private Timestamp promptForMeetingSchedule() {
-        Dialog<Timestamp> dialog = new Dialog<>();
+    private MeetingSchedule promptForMeetingSchedule() {
+        Dialog<MeetingSchedule> dialog = new Dialog<>();
         dialog.setTitle("Interview Meeting");
         dialog.setHeaderText("Schedule the meeting for this accepted application.");
 
@@ -315,20 +329,30 @@ public class ApplicationReviewController implements Initializable {
 
         DatePicker datePicker = new DatePicker();
         datePicker.setPromptText("24/05/2026");
+        datePicker.setPrefWidth(170);
 
-        TextField timeField = new TextField();
-        timeField.setPromptText("HH:mm");
-        timeField.setPrefWidth(120);
+        ComboBox<String> startHourCombo = createMeetingTimeCombo(MEETING_HOURS, 68);
+        ComboBox<String> startMinuteCombo = createMeetingTimeCombo(MEETING_MINUTES, 68);
+        ComboBox<String> startMeridiemCombo = createMeetingTimeCombo(MEETING_MERIDIEMS, 76);
+        ComboBox<String> endHourCombo = createMeetingTimeCombo(MEETING_HOURS, 68);
+        ComboBox<String> endMinuteCombo = createMeetingTimeCombo(MEETING_MINUTES, 68);
+        ComboBox<String> endMeridiemCombo = createMeetingTimeCombo(MEETING_MERIDIEMS, 76);
+        setDefaultMeetingPickerWindow(datePicker,
+                startHourCombo, startMinuteCombo, startMeridiemCombo,
+                endHourCombo, endMinuteCombo, endMeridiemCombo);
 
-        HBox scheduleRow = new HBox(8, datePicker, timeField);
+        HBox scheduleRow = new HBox(16,
+                datePicker,
+                buildTimePickerRow("Start", startHourCombo, startMinuteCombo, startMeridiemCombo),
+                buildTimePickerRow("End", endHourCombo, endMinuteCombo, endMeridiemCombo));
         scheduleRow.setAlignment(Pos.CENTER_LEFT);
 
         VBox content = new VBox(8,
-                new Label("Meeting date and time"),
+                new Label("Meeting date, start time, and end time"),
                 scheduleRow,
-                new Label("Students can join only on the scheduled date and time."));
+                new Label("Students can join only between the selected start and end time."));
         content.setPadding(new Insets(12));
-        content.setPrefWidth(460);
+        content.setPrefWidth(760);
         dialog.getDialogPane().setContent(content);
 
         dialog.setResultConverter(buttonType -> {
@@ -336,7 +360,9 @@ public class ApplicationReviewController implements Initializable {
                 return null;
             }
             try {
-                return parseMeetingSchedule(datePicker.getValue(), timeField.getText());
+                LocalTime startTime = readTimePickerValue("start", startHourCombo, startMinuteCombo, startMeridiemCombo);
+                LocalTime endTime = readTimePickerValue("end", endHourCombo, endMinuteCombo, endMeridiemCombo);
+                return parseMeetingSchedule(datePicker.getValue(), startTime, endTime);
             } catch (IllegalArgumentException exception) {
                 showError("Validation", exception.getMessage());
                 return null;
@@ -346,16 +372,115 @@ public class ApplicationReviewController implements Initializable {
         return dialog.showAndWait().orElse(null);
     }
 
-    private Timestamp parseMeetingSchedule(LocalDate date, String rawTime) {
-        String cleanTime = rawTime == null ? "" : rawTime.trim();
-        if (date == null || cleanTime.isEmpty()) {
-            throw new IllegalArgumentException("Choose a meeting date and time.");
+    private ComboBox<String> createMeetingTimeCombo(List<String> values, double width) {
+        ComboBox<String> comboBox = new ComboBox<>(FXCollections.observableArrayList(values));
+        comboBox.setPrefWidth(width);
+        comboBox.setVisibleRowCount(Math.min(6, values.size()));
+        comboBox.getStyleClass().addAll("job-offer-filter-combo", "job-offer-time-picker-combo");
+        return comboBox;
+    }
+
+    private VBox buildTimePickerRow(String labelText,
+                                    ComboBox<String> hourCombo,
+                                    ComboBox<String> minuteCombo,
+                                    ComboBox<String> meridiemCombo) {
+        Label label = new Label(labelText);
+        label.getStyleClass().add("job-offer-admin-label");
+
+        Label separator = new Label(":");
+        separator.getStyleClass().add("job-offer-card-meta");
+
+        HBox pickerRow = new HBox(5, hourCombo, separator, minuteCombo, meridiemCombo);
+        pickerRow.setAlignment(Pos.CENTER_LEFT);
+
+        return new VBox(4, label, pickerRow);
+    }
+
+    private void setDefaultMeetingPickerWindow(DatePicker datePicker,
+                                               ComboBox<String> startHourCombo,
+                                               ComboBox<String> startMinuteCombo,
+                                               ComboBox<String> startMeridiemCombo,
+                                               ComboBox<String> endHourCombo,
+                                               ComboBox<String> endMinuteCombo,
+                                               ComboBox<String> endMeridiemCombo) {
+        LocalDateTime startsAt = resolveDefaultMeetingStart();
+        LocalDateTime endsAt = startsAt.plusMinutes(DEFAULT_MEETING_DURATION_MINUTES);
+        datePicker.setValue(startsAt.toLocalDate());
+        setTimePickerValue(startsAt.toLocalTime(), startHourCombo, startMinuteCombo, startMeridiemCombo);
+        setTimePickerValue(endsAt.toLocalTime(), endHourCombo, endMinuteCombo, endMeridiemCombo);
+    }
+
+    private LocalDateTime resolveDefaultMeetingStart() {
+        LocalDateTime startsAt = roundToNextFiveMinutes(LocalDateTime.now().plusMinutes(5));
+        LocalDateTime endsAt = startsAt.plusMinutes(DEFAULT_MEETING_DURATION_MINUTES);
+        if (!startsAt.toLocalDate().equals(endsAt.toLocalDate())) {
+            return LocalDate.now().plusDays(1).atTime(9, 0);
         }
-        try {
-            LocalTime time = LocalTime.parse(cleanTime, DateTimeFormatter.ofPattern("H:mm"));
-            return Timestamp.valueOf(LocalDateTime.of(date, time));
-        } catch (DateTimeParseException exception) {
-            throw new IllegalArgumentException("Meeting time must use HH:mm format.");
+        return startsAt;
+    }
+
+    private LocalDateTime roundToNextFiveMinutes(LocalDateTime dateTime) {
+        LocalDateTime cleanedDateTime = dateTime.withSecond(0).withNano(0);
+        int roundedMinute = ((cleanedDateTime.getMinute() + 4) / 5) * 5;
+        if (roundedMinute >= 60) {
+            return cleanedDateTime.plusHours(1).withMinute(0);
         }
+        return cleanedDateTime.withMinute(roundedMinute);
+    }
+
+    private void setTimePickerValue(LocalTime time,
+                                    ComboBox<String> hourCombo,
+                                    ComboBox<String> minuteCombo,
+                                    ComboBox<String> meridiemCombo) {
+        int hour = time.getHour();
+        String meridiem = hour >= 12 ? "PM" : "AM";
+        int displayHour = hour % 12;
+        if (displayHour == 0) {
+            displayHour = 12;
+        }
+
+        hourCombo.setValue(String.format("%02d", displayHour));
+        minuteCombo.setValue(String.format("%02d", time.getMinute()));
+        meridiemCombo.setValue(meridiem);
+    }
+
+    private LocalTime readTimePickerValue(String fieldName,
+                                          ComboBox<String> hourCombo,
+                                          ComboBox<String> minuteCombo,
+                                          ComboBox<String> meridiemCombo) {
+        String hourText = hourCombo.getValue();
+        String minuteText = minuteCombo.getValue();
+        String meridiem = meridiemCombo.getValue();
+        if (hourText == null || minuteText == null || meridiem == null) {
+            throw new IllegalArgumentException("Choose the meeting " + fieldName + " time.");
+        }
+
+        int hour = Integer.parseInt(hourText);
+        int minute = Integer.parseInt(minuteText);
+        if ("PM".equals(meridiem) && hour < 12) {
+            hour += 12;
+        } else if ("AM".equals(meridiem) && hour == 12) {
+            hour = 0;
+        }
+
+        return LocalTime.of(hour, minute);
+    }
+
+    private MeetingSchedule parseMeetingSchedule(LocalDate date, LocalTime startTime, LocalTime endTime) {
+        if (date == null) {
+            throw new IllegalArgumentException("Choose a meeting date.");
+        }
+
+        LocalDateTime startsAt = LocalDateTime.of(date, startTime);
+        LocalDateTime endsAt = LocalDateTime.of(date, endTime);
+
+        if (!endsAt.isAfter(startsAt)) {
+            throw new IllegalArgumentException("Meeting end time must be after the start time.");
+        }
+        if (!endsAt.isAfter(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Meeting end time must be in the future. Check the date and AM/PM selection.");
+        }
+
+        return new MeetingSchedule(Timestamp.valueOf(startsAt), Timestamp.valueOf(endsAt));
     }
 }

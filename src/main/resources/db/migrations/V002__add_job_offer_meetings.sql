@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS job_offer_meeting (
     room_code VARCHAR(100) NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'scheduled',
     scheduled_at DATETIME NOT NULL,
+    scheduled_end_at DATETIME NOT NULL,
     started_at DATETIME NULL,
     ended_at DATETIME NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -20,6 +21,7 @@ CREATE TABLE IF NOT EXISTS job_offer_meeting (
     KEY idx_job_offer_meeting_partner (partner_id),
     KEY idx_job_offer_meeting_status (status),
     KEY idx_job_offer_meeting_scheduled (scheduled_at),
+    KEY idx_job_offer_meeting_window (scheduled_at, scheduled_end_at),
     CONSTRAINT fk_job_offer_meeting_application
         FOREIGN KEY (application_id) REFERENCES job_application (id)
         ON DELETE CASCADE,

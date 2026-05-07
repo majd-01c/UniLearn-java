@@ -29,9 +29,29 @@ public class JobOfferMeetingService {
                                                      String title,
                                                      String description,
                                                      Timestamp scheduledAt) {
+        Timestamp scheduledEndAt = scheduledAt == null
+                ? null
+                : Timestamp.valueOf(scheduledAt.toLocalDateTime().plusMinutes(JobOfferMeeting.DEFAULT_DURATION_MINUTES));
+        return scheduleMeetingForPartner(applicationId, title, description, scheduledAt, scheduledEndAt);
+    }
+
+    public JobOfferMeeting scheduleMeetingForPartner(Integer applicationId,
+                                                     String title,
+                                                     String description,
+                                                     Timestamp scheduledAt,
+                                                     Timestamp scheduledEndAt) {
         User currentUser = requireReviewer();
         if (scheduledAt == null) {
-            throw new IllegalArgumentException("Meeting date and time are required.");
+            throw new IllegalArgumentException("Meeting start date and time are required.");
+        }
+        if (scheduledEndAt == null) {
+            throw new IllegalArgumentException("Meeting end date and time are required.");
+        }
+        if (!scheduledEndAt.after(scheduledAt)) {
+            throw new IllegalArgumentException("Meeting end time must be after the start time.");
+        }
+        if (!scheduledEndAt.toLocalDateTime().isAfter(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Meeting end time must be in the future. Use 24-hour time like 19:47 for 7:47 PM, or include PM.");
         }
 
         JobApplication application = requireApplication(applicationId);
@@ -50,7 +70,7 @@ public class JobOfferMeetingService {
         meeting.setPartner(partner);
         meeting.setTitle(normalizeTitle(title, offer));
         meeting.setDescription(normalizeOptional(description));
-        meeting.reschedule(scheduledAt);
+        meeting.reschedule(scheduledAt, scheduledEndAt);
         if (meeting.getCreatedAt() == null) {
             meeting.setCreatedAt(Timestamp.from(Instant.now()));
         }
@@ -80,14 +100,14 @@ public class JobOfferMeetingService {
     public JobOfferMeeting joinPartnerMeeting(Integer meetingId) {
         User currentUser = requireReviewer();
         JobOfferMeeting meeting = requireMeeting(meetingId);
-        requireReviewerCanManage(meeting.getApplication(), currentUser);
+        requireReviewerCanManage(requireMeetingOffer(meeting), currentUser);
         return joinCheckedMeeting(meeting);
     }
 
     public void endMeeting(Integer meetingId) {
         User currentUser = requireReviewer();
         JobOfferMeeting meeting = requireMeeting(meetingId);
-        requireReviewerCanManage(meeting.getApplication(), currentUser);
+        requireReviewerCanManage(requireMeetingOffer(meeting), currentUser);
         meeting.end();
         meetingRepository.save(meeting);
     }
@@ -135,13 +155,30 @@ public class JobOfferMeetingService {
     private JobOfferMeeting joinCheckedMeeting(JobOfferMeeting meeting) {
         requireAccepted(meeting.getApplication());
         if (!canJoinNow(meeting)) {
-            throw new IllegalStateException("This meeting opens on its scheduled date and time.");
+            throw new IllegalStateException(buildJoinLockedMessage(meeting));
         }
         if (!meeting.isLive()) {
             meeting.markLive();
             return meetingRepository.save(meeting);
         }
         return meeting;
+    }
+
+    private String buildJoinLockedMessage(JobOfferMeeting meeting) {
+        if (meeting == null || meeting.getScheduledAt() == null) {
+            return "This meeting is not scheduled yet.";
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startsAt = meeting.getScheduledAt().toLocalDateTime();
+        LocalDateTime endsAt = meeting.resolveScheduledEndAt().toLocalDateTime();
+        if (now.isBefore(startsAt)) {
+            return "This meeting opens at " + startsAt + ". Current app time is " + now + ".";
+        }
+        if (now.isAfter(endsAt)) {
+            return "This meeting ended at " + endsAt + ". Current app time is " + now + ".";
+        }
+        return "This meeting can only be joined between its start and end time.";
     }
 
     private JobApplication requireApplication(Integer applicationId) {
@@ -173,6 +210,10 @@ public class JobOfferMeetingService {
 
     private void requireReviewerCanManage(JobApplication application, User currentUser) {
         JobOffer offer = requireOffer(application);
+        requireReviewerCanManage(offer, currentUser);
+    }
+
+    private void requireReviewerCanManage(JobOffer offer, User currentUser) {
         if (RoleGuard.isAdmin(currentUser)) {
             return;
         }
@@ -194,6 +235,13 @@ public class JobOfferMeetingService {
             throw new IllegalArgumentException("Application is not linked to a job offer.");
         }
         return application.getJobOffer();
+    }
+
+    private JobOffer requireMeetingOffer(JobOfferMeeting meeting) {
+        if (meeting == null || meeting.getJobOffer() == null) {
+            throw new IllegalArgumentException("Meeting is not linked to a job offer.");
+        }
+        return meeting.getJobOffer();
     }
 
     private User requireStudent(JobApplication application) {

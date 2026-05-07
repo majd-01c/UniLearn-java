@@ -1,5 +1,8 @@
 package repository.job_offer;
 
+import entities.User;
+import entities.job_offer.JobApplication;
+import entities.job_offer.JobOffer;
 import entities.job_offer.JobOfferMeeting;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -120,6 +123,7 @@ public class JobOfferMeetingRepository {
         Transaction tx = null;
         try (Session session = HibernateSessionFactory.getInstance().openSession()) {
             tx = session.beginTransaction();
+            attachManagedReferences(session, meeting);
             JobOfferMeeting saved = session.merge(meeting);
             session.flush();
             tx.commit();
@@ -131,5 +135,30 @@ public class JobOfferMeetingRepository {
             LOG.error("save failed", exception);
             throw new RuntimeException("Failed to save job offer meeting", exception);
         }
+    }
+
+    private void attachManagedReferences(Session session, JobOfferMeeting meeting) {
+        JobApplication application = meeting.getApplication();
+        JobOffer offer = meeting.getJobOffer();
+        User student = meeting.getStudent();
+        User partner = meeting.getPartner();
+
+        if (application == null || application.getId() <= 0) {
+            throw new IllegalArgumentException("Meeting application reference is required.");
+        }
+        if (offer == null || offer.getId() <= 0) {
+            throw new IllegalArgumentException("Meeting job offer reference is required.");
+        }
+        if (student == null || student.getId() == null || student.getId() <= 0) {
+            throw new IllegalArgumentException("Meeting student reference is required.");
+        }
+        if (partner == null || partner.getId() == null || partner.getId() <= 0) {
+            throw new IllegalArgumentException("Meeting partner reference is required.");
+        }
+
+        meeting.setApplication(session.getReference(JobApplication.class, application.getId()));
+        meeting.setJobOffer(session.getReference(JobOffer.class, offer.getId()));
+        meeting.setStudent(session.getReference(User.class, student.getId()));
+        meeting.setPartner(session.getReference(User.class, partner.getId()));
     }
 }
