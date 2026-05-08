@@ -277,23 +277,47 @@ public class UserProfileController implements Initializable {
         } catch (Throwable ignored) {}
 
         final ImageView preview = new ImageView();
-        preview.setFitWidth(640);
-        preview.setFitHeight(480);
+        preview.setFitWidth(560);
+        preview.setFitHeight(420);
         preview.setPreserveRatio(true);
+        preview.setSmooth(true);
 
-        Button captureBtn = new Button("Capture");
+        Label titleLabel = new Label("Face enrollment camera");
+        titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;");
+
+        Label instructionLabel = new Label("Look at the camera so you can see yourself before capture.");
+        instructionLabel.setStyle("-fx-text-fill: #c7d2fe; -fx-font-size: 13px;");
+
+        Label liveStatusLabel = new Label("Starting camera...");
+        liveStatusLabel.setStyle("-fx-text-fill: #7dd3fc; -fx-font-size: 12px; -fx-font-weight: bold;");
+
+        VBox previewFrame = new VBox(8, preview);
+        previewFrame.setStyle(
+            "-fx-padding: 10;" +
+            "-fx-background-color: rgba(255,255,255,0.04);" +
+            "-fx-background-radius: 14;" +
+            "-fx-border-color: rgba(125,211,252,0.45);" +
+            "-fx-border-radius: 14;" +
+            "-fx-border-width: 1.2;");
+        previewFrame.setAlignment(Pos.CENTER);
+
+        Button captureBtn = new Button("Capture & Enroll");
         Button cancelBtn = new Button("Cancel");
+
+        captureBtn.setMinWidth(160);
+        cancelBtn.setMinWidth(120);
 
         HBox actions = new HBox(10, captureBtn, cancelBtn);
         actions.setAlignment(Pos.CENTER);
 
-        VBox root = new VBox(8, preview, actions);
-        root.setStyle("-fx-padding: 12; -fx-background-color: #111;");
+        VBox root = new VBox(10, titleLabel, instructionLabel, previewFrame, liveStatusLabel, actions);
+        root.setAlignment(Pos.CENTER);
+        root.setStyle("-fx-padding: 16; -fx-background-color: #111827; -fx-background-radius: 16;");
 
         Scene scene = new Scene(root);
         Stage stage = new Stage();
         stage.initModality(Modality.APPLICATION_MODAL);
-        stage.setTitle("Camera Preview — Align your face and press Capture");
+        stage.setTitle("Face enrollment preview");
         stage.setScene(scene);
 
         final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
@@ -308,6 +332,7 @@ public class UserProfileController implements Initializable {
                     if (img != null) {
                         WritableImage fxImg = SwingFXUtils.toFXImage(img, null);
                         Platform.runLater(() -> preview.setImage(fxImg));
+                        Platform.runLater(() -> liveStatusLabel.setText("Camera live - you can see yourself now"));
                     }
                 } catch (Throwable t) {
                     // ignore individual frame errors
