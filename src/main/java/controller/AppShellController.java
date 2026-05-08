@@ -282,14 +282,15 @@ public class AppShellController implements Initializable {
 
         boolean admin = isAdmin(currentUser);
 
-        setHeader(
-                roleHomeTitle(currentUser),
-                roleHomeSubtitle(currentUser));
-
-        setNavigationState(
-                "HOME",
-                "Home",
-                admin ? "BackOffice Dashboard" : "FrontOffice Dashboard");
+        if (admin) {
+            setHeader(
+                    roleHomeTitle(currentUser),
+                    roleHomeSubtitle(currentUser));
+            setNavigationState("HOME", "Home", "BackOffice Dashboard");
+        } else {
+            setHeader("", "");
+            setNavigationState("HOME");
+        }
 
         String homeViewPath = admin
                 ? "/view/user/backoffice-home.fxml"

@@ -7,7 +7,6 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import service.UserService;
@@ -15,8 +14,10 @@ import util.AppNavigator;
 
 import java.net.URL;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 import javafx.util.Duration;
 
 public class BackOfficeHomeController implements Initializable {
@@ -56,7 +57,7 @@ public class BackOfficeHomeController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         welcomeLabel.setText("Welcome to BackOffice");
-        roleLabel.setText("Role: ADMIN");
+        roleLabel.setText("ADMIN");
         usersCountLabel.setText("Total users: -");
         pendingActionsLabel.setText("Pending actions: -");
         recentActivityLabel.setText("Recent activity: -");
@@ -87,7 +88,7 @@ public class BackOfficeHomeController implements Initializable {
         }
 
         welcomeLabel.setText("Welcome, " + displayName);
-        roleLabel.setText("Role: " + toDisplayRole(user == null ? null : user.getRole()));
+        roleLabel.setText(toDisplayRole(user == null ? null : user.getRole()));
         refreshStats();
     }
 
@@ -98,18 +99,17 @@ public class BackOfficeHomeController implements Initializable {
 
     @FXML
     private void onOpenEvaluation() {
-        AppNavigator.setHeader("Evaluation Module", "Student, Teacher, and Admin evaluation workspace");
-        AppNavigator.loadCenter("/view/evaluation/module-shell.fxml", null);
+        AppNavigator.navigateTo("EVALUATION");
     }
 
     @FXML
     private void onOpenProgramManagement() {
-        showInfo("Shortcut", "Program/Class management module shortcut is ready for wiring to the dedicated screen.");
+        AppNavigator.showPrograms();
     }
 
     @FXML
     private void onOpenModeration() {
-        showInfo("Shortcut", "Moderation shortcut is ready for wiring to forum/content moderation screens.");
+        AppNavigator.showForumAdminCategories();
     }
 
     @FXML
@@ -182,7 +182,7 @@ public class BackOfficeHomeController implements Initializable {
         fadeTransition.play();
 
         int index = 0;
-        for (Node node : rootContainer.lookupAll(".stagger-card")) {
+        for (Node node : animatedNodes()) {
             node.setOpacity(0.0);
             node.setTranslateY(14);
 
@@ -200,6 +200,15 @@ public class BackOfficeHomeController implements Initializable {
             cardSlide.play();
             index++;
         }
+    }
+
+    private Set<Node> animatedNodes() {
+        Set<Node> nodes = new LinkedHashSet<>();
+        nodes.addAll(rootContainer.lookupAll(".admin-hero"));
+        nodes.addAll(rootContainer.lookupAll(".admin-stat-card"));
+        nodes.addAll(rootContainer.lookupAll(".admin-action-card"));
+        nodes.addAll(rootContainer.lookupAll(".admin-summary-card"));
+        return nodes;
     }
 
     private String toDisplayRole(String role) {
@@ -224,11 +233,4 @@ public class BackOfficeHomeController implements Initializable {
         return trimmed.isEmpty() ? null : trimmed;
     }
 
-    private void showInfo(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
 }
