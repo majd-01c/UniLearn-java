@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.web.WebView?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="controller.lms.MeetingController"
+            styleClass="lms-root">
+    <top>
+        <HBox spacing="12" alignment="CENTER_LEFT" styleClass="lms-card">
+            <padding>
+                <Insets top="12" right="16" bottom="12" left="16"/>
+            </padding>
+            <Button text="Leave" onAction="#onLeaveRoom" styleClass="ghost-button"/>
+            <VBox spacing="2">
+                <Label fx:id="roomTitleLabel" text="Meeting" styleClass="card-title"/>
+                <Label fx:id="roomClasseLabel" text="Class" styleClass="card-text"/>
+            </VBox>
+            <Label text="LIVE" styleClass="badge badge-active"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="roomUserLabel" styleClass="card-text"/>
+            <Button text="Open in Browser" onAction="#onOpenInBrowser" styleClass="ghost-button"/>
+            <Button fx:id="roomEndButton" text="End Meeting" onAction="#onEndCurrentMeeting" styleClass="danger-button"
+                    visible="false" managed="false"/>
+        </HBox>
+    </top>
+    <center>
+        <StackPane fx:id="meetingContentPane" minHeight="520.0" prefHeight="720.0">
+            <WebView fx:id="meetingWebView"/>
+        </StackPane>
+    </center>
+</BorderPane>

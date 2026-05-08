@@ -1,27 +1,190 @@
-.frontoffice-home-root {
-    -fx-background-color: linear-gradient(to bottom right, derive(-ul-front-primary, 72%), derive(-ul-front-secondary, 80%));
+.frontoffice-scroll,
+.frontoffice-scroll > .viewport {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
 }
 
-.frontoffice-card {
-    -fx-border-color: derive(-ul-front-primary, 45%);
+.frontoffice-scroll {
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.frontoffice-home-root {
+    -fx-background-color: transparent;
+}
+
+.frontoffice-hero {
+    -fx-background-color: linear-gradient(to right, -ul-card-bg, derive(-ul-card-bg, 5%));
+    -fx-border-color: derive(-ul-front-primary, 34%);
+    -fx-border-width: 1 1 1 4;
+    -fx-border-radius: 18;
+    -fx-background-radius: 18;
+    -fx-padding: 24;
+    -fx-effect: dropshadow(gaussian, -ul-card-shadow, 18, 0.22, 0, 6);
 }
 
 .frontoffice-chip {
     -fx-background-color: linear-gradient(to right, -ul-front-primary, -ul-front-secondary);
     -fx-text-fill: #ffffff;
     -fx-background-radius: 999;
-    -fx-padding: 5 10;
+    -fx-padding: 6 12;
     -fx-font-size: 11px;
-    -fx-font-weight: 700;
+    -fx-font-weight: 800;
 }
 
-.frontoffice-widget {
-    -fx-background-color: derive(-ul-surface-2, -2%);
-    -fx-border-color: derive(-ul-front-primary, 50%);
+.frontoffice-role-pill {
+    -fx-background-color: rgba(8, 145, 178, 0.14);
+    -fx-border-color: rgba(8, 145, 178, 0.28);
+    -fx-border-width: 1;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-text-fill: -ul-front-primary;
+    -fx-padding: 5 11;
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+}
+
+.frontoffice-title {
+    -fx-text-fill: -ul-text-heading;
+    -fx-font-size: 28px;
+    -fx-font-weight: 900;
+}
+
+.frontoffice-hero-summary {
+    -fx-text-fill: -ul-text-body;
+    -fx-font-size: 13px;
+    -fx-line-spacing: 2px;
+    -fx-max-width: 680;
+}
+
+.frontoffice-hero-actions {
+    -fx-padding: 6 0 0 0;
+}
+
+.frontoffice-hero-aside {
+    -fx-background-color: rgba(8, 145, 178, 0.08);
+    -fx-border-color: rgba(8, 145, 178, 0.22);
+    -fx-border-width: 1;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-padding: 14 16;
+    -fx-pref-width: 285;
+    -fx-min-width: 245;
+}
+
+.frontoffice-section-eyebrow,
+.frontoffice-card-kicker {
+    -fx-text-fill: -ul-front-primary;
+    -fx-font-size: 11px;
+    -fx-font-weight: 900;
+}
+
+.frontoffice-aside-value,
+.frontoffice-card-value {
+    -fx-text-fill: -ul-text-heading;
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+    -fx-line-spacing: 1.5px;
+}
+
+.frontoffice-aside-muted,
+.frontoffice-card-text {
+    -fx-text-fill: -ul-text-body;
+    -fx-font-size: 12px;
+    -fx-line-spacing: 1.6px;
+}
+
+.frontoffice-insight-grid,
+.frontoffice-action-grid {
+    -fx-alignment: top-left;
+}
+
+.frontoffice-insight-card {
+    -fx-background-color: derive(-ul-card-bg, 2%);
+    -fx-border-color: derive(-ul-card-border, 4%);
+    -fx-border-width: 1;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-padding: 14 16;
+    -fx-min-height: 104;
+    -fx-pref-height: 112;
+    -fx-effect: dropshadow(gaussian, -ul-card-shadow, 10, 0.16, 0, 3);
+}
+
+.frontoffice-action-card {
+    -fx-background-color: linear-gradient(to bottom, derive(-ul-card-bg, 3%), -ul-card-bg);
+    -fx-border-color: derive(-ul-front-primary, 46%);
+    -fx-border-width: 1;
+    -fx-border-radius: 16;
+    -fx-background-radius: 16;
+    -fx-padding: 16;
+    -fx-min-height: 210;
+    -fx-pref-height: 224;
+    -fx-effect: dropshadow(gaussian, -ul-card-shadow, 14, 0.2, 0, 5);
+}
+
+.frontoffice-action-card:hover {
+    -fx-border-color: derive(-ul-front-primary, 22%);
+    -fx-effect: dropshadow(gaussian, -ul-card-shadow, 18, 0.26, 0, 7);
 }
 
 .frontoffice-heading {
-    -fx-text-fill: -ul-text-primary;
-    -fx-font-size: 18px;
-    -fx-font-weight: 700;
+    -fx-text-fill: -ul-text-heading;
+    -fx-font-size: 17px;
+    -fx-font-weight: 900;
+}
+
+.frontoffice-primary-button,
+.frontoffice-secondary-button {
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-min-height: 40;
+    -fx-padding: 10 16;
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+    -fx-cursor: hand;
+    -fx-background-insets: 0;
+}
+
+.frontoffice-primary-button {
+    -fx-background-color: linear-gradient(to right, -ul-front-primary, -ul-front-secondary);
+    -fx-border-color: transparent;
+    -fx-text-fill: #ffffff;
+    -fx-effect: dropshadow(gaussian, rgba(8, 145, 178, 0.30), 12, 0.22, 0, 4);
+}
+
+.frontoffice-primary-button:hover {
+    -fx-background-color: linear-gradient(to right, derive(-ul-front-primary, 8%), derive(-ul-front-secondary, 8%));
+    -fx-effect: dropshadow(gaussian, rgba(8, 145, 178, 0.38), 15, 0.26, 0, 5);
+}
+
+.frontoffice-primary-button:pressed {
+    -fx-background-color: linear-gradient(to right, derive(-ul-front-primary, -8%), derive(-ul-front-secondary, -8%));
+    -fx-effect: dropshadow(gaussian, rgba(8, 145, 178, 0.18), 7, 0.18, 0, 2);
+}
+
+.frontoffice-primary-button:focused {
+    -fx-border-color: rgba(255, 255, 255, 0.78);
+}
+
+.frontoffice-secondary-button {
+    -fx-background-color: rgba(8, 145, 178, 0.09);
+    -fx-border-color: rgba(8, 145, 178, 0.34);
+    -fx-text-fill: -ul-front-primary;
+    -fx-effect: null;
+}
+
+.frontoffice-secondary-button:hover {
+    -fx-background-color: rgba(8, 145, 178, 0.16);
+    -fx-border-color: derive(-ul-front-primary, 12%);
+}
+
+.frontoffice-secondary-button:pressed {
+    -fx-background-color: rgba(8, 145, 178, 0.22);
+}
+
+.frontoffice-secondary-button:focused {
+    -fx-border-color: derive(-ul-front-primary, 8%);
+    -fx-effect: dropshadow(gaussian, rgba(8, 145, 178, 0.20), 8, 0.18, 0, 0);
 }

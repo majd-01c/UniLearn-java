@@ -3,12 +3,14 @@ package controller;
 import controller.lms.*;
 import controller.forum.*;
 import controller.job_offer.*;
+import entities.ClassMeeting;
 import entities.User;
 import entities.forum.ForumCategory;
 import entities.forum.ForumComment;
 import entities.forum.ForumTopic;
 import entities.job_offer.JobOffer;
 import entities.job_offer.JobApplication;
+import entities.job_offer.JobOfferMeeting;
 import javafx.animation.FadeTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -280,14 +282,15 @@ public class AppShellController implements Initializable {
 
         boolean admin = isAdmin(currentUser);
 
-        setHeader(
-                roleHomeTitle(currentUser),
-                roleHomeSubtitle(currentUser));
-
-        setNavigationState(
-                "HOME",
-                "Home",
-                admin ? "BackOffice Dashboard" : "FrontOffice Dashboard");
+        if (admin) {
+            setHeader(
+                    roleHomeTitle(currentUser),
+                    roleHomeSubtitle(currentUser));
+            setNavigationState("HOME", "Home", "BackOffice Dashboard");
+        } else {
+            setHeader("", "");
+            setNavigationState("HOME");
+        }
 
         String homeViewPath = admin
                 ? "/view/user/backoffice-home.fxml"
@@ -561,6 +564,21 @@ public class AppShellController implements Initializable {
         });
     }
 
+    public void showTeacherMeetings(dto.lms.TeacherAssignmentRowDto tc) {
+        if (!ensureAuthenticated())
+            return;
+        if (!RoleGuard.isTeacher(currentUser)) {
+            showWarning("Access Denied", "Only teachers can access this page.");
+            showHomeView();
+            return;
+        }
+        setHeader("Class Meetings", tc != null ? tc.getClasseName() : "Meetings");
+        loadCenter("/view/lms/teacher/teacher-meetings.fxml", controller -> {
+            if (controller instanceof MeetingController mc)
+                mc.setTeacherClasse(tc, currentUser);
+        });
+    }
+
     // ==================== Student Navigation ====================
     public void showStudentLearning() {
         if (!ensureAuthenticated())
@@ -584,6 +602,21 @@ public class AppShellController implements Initializable {
         loadCenter("/view/lms/student/student-classe-view.fxml", controller -> {
             if (controller instanceof StudentClasseViewController sc)
                 sc.init(classe, currentUser);
+        });
+    }
+
+    public void showStudentMeetings(dto.lms.StudentClasseRowDto classe) {
+        if (!ensureAuthenticated())
+            return;
+        if (!RoleGuard.isStudent(currentUser)) {
+            showWarning("Access Denied", "Only students can access this page.");
+            showHomeView();
+            return;
+        }
+        setHeader("Class Meetings", classe != null ? classe.getClasseName() : "Meetings");
+        loadCenter("/view/lms/student/student-meetings.fxml", controller -> {
+            if (controller instanceof MeetingController mc)
+                mc.setStudentClasse(classe, currentUser);
         });
     }
 
@@ -615,6 +648,47 @@ public class AppShellController implements Initializable {
         loadCenter("/view/lms/student/student-quiz.fxml", controller -> {
             if (controller instanceof StudentQuizController sc)
                 sc.setStudent(student);
+        });
+    }
+
+    public void showMeetingRoom(ClassMeeting meeting, dto.lms.TeacherAssignmentRowDto teacherContext,
+                                dto.lms.StudentClasseRowDto studentContext, boolean isTeacher) {
+        if (!ensureAuthenticated())
+            return;
+        if (isTeacher && !RoleGuard.isTeacher(currentUser)) {
+            showWarning("Access Denied", "Only teachers can access this meeting as host.");
+            showHomeView();
+            return;
+        }
+        if (!isTeacher && !RoleGuard.isStudent(currentUser)) {
+            showWarning("Access Denied", "Only students can access this meeting as attendee.");
+            showHomeView();
+            return;
+        }
+        setHeader(meeting != null ? meeting.getTitle() : "Meeting", "Video meeting");
+        loadCenter("/view/lms/meeting-room.fxml", controller -> {
+            if (controller instanceof MeetingController mc)
+                mc.setRoom(meeting, teacherContext, studentContext, currentUser, isTeacher);
+        });
+    }
+
+    public void showJobOfferMeetingRoom(JobOfferMeeting meeting, boolean isPartner) {
+        if (!ensureAuthenticated())
+            return;
+        if (isPartner && RoleGuard.isStudent(currentUser)) {
+            showWarning("Access Denied", "Only partners can access this meeting as host.");
+            showJobOffersView();
+            return;
+        }
+        if (!isPartner && !RoleGuard.isStudent(currentUser)) {
+            showWarning("Access Denied", "Only students can access this meeting as attendee.");
+            showJobOffersView();
+            return;
+        }
+        setHeader(meeting != null ? meeting.getTitle() : "Interview Meeting", "Job offer video meeting");
+        loadCenter("/view/lms/meeting-room.fxml", controller -> {
+            if (controller instanceof MeetingController mc)
+                mc.setJobOfferRoom(meeting, currentUser, isPartner);
         });
     }
 

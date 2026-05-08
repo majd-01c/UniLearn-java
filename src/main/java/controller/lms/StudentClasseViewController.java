@@ -23,12 +23,14 @@ public class StudentClasseViewController implements Initializable {
 
     private final ClassDeliveryService cdSvc = new ClassDeliveryService();
     private User currentStudent;
+    private StudentClasseRowDto currentClasse;
     private int classeId;
 
     @Override public void initialize(URL u, ResourceBundle r) {}
 
     public void init(StudentClasseRowDto c, User student) {
         this.currentStudent = student;
+        this.currentClasse = c;
         this.classeId = c.getClasseId();
         
         breadcrumb.setText(c.getClasseName());
@@ -88,5 +90,11 @@ public class StudentClasseViewController implements Initializable {
 
     @FXML private void onBackToLearning() {
         AppNavigator.showStudentLearning();
+    }
+
+    @FXML private void onOpenMeetings() {
+        if (currentClasse != null) {
+            AppNavigator.showStudentMeetings(currentClasse);
+        }
     }
 }

@@ -9,6 +9,7 @@ import entities.forum.ForumComment;
 import entities.forum.ForumTopic;
 import entities.job_offer.JobOffer;
 import entities.job_offer.JobApplication;
+import entities.job_offer.JobOfferMeeting;
 
 import java.util.List;
 
@@ -19,6 +20,7 @@ public final class AppNavigator {
     private AppNavigator() {}
 
     public static void registerShell(AppShellController controller) { appShellController = controller; }
+    public static void navigateTo(String moduleId) { if (appShellController != null) appShellController.navigateTo(moduleId); }
 
     // Auth
     public static void showLogin() { if (appShellController != null) appShellController.showLoginView(); }
@@ -88,9 +90,19 @@ public final class AppNavigator {
     // Student
     public static void showStudentLearning() { if (appShellController != null) appShellController.showStudentLearning(); }
     public static void showStudentClasseView(dto.lms.StudentClasseRowDto classe) { if (appShellController != null) appShellController.showStudentClasseView(classe); }
+    public static void showStudentMeetings(dto.lms.StudentClasseRowDto classe) { if (appShellController != null) appShellController.showStudentMeetings(classe); }
     public static void showStudentCourseView(dto.lms.CourseRowDto cc) { if (appShellController != null) appShellController.showStudentCourseView(cc); }
     public static void showStudentContenuView(dto.lms.ContenuRowDto contenu, List<dto.lms.ContenuRowDto> allVisible, int idx) { if (appShellController != null) appShellController.showStudentContenuView(contenu, allVisible, idx); }
     public static void showStudentQuizzes(User student) { if (appShellController != null) appShellController.showStudentQuizzesView(student); }
+    public static void showTeacherMeetings(dto.lms.TeacherAssignmentRowDto tc) { if (appShellController != null) appShellController.showTeacherMeetings(tc); }
+    public static void showMeetingRoom(ClassMeeting meeting, dto.lms.TeacherAssignmentRowDto teacherContext,
+                                       dto.lms.StudentClasseRowDto studentContext, boolean isTeacher) {
+        if (appShellController != null) appShellController.showMeetingRoom(meeting, teacherContext, studentContext, isTeacher);
+    }
+
+    public static void showJobOfferMeetingRoom(JobOfferMeeting meeting, boolean isPartner) {
+        if (appShellController != null) appShellController.showJobOfferMeetingRoom(meeting, isPartner);
+    }
 
     // Direct access to load custom content
     public static void loadCenter(String fxml, java.util.function.Consumer<Object> init) { if (appShellController != null) appShellController.loadCenter(fxml, init); }

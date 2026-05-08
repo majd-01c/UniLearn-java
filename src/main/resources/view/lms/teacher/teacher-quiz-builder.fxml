@@ -2,74 +2,86 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Text?>
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="controller.lms.TeacherQuizBuilderController"
             styleClass="app-shell-root">
     <top>
-        <HBox spacing="16" alignment="CENTER_LEFT" styleClass="lms-root" BorderPane.alignment="CENTER">
+        <HBox spacing="16" alignment="CENTER_LEFT" styleClass="lms-root quiz-builder-hero" BorderPane.alignment="CENTER">
             <padding>
-                <Insets top="16" right="24" bottom="12" left="24"/>
+                <Insets top="18" right="24" bottom="16" left="24"/>
             </padding>
             <VBox spacing="4">
                 <Label text="Quiz Builder" styleClass="lms-page-title"/>
                 <Label fx:id="courseContextLabel" text="Course: " styleClass="lms-text"/>
             </VBox>
             <Region HBox.hgrow="ALWAYS"/>
+            <VBox spacing="2" styleClass="quiz-stat-card" alignment="CENTER_LEFT">
+                <Label fx:id="questionCountLabel" text="0" styleClass="quiz-stat-value"/>
+                <Label text="Questions" styleClass="stat-label"/>
+            </VBox>
+            <VBox spacing="2" styleClass="quiz-stat-card" alignment="CENTER_LEFT">
+                <Label fx:id="totalPointsLabel" text="0" styleClass="quiz-stat-value"/>
+                <Label text="Points" styleClass="stat-label"/>
+            </VBox>
             <Button text="Cancel" onAction="#onCancel" styleClass="ghost-button"/>
             <Button text="Save Quiz" onAction="#onSaveQuiz" styleClass="primary-button"/>
         </HBox>
     </top>
 
     <center>
-        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-control-inner-background: transparent;" BorderPane.alignment="CENTER">
+        <ScrollPane fitToWidth="true" styleClass="lms-scroll" BorderPane.alignment="CENTER">
             <padding>
                 <Insets top="20" right="24" bottom="24" left="24"/>
             </padding>
-            <VBox spacing="24" maxWidth="1000">
-                
-                <!-- Basic Quiz Information -->
-                <VBox spacing="16" styleClass="lms-card">
-                    <padding><Insets top="16" right="20" bottom="20" left="20"/></padding>
-                    <Label text="Basic Settings" styleClass="card-title"/>
-                    
-                    <VBox spacing="8">
-                        <Label text="Quiz Title *" styleClass="form-label"/>
-                        <TextField fx:id="quizTitleField" promptText="Enter quiz title" styleClass="lms-input"/>
+            <VBox spacing="20" maxWidth="1120">
+                <HBox spacing="20" alignment="TOP_LEFT">
+                    <VBox spacing="16" styleClass="lms-card quiz-builder-settings" HBox.hgrow="ALWAYS">
+                        <Label text="Quiz Setup" styleClass="card-title"/>
+                        <Label text="Set the core details students see before starting." styleClass="card-text" wrapText="true"/>
+
+                        <VBox spacing="8">
+                            <Label text="Quiz Title *" styleClass="form-label"/>
+                            <TextField fx:id="quizTitleField" promptText="Example: Java basics checkpoint" styleClass="lms-input"/>
+                        </VBox>
+
+                        <VBox spacing="8">
+                            <Label text="Description" styleClass="form-label"/>
+                            <TextArea fx:id="quizDescriptionField" promptText="Add instructions, covered chapters, or rules." prefRowCount="4" styleClass="lms-input" wrapText="true"/>
+                        </VBox>
                     </VBox>
-                    
-                    <VBox spacing="8">
-                        <Label text="Description" styleClass="form-label"/>
-                        <TextArea fx:id="quizDescriptionField" promptText="Enter quiz description or instructions" prefRowCount="3" styleClass="lms-input" wrapText="true"/>
-                    </VBox>
-                    
-                    <HBox spacing="24">
-                        <VBox spacing="8" HBox.hgrow="SOMETIMES">
+
+                    <VBox spacing="16" styleClass="lms-card quiz-builder-rules" prefWidth="300">
+                        <Label text="Rules" styleClass="card-title"/>
+                        <VBox spacing="8">
                             <Label text="Time Limit (minutes) *" styleClass="form-label"/>
-                            <Spinner fx:id="timeLimitSpinner" prefWidth="120" styleClass="lms-input"/>
+                            <Spinner fx:id="timeLimitSpinner" editable="true" maxWidth="1.7976931348623157E308" styleClass="lms-input"/>
                         </VBox>
-                        <VBox spacing="8" HBox.hgrow="SOMETIMES">
+                        <VBox spacing="8">
                             <Label text="Passing Score (%) *" styleClass="form-label"/>
-                            <Spinner fx:id="passingScoreSpinner" prefWidth="120" styleClass="lms-input"/>
+                            <Spinner fx:id="passingScoreSpinner" editable="true" maxWidth="1.7976931348623157E308" styleClass="lms-input"/>
                         </VBox>
-                    </HBox>
-                    
-                    <Label fx:id="errorLabel" style="-fx-text-fill: -ul-danger; -fx-font-weight: bold;" visible="false" managed="false" wrapText="true"/>
-                </VBox>
-                
-                <!-- Questions Section -->
+                        <Label fx:id="builderStatusLabel" text="Draft not saved yet" styleClass="quiz-save-status" wrapText="true"/>
+                    </VBox>
+                </HBox>
+
+                <Label fx:id="errorLabel" styleClass="field-error quiz-error-banner" visible="false" managed="false" wrapText="true"/>
+
                 <VBox spacing="16">
-                    <HBox alignment="CENTER_LEFT">
-                        <Label text="Questions" styleClass="lms-page-title"/>
+                    <HBox alignment="CENTER_LEFT" spacing="12">
+                        <VBox spacing="3">
+                            <Label text="Questions" styleClass="lms-page-title"/>
+                            <Label text="Add clear questions, choose points, and mark the correct answer for multiple choice items." styleClass="lms-text" wrapText="true"/>
+                        </VBox>
                         <Region HBox.hgrow="ALWAYS"/>
-                        <Button text="+ Add Question" onAction="#onAddQuestion" styleClass="ghost-button"/>
+                        <Button text="Add Question" onAction="#onAddQuestion" styleClass="primary-button"/>
                     </HBox>
-                    
+
                     <VBox fx:id="questionsContainer" spacing="16"/>
-                    
-                    <VBox alignment="CENTER" spacing="12" style="-fx-padding: 30; -fx-border-color: #ddd; -fx-border-style: dashed; -fx-border-radius: 8;">
-                        <Label text="No questions added yet." styleClass="card-text" fx:id="noQuestionsLabel"/>
+
+                    <VBox fx:id="emptyQuestionState" alignment="CENTER" spacing="12" styleClass="lms-card quiz-empty-builder">
+                        <Label text="No questions added yet." styleClass="card-title" fx:id="noQuestionsLabel"/>
+                        <Label text="Start with one multiple choice or text question. You can edit or remove it before saving." styleClass="card-text" wrapText="true"/>
                         <Button text="Add Your First Question" onAction="#onAddQuestion" styleClass="primary-button"/>
                     </VBox>
                 </VBox>

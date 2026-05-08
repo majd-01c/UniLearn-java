@@ -31,6 +31,10 @@
                 <Label fx:id="programLabel" styleClass="card-text" wrapText="true"/>
                 <Label fx:id="studentsLabel" styleClass="card-text"/>
                 <Label fx:id="durationLabel" styleClass="card-text" wrapText="true"/>
+                <HBox spacing="8">
+                    <Button text="Meetings" onAction="#onOpenMeetings" styleClass="ghost-button" HBox.hgrow="ALWAYS" maxWidth="1.7976931348623157E308"/>
+                    <Button text="Start" onAction="#onStartMeetingNow" styleClass="primary-button" HBox.hgrow="ALWAYS" maxWidth="1.7976931348623157E308"/>
+                </HBox>
             </VBox>
 
             <!-- My Module Card -->

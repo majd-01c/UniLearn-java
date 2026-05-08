@@ -59,6 +59,7 @@ public class TeacherClasseWorkspaceController implements Initializable {
     private final ContenuService contenuSvc = new ContenuService();
     private final EnrollmentService enrollSvc = new EnrollmentService();
     private final ClasseService classeSvc = new ClasseService();
+    private final MeetingService meetingSvc = new MeetingService();
 
     private TeacherAssignmentRowDto tc;
     private Integer classeModuleId; // cached for the current teacher's ClasseModule
@@ -671,5 +672,29 @@ public class TeacherClasseWorkspaceController implements Initializable {
 
     @FXML private void onBack() {
         AppNavigator.showTeacherClasses();
+    }
+
+    @FXML private void onOpenMeetings() {
+        if (tc != null) {
+            AppNavigator.showTeacherMeetings(tc);
+        }
+    }
+
+    @FXML private void onStartMeetingNow() {
+        if (tc == null) {
+            return;
+        }
+        TextInputDialog dialog = new TextInputDialog("Live lecture - " + tc.getClasseName());
+        dialog.setTitle("Start Meeting");
+        dialog.setHeaderText("Start a live meeting");
+        dialog.setContentText("Meeting title");
+        dialog.showAndWait().ifPresent(title -> {
+            try {
+                var meeting = meetingSvc.createMeetingForTeacher(tc.getId(), title, null, null, true);
+                AppNavigator.showMeetingRoom(meeting, tc, null, true);
+            } catch (Exception e) {
+                new Alert(Alert.AlertType.ERROR, e.getMessage()).showAndWait();
+            }
+        });
     }
 }

@@ -35,18 +35,31 @@
 }
 
 .theme-toggle-button {
-    -fx-background-color: -ul-surface-1;
+    -fx-background-color: linear-gradient(to bottom, derive(-ul-surface-1, 8%), -ul-surface-1);
     -fx-text-fill: -ul-text-primary;
     -fx-background-radius: 999;
-    -fx-padding: 8 12;
-    -fx-border-color: -ul-outline;
+    -fx-padding: 9 14;
+    -fx-border-color: derive(-ul-outline, 12%);
     -fx-border-width: 1;
     -fx-border-radius: 999;
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
     -fx-cursor: hand;
+    -fx-background-insets: 0;
 }
 
 .theme-toggle-button:hover {
-    -fx-background-color: derive(-ul-surface-3, 10%);
+    -fx-background-color: linear-gradient(to bottom, derive(-ul-surface-3, 14%), derive(-ul-surface-3, 4%));
+    -fx-border-color: derive(-ul-front-primary, 24%);
+}
+
+.theme-toggle-button:pressed {
+    -fx-background-color: derive(-ul-surface-3, 2%);
+}
+
+.theme-toggle-button:focused {
+    -fx-border-color: derive(-ul-front-primary, 8%);
+    -fx-effect: dropshadow(gaussian, rgba(8, 145, 178, 0.18), 8, 0.18, 0, 0);
 }
 
 .login-root {
@@ -1129,6 +1142,14 @@
 
 .job-offer-filter-combo .list-cell {
     -fx-text-fill: -ul-text-heading;
+}
+
+.job-offer-time-picker-combo {
+    -fx-font-weight: 700;
+}
+
+.job-offer-time-picker-combo .list-cell {
+    -fx-alignment: center;
 }
 
 .job-offer-list-view {

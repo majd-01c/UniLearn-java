@@ -236,6 +236,56 @@
                 <ComboBox fx:id="feedbackDecisionCombo" prefWidth="220" styleClass="job-offer-filter-combo"/>
             </VBox>
 
+            <VBox fx:id="meetingScheduleCard" spacing="10" styleClass="job-offer-review-info-card" visible="false" managed="false">
+                <Label text="Interview meeting schedule" styleClass="job-offer-section-title"/>
+                <Label fx:id="meetingScheduleHelperLabel"
+                       text="Accepted candidates need a future meeting window. Pick start and end time with AM/PM."
+                       styleClass="job-offer-card-meta"
+                       wrapText="true"/>
+                <HBox spacing="14" alignment="CENTER_LEFT">
+                    <DatePicker fx:id="meetingDatePicker"
+                                promptText="24/05/2026"
+                                prefWidth="180"
+                                styleClass="lms-input job-offer-input job-offer-date-picker"/>
+                    <VBox spacing="4">
+                        <Label text="Start" styleClass="job-offer-admin-label"/>
+                        <HBox spacing="5" alignment="CENTER_LEFT" styleClass="job-offer-time-picker-row">
+                            <ComboBox fx:id="meetingStartHourCombo"
+                                      prefWidth="68"
+                                      styleClass="job-offer-filter-combo job-offer-time-picker-combo"/>
+                            <Label text=":" styleClass="job-offer-card-meta"/>
+                            <ComboBox fx:id="meetingStartMinuteCombo"
+                                      prefWidth="68"
+                                      styleClass="job-offer-filter-combo job-offer-time-picker-combo"/>
+                            <ComboBox fx:id="meetingStartMeridiemCombo"
+                                      prefWidth="76"
+                                      styleClass="job-offer-filter-combo job-offer-time-picker-combo"/>
+                        </HBox>
+                    </VBox>
+                    <VBox spacing="4">
+                        <Label text="End" styleClass="job-offer-admin-label"/>
+                        <HBox spacing="5" alignment="CENTER_LEFT" styleClass="job-offer-time-picker-row">
+                            <ComboBox fx:id="meetingEndHourCombo"
+                                      prefWidth="68"
+                                      styleClass="job-offer-filter-combo job-offer-time-picker-combo"/>
+                            <Label text=":" styleClass="job-offer-card-meta"/>
+                            <ComboBox fx:id="meetingEndMinuteCombo"
+                                      prefWidth="68"
+                                      styleClass="job-offer-filter-combo job-offer-time-picker-combo"/>
+                            <ComboBox fx:id="meetingEndMeridiemCombo"
+                                      prefWidth="76"
+                                      styleClass="job-offer-filter-combo job-offer-time-picker-combo"/>
+                        </HBox>
+                    </VBox>
+                </HBox>
+                <Button fx:id="meetingJoinButton"
+                        text="Join Meeting"
+                        styleClass="primary-button"
+                        onAction="#onJoinSelectedMeeting"
+                        visible="false"
+                        managed="false"/>
+            </VBox>
+
             <VBox spacing="10" styleClass="job-offer-review-info-card">
                 <HBox spacing="8" alignment="CENTER_LEFT">
                     <Label text="Feedback to candidate" styleClass="job-offer-section-title"/>
