@@ -1,5 +1,6 @@
 package controller.lms;
 
+import entities.Answer;
 import entities.User;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -33,7 +34,9 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 /**
@@ -51,13 +54,20 @@ public class StudentQuizController implements Initializable {
     /* ===== Quiz List Screen ===== */
     @FXML private javafx.scene.layout.FlowPane quizListFlow;
     @FXML private Label emptyQuizzesLabel;
+    @FXML private VBox emptyQuizzesBox;
     @FXML private VBox quizListScreen;
+    @FXML private Label totalQuizzesLabel;
+    @FXML private Label pendingQuizzesLabel;
+    @FXML private Label completedQuizzesLabel;
 
     /* ===== Quiz Taking Screen ===== */
     @FXML private VBox quizTakingScreen;
     @FXML private Label quizTitleLabel;
     @FXML private Label quizDescriptionLabel;
     @FXML private Label progressLabel;  // e.g., "Question 3 of 10"
+    @FXML private ProgressBar quizProgressBar;
+    @FXML private Label saveStatusLabel;
+    @FXML private javafx.scene.layout.FlowPane questionNavigator;
     @FXML private Label timerLabel;
     @FXML private ScrollPane questionsScrollPane;
     @FXML private VBox questionsContainer;
@@ -85,6 +95,8 @@ public class StudentQuizController implements Initializable {
     private Timeline timerTimeline;
     private Timeline screenshotTimeline;
     private ChangeListener<Boolean> focusListener;
+    private final Map<Integer, String> textAnswers = new HashMap<>();
+    private final Map<Integer, Integer> selectedChoiceAnswers = new HashMap<>();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -129,17 +141,26 @@ public class StudentQuizController implements Initializable {
         quizItems.clear();
 
         List<QuizInfo> quizzes = quizService.getAvailableQuizzesForStudent(currentStudent.getId());
+        updateQuizSummary(quizzes);
 
         if (quizzes.isEmpty()) {
             if (quizListFlow != null) {
                 quizListFlow.setVisible(false);
                 quizListFlow.setManaged(false);
             }
+            if (emptyQuizzesBox != null) {
+                emptyQuizzesBox.setVisible(true);
+                emptyQuizzesBox.setManaged(true);
+            }
             emptyQuizzesLabel.setVisible(true);
             emptyQuizzesLabel.setManaged(true);
             return;
         }
 
+        if (emptyQuizzesBox != null) {
+            emptyQuizzesBox.setVisible(false);
+            emptyQuizzesBox.setManaged(false);
+        }
         emptyQuizzesLabel.setVisible(false);
         emptyQuizzesLabel.setManaged(false);
         if (quizListFlow != null) {
@@ -148,9 +169,25 @@ public class StudentQuizController implements Initializable {
             quizListFlow.getChildren().clear();
             for (QuizInfo quiz : quizzes) {
                 VBox card = createQuizCard(quiz);
-                card.setPrefWidth(320);
+                card.setPrefWidth(340);
+                card.setMinWidth(300);
                 quizListFlow.getChildren().add(card);
             }
+        }
+    }
+
+    private void updateQuizSummary(List<QuizInfo> quizzes) {
+        int total = quizzes == null ? 0 : quizzes.size();
+        long completed = quizzes == null ? 0 : quizzes.stream().filter(q -> q.alreadyTaken).count();
+        int pending = total - (int) completed;
+        if (totalQuizzesLabel != null) {
+            totalQuizzesLabel.setText(String.valueOf(total));
+        }
+        if (pendingQuizzesLabel != null) {
+            pendingQuizzesLabel.setText(String.valueOf(pending));
+        }
+        if (completedQuizzesLabel != null) {
+            completedQuizzesLabel.setText(String.valueOf(completed));
         }
     }
 
@@ -236,6 +273,7 @@ public class StudentQuizController implements Initializable {
 
             sortedQuestions = currentQuiz.questions;
             currentQuestionIndex = 0;
+            loadExistingAnswers();
 
             // Show quiz-taking screen
             showScreen(quizTakingScreen);
@@ -243,6 +281,7 @@ public class StudentQuizController implements Initializable {
             // Display quiz info
             quizTitleLabel.setText(currentQuiz.title);
             quizDescriptionLabel.setText(currentQuiz.description != null ? currentQuiz.description : "");
+            buildQuestionNavigator();
 
             // Show first question
             showQuestionAtIndex(0);
@@ -275,6 +314,11 @@ public class StudentQuizController implements Initializable {
 
         // Update progress
         progressLabel.setText("Question " + (index + 1) + " of " + sortedQuestions.size());
+        if (quizProgressBar != null) {
+            quizProgressBar.setProgress((index + 1) / (double) sortedQuestions.size());
+        }
+        updateQuestionNavigator();
+        updateSaveStatus("Ready");
 
         // Update navigation buttons
         previousButton.setDisable(index == 0);
@@ -288,13 +332,77 @@ public class StudentQuizController implements Initializable {
         questionsContainer.getChildren().add(questionBox);
     }
 
+    private void loadExistingAnswers() {
+        textAnswers.clear();
+        selectedChoiceAnswers.clear();
+        if (currentQuiz == null || currentQuiz.existingAnswers == null) {
+            return;
+        }
+        for (Answer answer : currentQuiz.existingAnswers) {
+            if (answer == null || answer.getQuestion() == null) {
+                continue;
+            }
+            int questionId = answer.getQuestion().getId();
+            if (answer.getChoice() != null) {
+                selectedChoiceAnswers.put(questionId, answer.getChoice().getId());
+            }
+            if (answer.getTextAnswer() != null) {
+                textAnswers.put(questionId, answer.getTextAnswer());
+            }
+        }
+    }
+
+    private void buildQuestionNavigator() {
+        if (questionNavigator == null || sortedQuestions == null) {
+            return;
+        }
+        questionNavigator.getChildren().clear();
+        for (int i = 0; i < sortedQuestions.size(); i++) {
+            final int targetIndex = i;
+            Button button = new Button(String.valueOf(i + 1));
+            button.getStyleClass().add("quiz-nav-chip");
+            button.setOnAction(event -> {
+                saveCurrentAnswer();
+                showQuestionAtIndex(targetIndex);
+            });
+            questionNavigator.getChildren().add(button);
+        }
+        updateQuestionNavigator();
+    }
+
+    private void updateQuestionNavigator() {
+        if (questionNavigator == null || sortedQuestions == null) {
+            return;
+        }
+        for (int i = 0; i < questionNavigator.getChildren().size(); i++) {
+            if (questionNavigator.getChildren().get(i) instanceof Button button) {
+                button.getStyleClass().removeAll("quiz-nav-chip-active", "quiz-nav-chip-answered");
+                if (i == currentQuestionIndex) {
+                    button.getStyleClass().add("quiz-nav-chip-active");
+                } else if (hasAnswer(sortedQuestions.get(i).id)) {
+                    button.getStyleClass().add("quiz-nav-chip-answered");
+                }
+            }
+        }
+    }
+
+    private boolean hasAnswer(int questionId) {
+        String text = textAnswers.get(questionId);
+        return selectedChoiceAnswers.containsKey(questionId) || (text != null && !text.isBlank());
+    }
+
+    private void updateSaveStatus(String status) {
+        if (saveStatusLabel != null) {
+            saveStatusLabel.setText(status);
+        }
+    }
+
     /**
      * Create question display based on type
      */
     private VBox createQuestionDisplay(QuestionDetail question) {
         VBox box = new VBox(12);
-        box.setPadding(new Insets(16));
-        box.setStyle("-fx-border-color: #ddd; -fx-border-radius: 8; -fx-border-width: 1;");
+        box.getStyleClass().addAll("lms-card", "quiz-question-card");
 
         // Question text
         Label questionLabel = new Label(question.text);
@@ -305,7 +413,11 @@ public class StudentQuizController implements Initializable {
         Label pointsLabel = new Label("Points: " + question.points);
         pointsLabel.getStyleClass().add("points-label");
 
-        box.getChildren().addAll(questionLabel, pointsLabel);
+        HBox header = new HBox(10, questionLabel, pointsLabel);
+        header.setAlignment(Pos.CENTER_LEFT);
+        HBox.setHgrow(questionLabel, Priority.ALWAYS);
+
+        box.getChildren().add(header);
 
         // Answer input based on question type
         if ("MULTIPLE_CHOICE".equals(question.type) || "TRUE_FALSE".equals(question.type) || "MCQ".equals(question.type)) {
@@ -317,6 +429,7 @@ public class StudentQuizController implements Initializable {
             textArea.setPrefRowCount(6);
             textArea.setId("question_" + question.id + "_answer");
             textArea.getStyleClass().add("answer-textarea");
+            textArea.setText(textAnswers.getOrDefault(question.id, ""));
             
             // Anti-cheat: prevent copy/paste
             textArea.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
@@ -326,7 +439,9 @@ public class StudentQuizController implements Initializable {
             });
             textArea.setContextMenu(new ContextMenu()); // Disable context menu
             
-            box.getChildren().add(new Label("Your Answer:"));
+            Label answerLabel = new Label("Your answer");
+            answerLabel.getStyleClass().add("form-label");
+            box.getChildren().add(answerLabel);
             box.getChildren().add(textArea);
         }
 
@@ -338,19 +453,40 @@ public class StudentQuizController implements Initializable {
      */
     private VBox createChoicesDisplay(QuestionDetail question) {
         VBox choicesBox = new VBox(8);
-        choicesBox.setStyle("-fx-border-color: #f0f0f0; -fx-border-radius: 6; -fx-padding: 12; -fx-border-width: 1;");
+        choicesBox.getStyleClass().add("quiz-choice-list");
 
-        Label choicesLabel = new Label("Select one:");
+        Label choicesLabel = new Label("Choose one answer");
+        choicesLabel.getStyleClass().add("form-label");
         choicesBox.getChildren().add(choicesLabel);
 
         ToggleGroup group = new ToggleGroup();
+        Integer selectedChoiceId = selectedChoiceAnswers.get(question.id);
+        int optionIndex = 0;
 
         for (ChoiceDetail choice : question.choices) {
-            RadioButton rb = new RadioButton(choice.text);
-            rb.setToggleGroup(group);
-            rb.setId("choice_" + choice.id);
-            rb.setUserData(choice.id);
-            choicesBox.getChildren().add(rb);
+            ToggleButton optionButton = new ToggleButton(choice.text);
+            optionButton.setToggleGroup(group);
+            optionButton.setId("choice_" + choice.id);
+            optionButton.setUserData(choice.id);
+            optionButton.getStyleClass().add("quiz-check-button");
+            optionButton.setWrapText(true);
+            optionButton.setMaxWidth(Double.MAX_VALUE);
+            optionButton.setAlignment(Pos.CENTER_LEFT);
+
+            Label marker = new Label(String.valueOf((char) ('A' + optionIndex)));
+            marker.getStyleClass().add("quiz-check-marker");
+            optionButton.setGraphic(marker);
+
+            if (selectedChoiceId != null && selectedChoiceId == choice.id) {
+                optionButton.setSelected(true);
+            }
+            optionButton.setOnAction(event -> {
+                if (group.getSelectedToggle() == null) {
+                    optionButton.setSelected(true);
+                }
+            });
+            choicesBox.getChildren().add(optionButton);
+            optionIndex++;
         }
 
         return choicesBox;
@@ -390,27 +526,34 @@ public class StudentQuizController implements Initializable {
             Integer selectedChoiceId = null;
 
             if ("MULTIPLE_CHOICE".equals(question.type) || "TRUE_FALSE".equals(question.type) || "MCQ".equals(question.type)) {
-                // Get selected choice
                 for (ChoiceDetail choice : question.choices) {
-                    RadioButton rb = (RadioButton) questionsContainer.lookup("#choice_" + choice.id);
-                    if (rb != null && rb.isSelected()) {
+                    ToggleButton optionButton = (ToggleButton) questionsContainer.lookup("#choice_" + choice.id);
+                    if (optionButton != null && optionButton.isSelected()) {
                         selectedChoiceId = choice.id;
                         answer = choice.text;
+                        selectedChoiceAnswers.put(question.id, selectedChoiceId);
                         break;
                     }
+                }
+                if (selectedChoiceId == null) {
+                    selectedChoiceAnswers.remove(question.id);
                 }
             } else if ("TEXT".equals(question.type)) {
                 TextArea ta = (TextArea) questionsContainer.lookup("#question_" + question.id + "_answer");
                 if (ta != null) {
                     answer = ta.getText();
+                    textAnswers.put(question.id, answer);
                 }
             }
 
             // Save answer
             quizService.saveAnswer(currentQuiz.userAnswerId, question.id, answer, selectedChoiceId);
+            updateQuestionNavigator();
+            updateSaveStatus("Saved");
             logger.debug("Answer saved for question: " + question.id);
 
         } catch (Exception e) {
+            updateSaveStatus("Save failed");
             logger.error("Error saving answer: " + e.getMessage(), e);
         }
     }
