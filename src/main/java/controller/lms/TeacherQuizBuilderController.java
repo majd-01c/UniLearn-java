@@ -37,6 +37,10 @@ public class TeacherQuizBuilderController implements Initializable {
     @FXML private Label errorLabel;
     @FXML private VBox questionsContainer;
     @FXML private Label noQuestionsLabel;
+    @FXML private VBox emptyQuestionState;
+    @FXML private Label questionCountLabel;
+    @FXML private Label totalPointsLabel;
+    @FXML private Label builderStatusLabel;
 
     private CourseRowDto targetCourse;
     private dto.lms.TeacherAssignmentRowDto targetAssignment;
@@ -52,6 +56,7 @@ public class TeacherQuizBuilderController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         timeLimitSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 180, 20));
         passingScoreSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 100, 60));
+        updateBuilderStats();
     }
 
     public void setContext(CourseRowDto course, dto.lms.TeacherAssignmentRowDto assignment) {
@@ -62,34 +67,42 @@ public class TeacherQuizBuilderController implements Initializable {
 
     @FXML
     private void onAddQuestion() {
-        noQuestionsLabel.getParent().setVisible(false);
-        noQuestionsLabel.getParent().setManaged(false);
+        setEmptyStateVisible(false);
 
         questionCounter++;
         VBox questionBox = createQuestionEditor(questionCounter);
         questionsContainer.getChildren().add(questionBox);
+        updateBuilderStats();
     }
 
     private VBox createQuestionEditor(int index) {
         VBox qBox = new VBox(12);
-        qBox.getStyleClass().add("lms-card");
-        qBox.setPadding(new Insets(16));
+        qBox.getStyleClass().addAll("lms-card", "quiz-builder-question");
 
         HBox header = new HBox(12);
+        header.getStyleClass().add("quiz-question-header");
+        header.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
         Label qLabel = new Label("Question " + index);
-        qLabel.setStyle("-fx-font-weight: bold;");
+        qLabel.getStyleClass().add("card-title");
         
         ComboBox<String> typeBox = new ComboBox<>(FXCollections.observableArrayList("MULTIPLE_CHOICE", "TEXT"));
         typeBox.setValue("MULTIPLE_CHOICE");
+        typeBox.getStyleClass().addAll("lms-input", "quiz-type-select");
         
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         
         Button removeBtn = new Button("Delete");
-        removeBtn.getStyleClass().add("danger-button");
-        removeBtn.setOnAction(e -> questionsContainer.getChildren().remove(qBox));
+        removeBtn.getStyleClass().addAll("danger-button", "quiz-question-delete");
+        removeBtn.setOnAction(e -> {
+            questionsContainer.getChildren().remove(qBox);
+            setEmptyStateVisible(questionsContainer.getChildren().isEmpty());
+            updateBuilderStats();
+        });
         
-        header.getChildren().addAll(qLabel, new Label("Type:"), typeBox, spacer, removeBtn);
+        Label typeLabel = new Label("Type");
+        typeLabel.getStyleClass().add("quiz-inline-label");
+        header.getChildren().addAll(qLabel, typeLabel, typeBox, spacer, removeBtn);
 
         TextField questionTextField = new TextField();
         questionTextField.setPromptText("Enter your question here");
@@ -99,21 +112,27 @@ public class TeacherQuizBuilderController implements Initializable {
         TextField pointsField = new TextField("1");
         pointsField.setPromptText("Points");
         pointsField.setPrefWidth(80);
+        pointsField.getStyleClass().add("lms-input");
         pointsField.setId("qPoints");
+        pointsField.textProperty().addListener((obs, old, value) -> updateBuilderStats());
         
         TextField explanationField = new TextField();
-        explanationField.setPromptText("Explanation (Optional)");
+        explanationField.setPromptText("Optional explanation shown during review");
         explanationField.getStyleClass().add("lms-input");
         explanationField.setId("qExplanation");
 
         VBox choicesContainer = new VBox(8);
         choicesContainer.setId("choicesContainer");
+        choicesContainer.getStyleClass().add("quiz-choice-editor-list");
         // Create a shared ToggleGroup for correct-choice RadioButtons
         ToggleGroup correctGroup = new ToggleGroup();
         choicesContainer.setUserData(correctGroup);
         
-        Button addChoiceBtn = new Button("+ Add Choice");
-        addChoiceBtn.getStyleClass().add("ghost-button");
+        Label choicesTitle = new Label("Answer Options");
+        choicesTitle.getStyleClass().add("form-label");
+
+        Button addChoiceBtn = new Button("Add Option");
+        addChoiceBtn.getStyleClass().addAll("ghost-button", "quiz-add-choice-button");
         addChoiceBtn.setOnAction(e -> addChoiceToContainer(choicesContainer));
 
         Runnable updateTypeUI = () -> {
@@ -139,9 +158,10 @@ public class TeacherQuizBuilderController implements Initializable {
 
         qBox.getChildren().addAll(
             header,
-            new Label("Question Text:"), questionTextField,
-            new HBox(12, new Label("Points:"), pointsField),
-            new Label("Explanation:"), explanationField,
+            fieldBlock("Question Text", questionTextField),
+            fieldBlock("Points", pointsField),
+            fieldBlock("Explanation", explanationField),
+            choicesTitle,
             choicesContainer,
             addChoiceBtn
         );
@@ -151,27 +171,42 @@ public class TeacherQuizBuilderController implements Initializable {
 
     private void addChoiceToContainer(VBox choicesContainer) {
         HBox choiceBox = new HBox(8);
-        choiceBox.setStyle("-fx-alignment: center-left;");
+        choiceBox.getStyleClass().add("quiz-choice-editor-row");
 
-        RadioButton correctRadio = new RadioButton();
-        correctRadio.setId("cCorrect");
+        ToggleButton correctToggle = new ToggleButton("Correct");
+        correctToggle.setId("cCorrect");
+        correctToggle.getStyleClass().add("quiz-correct-toggle");
+        correctToggle.setMinWidth(92);
         // Join the shared ToggleGroup so only one choice can be correct
         if (choicesContainer.getUserData() instanceof ToggleGroup tg) {
-            correctRadio.setToggleGroup(tg);
+            correctToggle.setToggleGroup(tg);
+            correctToggle.setOnAction(e -> {
+                if (tg.getSelectedToggle() == null) {
+                    correctToggle.setSelected(true);
+                }
+            });
         }
 
         TextField choiceTextField = new TextField();
-        choiceTextField.setPromptText("Choice text");
+        choiceTextField.setPromptText("Answer option");
         choiceTextField.getStyleClass().add("lms-input");
         choiceTextField.setId("cText");
         HBox.setHgrow(choiceTextField, Priority.ALWAYS);
 
-        Button removeBtn = new Button("x");
-        removeBtn.getStyleClass().add("ghost-button");
+        Button removeBtn = new Button("Remove");
+        removeBtn.getStyleClass().addAll("ghost-button", "quiz-choice-remove");
         removeBtn.setOnAction(e -> choicesContainer.getChildren().remove(choiceBox));
 
-        choiceBox.getChildren().addAll(correctRadio, choiceTextField, removeBtn);
+        choiceBox.getChildren().addAll(correctToggle, choiceTextField, removeBtn);
         choicesContainer.getChildren().add(choiceBox);
+    }
+
+    private VBox fieldBlock(String label, Control control) {
+        VBox box = new VBox(6);
+        Label fieldLabel = new Label(label);
+        fieldLabel.getStyleClass().add("form-label");
+        box.getChildren().addAll(fieldLabel, control);
+        return box;
     }
 
     @FXML
@@ -233,6 +268,7 @@ public class TeacherQuizBuilderController implements Initializable {
                 if (qText == null || qText.isBlank()) throw new Exception("Question text cannot be blank.");
                 int points = 1;
                 try { points = Integer.parseInt(qPointsStr); } catch (Exception ignored) {}
+                if (points <= 0) throw new Exception("Question points must be greater than 0.");
 
                 Question question = new Question();
                 question.setQuiz(savedQuiz);
@@ -251,11 +287,14 @@ public class TeacherQuizBuilderController implements Initializable {
 
                 if ("MULTIPLE_CHOICE".equals(qType)) {
                     VBox choicesContainer = (VBox) qBox.lookup("#choicesContainer");
+                    if (choicesContainer.getChildren().size() < 2) {
+                        throw new Exception("Multiple choice questions need at least two choices.");
+                    }
                     int cPosition = 1;
                     boolean hasCorrect = false;
                     for (Node cNode : choicesContainer.getChildren()) {
                         HBox cBox = (HBox) cNode;
-                        boolean isCorrect = ((RadioButton) cBox.lookup("#cCorrect")).isSelected();
+                        boolean isCorrect = ((ToggleButton) cBox.lookup("#cCorrect")).isSelected();
                         String cText = ((TextField) cBox.lookup("#cText")).getText();
                         if (cText == null || cText.isBlank()) throw new Exception("Choice text cannot be blank.");
 
@@ -286,5 +325,43 @@ public class TeacherQuizBuilderController implements Initializable {
         errorLabel.setText(message);
         errorLabel.setVisible(true);
         errorLabel.setManaged(true);
+        if (builderStatusLabel != null) {
+            builderStatusLabel.setText("Fix the highlighted issue before saving.");
+        }
+    }
+
+    private void setEmptyStateVisible(boolean visible) {
+        if (emptyQuestionState != null) {
+            emptyQuestionState.setVisible(visible);
+            emptyQuestionState.setManaged(visible);
+        } else if (noQuestionsLabel != null && noQuestionsLabel.getParent() != null) {
+            noQuestionsLabel.getParent().setVisible(visible);
+            noQuestionsLabel.getParent().setManaged(visible);
+        }
+    }
+
+    private void updateBuilderStats() {
+        int questionCount = questionsContainer == null ? 0 : questionsContainer.getChildren().size();
+        int points = 0;
+        if (questionsContainer != null) {
+            for (Node node : questionsContainer.getChildren()) {
+                TextField pointsField = (TextField) node.lookup("#qPoints");
+                if (pointsField != null) {
+                    try {
+                        points += Math.max(0, Integer.parseInt(pointsField.getText()));
+                    } catch (NumberFormatException ignored) {
+                    }
+                }
+            }
+        }
+        if (questionCountLabel != null) {
+            questionCountLabel.setText(String.valueOf(questionCount));
+        }
+        if (totalPointsLabel != null) {
+            totalPointsLabel.setText(String.valueOf(points));
+        }
+        if (builderStatusLabel != null) {
+            builderStatusLabel.setText(questionCount == 0 ? "Draft not saved yet" : "Draft has " + questionCount + " question(s).");
+        }
     }
 }

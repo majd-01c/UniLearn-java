@@ -3,76 +3,189 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.TilePane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-      fx:id="rootContainer"
-      fx:controller="controller.FrontOfficeHomeController"
-      spacing="16.0" styleClass="home-root frontoffice-home-root animate-enter">
-    <padding>
-        <Insets top="22.0" right="22.0" bottom="22.0" left="22.0"/>
-    </padding>
-    <children>
-        <VBox spacing="8.0" styleClass="home-card frontoffice-card stagger-card">
+<ScrollPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controller.FrontOfficeHomeController"
+            fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+            styleClass="frontoffice-scroll">
+    <content>
+        <VBox fx:id="rootContainer"
+              spacing="18.0"
+              styleClass="frontoffice-home-root">
+            <padding>
+                <Insets top="24.0" right="24.0" bottom="28.0" left="24.0"/>
+            </padding>
             <children>
-                <Label text="FrontOffice" styleClass="frontoffice-chip"/>
-                <Label fx:id="welcomeLabel" text="Welcome to FrontOffice" styleClass="home-title"/>
-                <Label fx:id="roleLabel" text="Role: USER" styleClass="home-role"/>
-                <Label text="Access learning, schedule, meetings, forum, and opportunities from your role-based home."
-                       wrapText="true" styleClass="home-summary"/>
-            </children>
-        </VBox>
-
-        <HBox spacing="12.0">
-            <children>
-                <VBox spacing="10.0" styleClass="home-card frontoffice-card stagger-card" prefWidth="280.0">
+                <HBox spacing="18.0" alignment="CENTER_LEFT" styleClass="frontoffice-hero">
                     <children>
-                        <Label text="Courses" styleClass="frontoffice-heading"/>
-                        <Label text="Open course content and continue your learning journey." wrapText="true" styleClass="card-text"/>
-                        <Region prefHeight="4.0"/>
-                        <Button text="Open Courses" onAction="#onOpenCourses" styleClass="primary-button"/>
-                        <Button text="Open Evaluation" onAction="#onOpenEvaluation" styleClass="ghost-button"/>
-                    </children>
-                </VBox>
+                        <VBox spacing="10.0" HBox.hgrow="ALWAYS">
+                            <children>
+                                <HBox spacing="8.0" alignment="CENTER_LEFT">
+                                    <children>
+                                        <Label text="FrontOffice" styleClass="frontoffice-chip"/>
+                                        <Label fx:id="roleLabel" text="USER" styleClass="frontoffice-role-pill"/>
+                                    </children>
+                                </HBox>
+                                <Label fx:id="welcomeLabel" text="Welcome to FrontOffice" styleClass="frontoffice-title"/>
+                                <Label fx:id="heroSubtitleLabel"
+                                       text="Learning, evaluation, community, opportunities, and account tools in one place."
+                                       wrapText="true" styleClass="frontoffice-hero-summary"/>
+                                <HBox spacing="10.0" alignment="CENTER_LEFT" styleClass="frontoffice-hero-actions">
+                                    <children>
+                                        <Button fx:id="primaryActionButton" text="Continue Work"
+                                                onAction="#onOpenCourses"
+                                                styleClass="frontoffice-primary-button"/>
+                                        <Button text="My Profile" onAction="#onOpenProfile"
+                                                styleClass="frontoffice-secondary-button"/>
+                                    </children>
+                                </HBox>
+                            </children>
+                        </VBox>
 
-                <VBox spacing="10.0" styleClass="home-card frontoffice-card stagger-card" prefWidth="280.0">
-                    <children>
-                        <Label text="Schedule &amp; Meetings" styleClass="frontoffice-heading"/>
-                        <Label text="Track timetable and access class meetings and sessions." wrapText="true" styleClass="card-text"/>
-                        <Region prefHeight="4.0"/>
-                        <Button text="Open Schedule" onAction="#onOpenSchedule" styleClass="ghost-button"/>
-                        <Button text="Open Meetings" onAction="#onOpenMeetings" styleClass="ghost-button"/>
-                    </children>
-                </VBox>
-
-                <VBox spacing="10.0" styleClass="home-card frontoffice-card stagger-card" prefWidth="280.0">
-                    <children>
-                        <Label text="Forum &amp; Opportunities" styleClass="frontoffice-heading"/>
-                        <Label text="Participate in the forum and explore opportunities." wrapText="true" styleClass="card-text"/>
-                        <Region prefHeight="4.0"/>
-                        <Button text="Open Forum" onAction="#onOpenForum" styleClass="ghost-button"/>
-                        <Button text="Open Opportunities" onAction="#onOpenOpportunities" styleClass="ghost-button"/>
-                    </children>
-                </VBox>
-            </children>
-        </HBox>
-
-        <VBox spacing="10.0" styleClass="home-card frontoffice-card frontoffice-widget stagger-card">
-            <children>
-                <Label text="Personal Widgets" styleClass="card-title"/>
-                <Label fx:id="nextClassLabel" text="Next class/event: not scheduled" styleClass="card-text"/>
-                <Label fx:id="notificationsLabel" text="Notifications: 0 unread" styleClass="card-text"/>
-                <Label fx:id="tasksLabel" text="Tasks: no pending tasks" styleClass="card-text"/>
-                <Region prefHeight="4.0"/>
-                <HBox spacing="10.0">
-                    <children>
-                        <Button text="My Profile" onAction="#onOpenProfile" styleClass="ghost-button"/>
-                        <Button text="Change Password" onAction="#onChangePassword" styleClass="ghost-button"/>
+                        <VBox spacing="8.0" styleClass="frontoffice-hero-aside">
+                            <children>
+                                <Label fx:id="focusHeadingLabel" text="Today's focus" styleClass="frontoffice-section-eyebrow"/>
+                                <Label fx:id="nextClassLabel" text="No class or event is scheduled yet."
+                                       wrapText="true" styleClass="frontoffice-aside-value"/>
+                                <Label fx:id="notificationsLabel" text="No unread notifications."
+                                       wrapText="true" styleClass="frontoffice-aside-muted"/>
+                            </children>
+                        </VBox>
                     </children>
                 </HBox>
+
+                <TilePane hgap="14.0" vgap="14.0" prefTileWidth="260.0" prefColumns="3"
+                          tileAlignment="TOP_LEFT" styleClass="frontoffice-insight-grid">
+                    <children>
+                        <VBox spacing="8.0" styleClass="frontoffice-insight-card">
+                            <children>
+                                <Label text="Next" styleClass="frontoffice-card-kicker"/>
+                                <Label fx:id="nextClassTileLabel" text="No class or event is scheduled yet."
+                                       wrapText="true" styleClass="frontoffice-card-value"/>
+                            </children>
+                        </VBox>
+                        <VBox spacing="8.0" styleClass="frontoffice-insight-card">
+                            <children>
+                                <Label text="Notifications" styleClass="frontoffice-card-kicker"/>
+                                <Label fx:id="notificationsTileLabel" text="No unread notifications."
+                                       wrapText="true" styleClass="frontoffice-card-value"/>
+                            </children>
+                        </VBox>
+                        <VBox spacing="8.0" styleClass="frontoffice-insight-card">
+                            <children>
+                                <Label text="Tasks" styleClass="frontoffice-card-kicker"/>
+                                <Label fx:id="tasksLabel" text="No pending tasks."
+                                       wrapText="true" styleClass="frontoffice-card-value"/>
+                            </children>
+                        </VBox>
+                    </children>
+                </TilePane>
+
+                <TilePane hgap="14.0" vgap="14.0" prefTileWidth="286.0" prefColumns="3"
+                          tileAlignment="TOP_LEFT" styleClass="frontoffice-action-grid">
+                    <children>
+                        <VBox spacing="10.0" styleClass="frontoffice-action-card">
+                            <children>
+                                <Label fx:id="learningTitleLabel" text="Learning" styleClass="frontoffice-heading"/>
+                                <Label fx:id="learningDescriptionLabel"
+                                       text="Continue classes, courses, and learning resources."
+                                       wrapText="true" styleClass="frontoffice-card-text"/>
+                                <Region VBox.vgrow="ALWAYS"/>
+                                <Button fx:id="coursesButton" text="Open Learning"
+                                        onAction="#onOpenCourses"
+                                        maxWidth="1.7976931348623157E308"
+                                        styleClass="frontoffice-primary-button"/>
+                            </children>
+                        </VBox>
+
+                        <VBox spacing="10.0" styleClass="frontoffice-action-card">
+                            <children>
+                                <Label text="Evaluation" styleClass="frontoffice-heading"/>
+                                <Label fx:id="evaluationDescriptionLabel"
+                                       text="Review grades, quizzes, documents, and timetable items."
+                                       wrapText="true" styleClass="frontoffice-card-text"/>
+                                <Region VBox.vgrow="ALWAYS"/>
+                                <Button text="Open Evaluation"
+                                        onAction="#onOpenEvaluation"
+                                        maxWidth="1.7976931348623157E308"
+                                        styleClass="frontoffice-primary-button"/>
+                                <Button text="Open Schedule"
+                                        onAction="#onOpenSchedule"
+                                        maxWidth="1.7976931348623157E308"
+                                        styleClass="frontoffice-secondary-button"/>
+                            </children>
+                        </VBox>
+
+                        <VBox spacing="10.0" styleClass="frontoffice-action-card">
+                            <children>
+                                <Label fx:id="meetingsTitleLabel" text="Meetings" styleClass="frontoffice-heading"/>
+                                <Label fx:id="meetingsDescriptionLabel"
+                                       text="Access class sessions and room availability."
+                                       wrapText="true" styleClass="frontoffice-card-text"/>
+                                <Region VBox.vgrow="ALWAYS"/>
+                                <Button fx:id="meetingsButton" text="Open Meetings"
+                                        onAction="#onOpenMeetings"
+                                        maxWidth="1.7976931348623157E308"
+                                        styleClass="frontoffice-primary-button"/>
+                                <Button text="Open IArooms"
+                                        onAction="#onOpenRooms"
+                                        maxWidth="1.7976931348623157E308"
+                                        styleClass="frontoffice-secondary-button"/>
+                            </children>
+                        </VBox>
+
+                        <VBox spacing="10.0" styleClass="frontoffice-action-card">
+                            <children>
+                                <Label text="Community" styleClass="frontoffice-heading"/>
+                                <Label fx:id="communityDescriptionLabel"
+                                       text="Ask questions, browse discussions, and share knowledge."
+                                       wrapText="true" styleClass="frontoffice-card-text"/>
+                                <Region VBox.vgrow="ALWAYS"/>
+                                <Button text="Open Forum"
+                                        onAction="#onOpenForum"
+                                        maxWidth="1.7976931348623157E308"
+                                        styleClass="frontoffice-primary-button"/>
+                            </children>
+                        </VBox>
+
+                        <VBox spacing="10.0" styleClass="frontoffice-action-card">
+                            <children>
+                                <Label fx:id="opportunitiesTitleLabel" text="Opportunities" styleClass="frontoffice-heading"/>
+                                <Label fx:id="opportunitiesDescriptionLabel"
+                                       text="Explore job offers, applications, and partner opportunities."
+                                       wrapText="true" styleClass="frontoffice-card-text"/>
+                                <Region VBox.vgrow="ALWAYS"/>
+                                <Button text="Open Opportunities"
+                                        onAction="#onOpenOpportunities"
+                                        maxWidth="1.7976931348623157E308"
+                                        styleClass="frontoffice-primary-button"/>
+                            </children>
+                        </VBox>
+
+                        <VBox spacing="10.0" styleClass="frontoffice-action-card">
+                            <children>
+                                <Label text="Account" styleClass="frontoffice-heading"/>
+                                <Label text="Manage your profile and security settings."
+                                       wrapText="true" styleClass="frontoffice-card-text"/>
+                                <Region VBox.vgrow="ALWAYS"/>
+                                <Button text="My Profile"
+                                        onAction="#onOpenProfile"
+                                        maxWidth="1.7976931348623157E308"
+                                        styleClass="frontoffice-primary-button"/>
+                                <Button text="Change Password"
+                                        onAction="#onChangePassword"
+                                        maxWidth="1.7976931348623157E308"
+                                        styleClass="frontoffice-secondary-button"/>
+                            </children>
+                        </VBox>
+                    </children>
+                </TilePane>
             </children>
         </VBox>
-    </children>
-</VBox>
+    </content>
+</ScrollPane>

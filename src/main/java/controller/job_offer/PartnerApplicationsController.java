@@ -6,6 +6,7 @@ import entities.job_offer.CandidateProfile;
 import entities.job_offer.JobApplication;
 import entities.job_offer.JobApplicationStatus;
 import entities.job_offer.JobOffer;
+import entities.job_offer.JobOfferMeeting;
 import entities.job_offer.ScoreBreakdown;
 import entities.job_offer.ScoreCriteria;
 import javafx.application.Platform;
@@ -19,20 +20,24 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import service.job_offer.ApplicationDocumentStorageService;
 import service.job_offer.AtsApplicationScoringService;
 import service.job_offer.AtsScoringEngine;
 import service.job_offer.GeminiApplicationFeedbackService;
+import service.job_offer.JobOfferMeetingService;
 import services.ServiceUser;
 import services.job_offer.ServiceJobApplication;
 import services.job_offer.ServiceJobOffer;
@@ -41,13 +46,12 @@ import util.RoleGuard;
 
 import java.awt.Desktop;
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -57,10 +61,24 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class PartnerApplicationsController implements Initializable {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMM yyyy");
+    private static final DateTimeFormatter MEETING_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    private static final DateTimeFormatter MEETING_TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
+    private static final int DEFAULT_MEETING_DURATION_MINUTES = 30;
+    private static final List<String> MEETING_HOURS = IntStream.rangeClosed(1, 12)
+            .mapToObj(value -> String.format("%02d", value))
+            .toList();
+    private static final List<String> MEETING_MINUTES = IntStream.range(0, 60)
+            .mapToObj(value -> String.format("%02d", value))
+            .toList();
+    private static final List<String> MEETING_MERIDIEMS = List.of("AM", "PM");
+
+    private record MeetingWindow(Timestamp startsAt, Timestamp endsAt) {
+    }
 
     @FXML private Label pageTitleLabel;
     @FXML private Label pageSubtitleLabel;
@@ -125,6 +143,16 @@ public class PartnerApplicationsController implements Initializable {
     @FXML private Label decisionCandidateLabel;
     @FXML private Label decisionOfferLabel;
     @FXML private ComboBox<String> feedbackDecisionCombo;
+    @FXML private VBox meetingScheduleCard;
+    @FXML private DatePicker meetingDatePicker;
+    @FXML private ComboBox<String> meetingStartHourCombo;
+    @FXML private ComboBox<String> meetingStartMinuteCombo;
+    @FXML private ComboBox<String> meetingStartMeridiemCombo;
+    @FXML private ComboBox<String> meetingEndHourCombo;
+    @FXML private ComboBox<String> meetingEndMinuteCombo;
+    @FXML private ComboBox<String> meetingEndMeridiemCombo;
+    @FXML private Label meetingScheduleHelperLabel;
+    @FXML private Button meetingJoinButton;
     @FXML private Button generateFeedbackButton;
     @FXML private Label feedbackHelperLabel;
     @FXML private TextArea feedbackArea;
@@ -137,7 +165,9 @@ public class PartnerApplicationsController implements Initializable {
     private ServiceJobApplication serviceJobApplication;
     private ServiceJobOffer serviceJobOffer;
     private ServiceUser serviceUser;
+    private ApplicationDocumentStorageService documentStorageService;
     private GeminiApplicationFeedbackService aiFeedbackService;
+    private JobOfferMeetingService jobOfferMeetingService;
     private AtsScoringEngine atsScoringEngine;
     private AtsApplicationScoringService atsApplicationScoringService;
     private ObjectMapper objectMapper;
@@ -145,22 +175,29 @@ public class PartnerApplicationsController implements Initializable {
     private final ObservableList<JobApplication> allApplications = FXCollections.observableArrayList();
     private final ObservableList<JobOffer> ownedOffers = FXCollections.observableArrayList();
     private final Map<Integer, List<JobApplication>> applicationsByOfferId = new LinkedHashMap<>();
+    private final Map<Integer, JobOfferMeeting> meetingsByApplicationId = new LinkedHashMap<>();
 
     private JobOffer selectedOffer;
     private JobApplication selectedApplication;
     private int currentStep = 1;
+    private Integer pendingOfferId;
+    private Integer pendingApplicationId;
+    private Integer pendingStep;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         serviceJobApplication = new ServiceJobApplication();
         serviceJobOffer = new ServiceJobOffer();
         serviceUser = new ServiceUser();
+        documentStorageService = new ApplicationDocumentStorageService();
         aiFeedbackService = new GeminiApplicationFeedbackService();
+        jobOfferMeetingService = new JobOfferMeetingService();
         atsScoringEngine = new AtsScoringEngine();
         atsApplicationScoringService = new AtsApplicationScoringService();
         objectMapper = new ObjectMapper();
 
         setupFilters();
+        setupMeetingTimePickers();
         setupInteraction();
         resetStepOneSelection();
         resetStepTwoSelection();
@@ -176,6 +213,12 @@ public class PartnerApplicationsController implements Initializable {
         pageTitleLabel.setText("Application Review");
         pageSubtitleLabel.setText("Pick an offer, select one candidate, review the dossier, then submit a final decision.");
         loadApplications();
+    }
+
+    public void restoreNavigationState(Integer offerId, Integer applicationId, int step) {
+        pendingOfferId = offerId;
+        pendingApplicationId = applicationId;
+        pendingStep = Math.max(1, Math.min(step, 5));
     }
 
     private void setupFilters() {
@@ -195,9 +238,28 @@ public class PartnerApplicationsController implements Initializable {
         feedbackDecisionCombo.setValue(JobApplicationStatus.REVIEWED.name());
     }
 
+    private void setupMeetingTimePickers() {
+        setupTimePickerCombo(meetingStartHourCombo, MEETING_HOURS);
+        setupTimePickerCombo(meetingStartMinuteCombo, MEETING_MINUTES);
+        setupTimePickerCombo(meetingStartMeridiemCombo, MEETING_MERIDIEMS);
+        setupTimePickerCombo(meetingEndHourCombo, MEETING_HOURS);
+        setupTimePickerCombo(meetingEndMinuteCombo, MEETING_MINUTES);
+        setupTimePickerCombo(meetingEndMeridiemCombo, MEETING_MERIDIEMS);
+        setDefaultMeetingPickerWindow();
+    }
+
+    private void setupTimePickerCombo(ComboBox<String> comboBox, List<String> values) {
+        if (comboBox == null) {
+            return;
+        }
+        comboBox.setItems(FXCollections.observableArrayList(values));
+        comboBox.setVisibleRowCount(Math.min(6, values.size()));
+    }
+
     private void setupInteraction() {
         offerSearchField.textProperty().addListener((obs, oldValue, newValue) -> renderOffers());
         statusFilterCombo.setOnAction(event -> renderApplicationsForSelection());
+        feedbackDecisionCombo.valueProperty().addListener((obs, oldValue, newValue) -> updateMeetingScheduleVisibility());
         messageArea.setEditable(false);
         messageArea.setWrapText(true);
         feedbackArea.setWrapText(true);
@@ -208,14 +270,20 @@ public class PartnerApplicationsController implements Initializable {
             return;
         }
 
-        Integer previousOfferId = selectedOffer != null ? selectedOffer.getId() : null;
-        Integer previousApplicationId = selectedApplication != null ? selectedApplication.getId() : null;
+        Integer previousOfferId = pendingOfferId != null ? pendingOfferId : (selectedOffer != null ? selectedOffer.getId() : null);
+        Integer previousApplicationId = pendingApplicationId != null ? pendingApplicationId : (selectedApplication != null ? selectedApplication.getId() : null);
+        int previousStep = pendingStep != null ? pendingStep : currentStep;
+
+        pendingOfferId = null;
+        pendingApplicationId = null;
+        pendingStep = null;
 
         Thread thread = new Thread(() -> {
             try {
                 List<JobApplication> applications = serviceJobApplication.getALL();
                 List<JobOffer> offers = serviceJobOffer.getALL();
                 List<User> users = serviceUser.getALL();
+                List<JobOfferMeeting> meetings = jobOfferMeetingService.getMeetingsForReviewer(currentUser.getId());
 
                 Map<Integer, JobOffer> offersById = offers.stream()
                         .filter(offer -> offer != null && offer.getId() > 0)
@@ -247,14 +315,26 @@ public class PartnerApplicationsController implements Initializable {
                                 LinkedHashMap::new,
                                 Collectors.toList()));
 
+                Map<Integer, JobOfferMeeting> meetingMap = meetings.stream()
+                        .filter(meeting -> meeting != null && meeting.getApplication() != null)
+                        .collect(Collectors.toMap(
+                                meeting -> meeting.getApplication().getId(),
+                                meeting -> meeting,
+                                (left, right) -> left,
+                                LinkedHashMap::new
+                        ));
+
                 Platform.runLater(() -> {
                     ownedOffers.setAll(accessibleOffers);
                     allApplications.setAll(partnerApplications);
                     applicationsByOfferId.clear();
                     applicationsByOfferId.putAll(grouped);
+                    meetingsByApplicationId.clear();
+                    meetingsByApplicationId.putAll(meetingMap);
 
                     updateStats();
                     renderOffers();
+                    currentStep = Math.max(1, Math.min(previousStep, 5));
                     restoreSelection(previousOfferId, previousApplicationId);
                 });
             } catch (Exception e) {
@@ -293,6 +373,7 @@ public class PartnerApplicationsController implements Initializable {
                 populateReviewPanel(restoredApplication);
                 populateDecisionPanel(restoredApplication);
             }
+            showStep(currentStep);
         } else {
             selectedApplication = null;
             resetStepTwoSelection();
@@ -300,6 +381,8 @@ public class PartnerApplicationsController implements Initializable {
             resetDecisionPanel();
             if (currentStep > 2) {
                 showStep(2);
+            } else {
+                showStep(currentStep);
             }
         }
     }
@@ -751,9 +834,66 @@ public class PartnerApplicationsController implements Initializable {
         }
 
         feedbackArea.setText(safeText(application.getStatusMessage(), ""));
+        populateMeetingScheduleFields(application);
         generateFeedbackButton.setDisable(false);
         submitDecisionButton.setDisable(false);
         feedbackHelperLabel.setText("Pick a status, generate AI feedback if needed, then submit.");
+    }
+
+    private void populateMeetingScheduleFields(JobApplication application) {
+        if (!hasMeetingPickerControls()) {
+            return;
+        }
+
+        JobOfferMeeting meeting = application == null ? null : meetingsByApplicationId.get(application.getId());
+        if (meeting != null && meeting.getScheduledAt() != null) {
+            LocalDateTime scheduled = meeting.getScheduledAt().toLocalDateTime();
+            LocalDateTime scheduledEnd = meeting.resolveScheduledEndAt().toLocalDateTime();
+            meetingDatePicker.setValue(scheduled.toLocalDate());
+            setTimePickerValue(scheduled.toLocalTime(), meetingStartHourCombo, meetingStartMinuteCombo, meetingStartMeridiemCombo);
+            setTimePickerValue(scheduledEnd.toLocalTime(), meetingEndHourCombo, meetingEndMinuteCombo, meetingEndMeridiemCombo);
+            meetingScheduleHelperLabel.setText("Existing meeting: " + formatMeetingWindow(meeting)
+                    + ". Update it here if needed.");
+            setMeetingJoinButtonState(true, jobOfferMeetingService.canJoinNow(meeting));
+        } else {
+            setDefaultMeetingPickerWindow();
+            meetingScheduleHelperLabel.setText("Accepted candidates need a future meeting window. Pick start and end time with AM/PM.");
+            setMeetingJoinButtonState(false, false);
+        }
+        updateMeetingScheduleVisibility();
+    }
+
+    private void updateMeetingScheduleVisibility() {
+        if (meetingScheduleCard == null || feedbackDecisionCombo == null) {
+            return;
+        }
+        boolean acceptedDecision = JobApplicationStatus.fromString(feedbackDecisionCombo.getValue()) == JobApplicationStatus.ACCEPTED
+                && selectedApplication != null;
+        meetingScheduleCard.setVisible(acceptedDecision);
+        meetingScheduleCard.setManaged(acceptedDecision);
+        if (!acceptedDecision) {
+            setMeetingJoinButtonState(false, false);
+        } else {
+            JobOfferMeeting meeting = meetingsByApplicationId.get(selectedApplication.getId());
+            setMeetingJoinButtonState(meeting != null, meeting != null && jobOfferMeetingService.canJoinNow(meeting));
+        }
+    }
+
+    private void setMeetingJoinButtonState(boolean visible, boolean canJoin) {
+        if (meetingJoinButton == null) {
+            return;
+        }
+        meetingJoinButton.setVisible(visible);
+        meetingJoinButton.setManaged(visible);
+        meetingJoinButton.setDisable(!canJoin);
+        if (!visible) {
+            meetingJoinButton.setTooltip(null);
+        } else if (canJoin) {
+            meetingJoinButton.setTooltip(new Tooltip("Meeting is open now."));
+        } else {
+            JobOfferMeeting meeting = selectedApplication == null ? null : meetingsByApplicationId.get(selectedApplication.getId());
+            meetingJoinButton.setTooltip(new Tooltip(resolveMeetingLockedText(meeting)));
+        }
     }
 
     private void showStep(int step) {
@@ -872,6 +1012,10 @@ public class PartnerApplicationsController implements Initializable {
         decisionOfferLabel.setText("Pick a candidate in step 2 first.");
         feedbackDecisionCombo.setValue(JobApplicationStatus.REVIEWED.name());
         feedbackArea.setText("");
+        if (meetingDatePicker != null) {
+            setDefaultMeetingPickerWindow();
+        }
+        updateMeetingScheduleVisibility();
         generateFeedbackButton.setDisable(true);
         submitDecisionButton.setDisable(true);
         feedbackHelperLabel.setText("Step 4 unlocks after you review a selected candidate.");
@@ -990,7 +1134,34 @@ public class PartnerApplicationsController implements Initializable {
     @FXML
     private void onOpenSelectedAtsDetail() {
         if (selectedApplication != null) {
-            AppNavigator.showAtsApplicationDetail(selectedApplication);
+            AppNavigator.showAtsApplicationDetail(
+                    selectedApplication,
+                    selectedOffer != null ? selectedOffer.getId() : null,
+                    selectedApplication.getId(),
+                    3
+            );
+        }
+    }
+
+    @FXML
+    private void onJoinSelectedMeeting() {
+        if (selectedApplication == null) {
+            showError("No application selected", "Select an accepted application first.");
+            return;
+        }
+
+        JobOfferMeeting meeting = meetingsByApplicationId.get(selectedApplication.getId());
+        if (meeting == null) {
+            showError("Meeting not scheduled", "Create a meeting schedule before joining.");
+            return;
+        }
+
+        try {
+            JobOfferMeeting joinedMeeting = jobOfferMeetingService.joinPartnerMeeting(meeting.getId());
+            AppNavigator.showJobOfferMeetingRoom(joinedMeeting, true);
+        } catch (Exception exception) {
+            showError("Cannot join meeting", exception.getMessage());
+            populateMeetingScheduleFields(selectedApplication);
         }
     }
 
@@ -1099,6 +1270,11 @@ public class PartnerApplicationsController implements Initializable {
         }
 
         try {
+            MeetingWindow meetingWindow = null;
+            if (targetStatus == JobApplicationStatus.ACCEPTED) {
+                meetingWindow = parseMeetingSchedule();
+            }
+
             String feedback = resolveFeedbackForSubmission(targetStatus);
             if (feedback == null) {
                 return;
@@ -1115,10 +1291,26 @@ public class PartnerApplicationsController implements Initializable {
 
             serviceJobApplication.update(selectedApplication);
 
+            JobOfferMeeting scheduledMeeting = null;
+            if (targetStatus == JobApplicationStatus.ACCEPTED) {
+                scheduledMeeting = jobOfferMeetingService.scheduleMeetingForPartner(
+                        selectedApplication.getId(),
+                        "Interview - " + safeText(selectedApplication.getJobOffer() != null ? selectedApplication.getJobOffer().getTitle() : null, "Job offer"),
+                        buildMeetingDescription(selectedApplication),
+                        meetingWindow.startsAt(),
+                        meetingWindow.endsAt()
+                );
+                meetingsByApplicationId.put(selectedApplication.getId(), scheduledMeeting);
+            }
+
             doneTitleLabel.setText("Decision submitted");
-            doneSummaryLabel.setText("Candidate: " + resolveCandidateName(selectedApplication)
+            String summary = "Candidate: " + resolveCandidateName(selectedApplication)
                     + "\nOffer: " + safeText(selectedApplication.getJobOffer() != null ? selectedApplication.getJobOffer().getTitle() : null, "Unknown offer")
-                    + "\nStatus: " + targetStatus.getLabel());
+                    + "\nStatus: " + targetStatus.getLabel();
+            if (scheduledMeeting != null && scheduledMeeting.getScheduledAt() != null) {
+                summary += "\nMeeting: " + formatMeetingWindow(scheduledMeeting);
+            }
+            doneSummaryLabel.setText(summary);
 
             feedbackHelperLabel.setText("Submitted status: " + targetStatus.getLabel());
             loadApplications();
@@ -1144,6 +1336,117 @@ public class PartnerApplicationsController implements Initializable {
         return generatedFeedback == null ? "" : generatedFeedback.trim();
     }
 
+    private MeetingWindow parseMeetingSchedule() {
+        LocalDate date = meetingDatePicker == null ? null : meetingDatePicker.getValue();
+
+        if (date == null) {
+            throw new IllegalArgumentException("Choose a meeting date before accepting the candidate.");
+        }
+
+        LocalTime startTime = readTimePickerValue("start", meetingStartHourCombo, meetingStartMinuteCombo, meetingStartMeridiemCombo);
+        LocalTime endTime = readTimePickerValue("end", meetingEndHourCombo, meetingEndMinuteCombo, meetingEndMeridiemCombo);
+        LocalDateTime startsAt = LocalDateTime.of(date, startTime);
+        LocalDateTime endsAt = LocalDateTime.of(date, endTime);
+
+        if (!endsAt.isAfter(startsAt)) {
+            throw new IllegalArgumentException("Meeting end time must be after the start time.");
+        }
+        if (!endsAt.isAfter(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Meeting end time must be in the future. Check the date and AM/PM selection.");
+        }
+
+        return new MeetingWindow(Timestamp.valueOf(startsAt), Timestamp.valueOf(endsAt));
+    }
+
+    private boolean hasMeetingPickerControls() {
+        return meetingDatePicker != null
+                && meetingStartHourCombo != null
+                && meetingStartMinuteCombo != null
+                && meetingStartMeridiemCombo != null
+                && meetingEndHourCombo != null
+                && meetingEndMinuteCombo != null
+                && meetingEndMeridiemCombo != null;
+    }
+
+    private void setDefaultMeetingPickerWindow() {
+        if (!hasMeetingPickerControls()) {
+            return;
+        }
+
+        LocalDateTime startsAt = resolveDefaultMeetingStart();
+        LocalDateTime endsAt = startsAt.plusMinutes(DEFAULT_MEETING_DURATION_MINUTES);
+        meetingDatePicker.setValue(startsAt.toLocalDate());
+        setTimePickerValue(startsAt.toLocalTime(), meetingStartHourCombo, meetingStartMinuteCombo, meetingStartMeridiemCombo);
+        setTimePickerValue(endsAt.toLocalTime(), meetingEndHourCombo, meetingEndMinuteCombo, meetingEndMeridiemCombo);
+    }
+
+    private LocalDateTime resolveDefaultMeetingStart() {
+        LocalDateTime startsAt = roundToNextFiveMinutes(LocalDateTime.now().plusMinutes(5));
+        LocalDateTime endsAt = startsAt.plusMinutes(DEFAULT_MEETING_DURATION_MINUTES);
+        if (!startsAt.toLocalDate().equals(endsAt.toLocalDate())) {
+            return LocalDate.now().plusDays(1).atTime(9, 0);
+        }
+        return startsAt;
+    }
+
+    private LocalDateTime roundToNextFiveMinutes(LocalDateTime dateTime) {
+        LocalDateTime cleanedDateTime = dateTime.withSecond(0).withNano(0);
+        int roundedMinute = ((cleanedDateTime.getMinute() + 4) / 5) * 5;
+        if (roundedMinute >= 60) {
+            return cleanedDateTime.plusHours(1).withMinute(0);
+        }
+        return cleanedDateTime.withMinute(roundedMinute);
+    }
+
+    private void setTimePickerValue(LocalTime time,
+                                    ComboBox<String> hourCombo,
+                                    ComboBox<String> minuteCombo,
+                                    ComboBox<String> meridiemCombo) {
+        if (time == null || hourCombo == null || minuteCombo == null || meridiemCombo == null) {
+            return;
+        }
+
+        int hour = time.getHour();
+        String meridiem = hour >= 12 ? "PM" : "AM";
+        int displayHour = hour % 12;
+        if (displayHour == 0) {
+            displayHour = 12;
+        }
+
+        hourCombo.setValue(String.format("%02d", displayHour));
+        minuteCombo.setValue(String.format("%02d", time.getMinute()));
+        meridiemCombo.setValue(meridiem);
+    }
+
+    private LocalTime readTimePickerValue(String fieldName,
+                                          ComboBox<String> hourCombo,
+                                          ComboBox<String> minuteCombo,
+                                          ComboBox<String> meridiemCombo) {
+        String hourText = hourCombo == null ? null : hourCombo.getValue();
+        String minuteText = minuteCombo == null ? null : minuteCombo.getValue();
+        String meridiem = meridiemCombo == null ? null : meridiemCombo.getValue();
+
+        if (hourText == null || minuteText == null || meridiem == null) {
+            throw new IllegalArgumentException("Choose the meeting " + fieldName + " time.");
+        }
+
+        int hour = Integer.parseInt(hourText);
+        int minute = Integer.parseInt(minuteText);
+        if ("PM".equals(meridiem) && hour < 12) {
+            hour += 12;
+        } else if ("AM".equals(meridiem) && hour == 12) {
+            hour = 0;
+        }
+
+        return LocalTime.of(hour, minute);
+    }
+
+    private String buildMeetingDescription(JobApplication application) {
+        String candidate = resolveCandidateName(application);
+        String offer = safeText(application != null && application.getJobOffer() != null ? application.getJobOffer().getTitle() : null, "the job offer");
+        return "Interview meeting for " + candidate + " about " + offer + ".";
+    }
+
     private void openCvFile(JobApplication application) {
         if (application == null || application.getCvFileName() == null || application.getCvFileName().trim().isEmpty()) {
             showError("CV not available", "This application does not have a CV file.");
@@ -1152,7 +1455,7 @@ public class PartnerApplicationsController implements Initializable {
 
         try {
             String storedValue = application.getCvFileName().trim();
-            File cvFile = resolveCvFile(storedValue);
+            File cvFile = documentStorageService.resolveCvFile(storedValue);
             if (cvFile == null || !cvFile.exists()) {
                 relinkCvFile(application, storedValue);
                 return;
@@ -1192,64 +1495,19 @@ public class PartnerApplicationsController implements Initializable {
         }
 
         try {
-            String managedCvPath = persistCvFile(selected);
+            String managedCvPath = documentStorageService.storeCv(
+                    selected,
+                    application.getUser() != null ? application.getUser().getId() : null,
+                    application.getJobOffer() != null ? application.getJobOffer().getId() : null
+            );
             application.setCvFileName(managedCvPath);
             application.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
             serviceJobApplication.update(application);
-            Desktop.getDesktop().open(new File(managedCvPath));
+            Desktop.getDesktop().open(documentStorageService.resolveCvFile(managedCvPath));
             loadApplications();
         } catch (Exception exception) {
             showError("CV relink failed", exception.getMessage());
         }
-    }
-
-    private String persistCvFile(File source) throws IOException {
-        if (source == null || !source.exists()) {
-            throw new IOException("Selected CV file does not exist.");
-        }
-
-        String sanitizedName = source.getName().replaceAll("[^a-zA-Z0-9._-]", "_");
-        String targetName = System.currentTimeMillis() + "_" + sanitizedName;
-
-        Path targetDir = Path.of(System.getProperty("user.dir"), "uploads", "cvs");
-        Files.createDirectories(targetDir);
-
-        Path targetPath = targetDir.resolve(targetName);
-        Files.copy(source.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-        return targetPath.toAbsolutePath().toString();
-    }
-
-    private File resolveCvFile(String storedValue) {
-        File direct = new File(storedValue);
-        if (direct.exists()) {
-            return direct;
-        }
-
-        String normalized = storedValue.replace("\\", File.separator).replace("/", File.separator);
-        File normalizedFile = new File(normalized);
-        if (normalizedFile.exists()) {
-            return normalizedFile;
-        }
-
-        String filenameOnly = new File(normalized).getName();
-        if (filenameOnly.isEmpty()) {
-            return null;
-        }
-
-        List<File> candidateDirs = new ArrayList<>();
-        candidateDirs.add(new File(System.getProperty("user.dir")));
-        candidateDirs.add(new File(System.getProperty("user.home"), "Downloads"));
-        candidateDirs.add(new File(System.getProperty("user.home"), "Desktop"));
-        candidateDirs.add(new File(System.getProperty("user.home"), "Documents"));
-
-        for (File dir : candidateDirs) {
-            File candidate = new File(dir, filenameOnly);
-            if (candidate.exists()) {
-                return candidate;
-            }
-        }
-
-        return null;
     }
 
     private void enrichApplicationReferences(JobApplication application,
@@ -1372,6 +1630,40 @@ public class PartnerApplicationsController implements Initializable {
 
     private String formatDate(Timestamp timestamp) {
         return timestamp != null ? timestamp.toLocalDateTime().format(DATE_FORMATTER) : "Unknown";
+    }
+
+    private String formatMeetingWindow(JobOfferMeeting meeting) {
+        if (meeting == null || meeting.getScheduledAt() == null) {
+            return "Not scheduled";
+        }
+
+        LocalDateTime startsAt = meeting.getScheduledAt().toLocalDateTime();
+        LocalDateTime endsAt = meeting.resolveScheduledEndAt().toLocalDateTime();
+        if (startsAt.toLocalDate().equals(endsAt.toLocalDate())) {
+            return startsAt.format(MEETING_DATE_TIME_FORMATTER) + " - " + endsAt.format(MEETING_TIME_FORMATTER);
+        }
+        return startsAt.format(MEETING_DATE_TIME_FORMATTER) + " - " + endsAt.format(MEETING_DATE_TIME_FORMATTER);
+    }
+
+    private String resolveMeetingLockedText(JobOfferMeeting meeting) {
+        if (meeting != null && meeting.isEnded()) {
+            return "This meeting has ended.";
+        }
+        if (meeting == null || meeting.getScheduledAt() == null) {
+            return "Meeting is not scheduled yet.";
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startsAt = meeting.getScheduledAt().toLocalDateTime();
+        LocalDateTime endsAt = meeting.resolveScheduledEndAt().toLocalDateTime();
+        String currentTime = now.format(MEETING_DATE_TIME_FORMATTER);
+        if (now.isBefore(startsAt)) {
+            return "Meeting opens from " + formatMeetingWindow(meeting) + ". Current app time: " + currentTime + ".";
+        }
+        if (now.isAfter(endsAt)) {
+            return "Meeting window ended at " + formatMeetingWindow(meeting) + ". Current app time: " + currentTime + ".";
+        }
+        return "This meeting is not available right now.";
     }
 
     private String safeText(String value) {

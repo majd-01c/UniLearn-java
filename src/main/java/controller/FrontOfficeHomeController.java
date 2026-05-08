@@ -7,13 +7,15 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import util.AppNavigator;
 
 import java.net.URL;
+import java.util.LinkedHashSet;
 import java.util.ResourceBundle;
+import java.util.Set;
 import javafx.util.Duration;
 
 public class FrontOfficeHomeController implements Initializable {
@@ -28,21 +30,70 @@ public class FrontOfficeHomeController implements Initializable {
     private Label roleLabel;
 
     @FXML
+    private Label heroSubtitleLabel;
+
+    @FXML
+    private Label focusHeadingLabel;
+
+    @FXML
     private Label nextClassLabel;
+
+    @FXML
+    private Label nextClassTileLabel;
 
     @FXML
     private Label notificationsLabel;
 
     @FXML
+    private Label notificationsTileLabel;
+
+    @FXML
     private Label tasksLabel;
+
+    @FXML
+    private Label learningTitleLabel;
+
+    @FXML
+    private Label learningDescriptionLabel;
+
+    @FXML
+    private Label evaluationDescriptionLabel;
+
+    @FXML
+    private Label meetingsTitleLabel;
+
+    @FXML
+    private Label meetingsDescriptionLabel;
+
+    @FXML
+    private Label communityDescriptionLabel;
+
+    @FXML
+    private Label opportunitiesTitleLabel;
+
+    @FXML
+    private Label opportunitiesDescriptionLabel;
+
+    @FXML
+    private Button primaryActionButton;
+
+    @FXML
+    private Button coursesButton;
+
+    @FXML
+    private Button meetingsButton;
+
+    private String currentRole = "USER";
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         welcomeLabel.setText("Welcome to FrontOffice");
-        roleLabel.setText("Role: USER");
-        nextClassLabel.setText("Next class/event: not scheduled");
-        notificationsLabel.setText("Notifications: 0 unread");
-        tasksLabel.setText("Tasks: no pending tasks");
+        roleLabel.setText("USER");
+        setStatusLabels(
+                "No class or event is scheduled yet.",
+                "No unread notifications.",
+                "No pending tasks.");
+        updateCopyByRole(currentRole);
 
         Platform.runLater(this::playEntryAnimation);
     }
@@ -57,41 +108,56 @@ public class FrontOfficeHomeController implements Initializable {
         }
 
         String role = toDisplayRole(user == null ? null : user.getRole());
+        currentRole = role;
         welcomeLabel.setText("Welcome, " + displayName);
-        roleLabel.setText("Role: " + role);
+        roleLabel.setText(formatRoleLabel(role));
 
+        updateCopyByRole(role);
         updateWidgetsByRole(role);
     }
 
     @FXML
     private void onOpenCourses() {
-        showInfo("Courses", "Courses module shortcut is ready for wiring.");
+        switch (currentRole) {
+            case "STUDENT" -> AppNavigator.showStudentLearning();
+            case "TEACHER", "TRAINER" -> AppNavigator.showTeacherClasses();
+            case "PARTNER", "BUSINESS_PARTNER" -> AppNavigator.showJobOffers();
+            default -> AppNavigator.showJobOffers();
+        }
     }
 
     @FXML
     private void onOpenEvaluation() {
-        AppNavigator.setHeader("Evaluation Module", "Student, Teacher, and Admin evaluation workspace");
-        AppNavigator.loadCenter("/view/evaluation/module-shell.fxml", null);
+        AppNavigator.navigateTo("EVALUATION");
     }
 
     @FXML
     private void onOpenSchedule() {
-        showInfo("Schedule", "Schedule module shortcut is ready for wiring.");
+        AppNavigator.navigateTo("EVALUATION_SCHEDULE");
     }
 
     @FXML
     private void onOpenMeetings() {
-        showInfo("Meetings", "Meetings module shortcut is ready for wiring.");
+        switch (currentRole) {
+            case "STUDENT" -> AppNavigator.showStudentLearning();
+            case "TEACHER", "TRAINER" -> AppNavigator.showTeacherClasses();
+            default -> AppNavigator.showIARooms();
+        }
     }
 
     @FXML
     private void onOpenForum() {
-        showInfo("Forum", "Forum module shortcut is ready for wiring.");
+        AppNavigator.showForum();
     }
 
     @FXML
     private void onOpenOpportunities() {
         AppNavigator.showJobOffers();
+    }
+
+    @FXML
+    private void onOpenRooms() {
+        AppNavigator.showIARooms();
     }
 
     @FXML
@@ -106,29 +172,151 @@ public class FrontOfficeHomeController implements Initializable {
 
     private void updateWidgetsByRole(String role) {
         if ("TEACHER".equals(role) || "TRAINER".equals(role)) {
-            nextClassLabel.setText("Next class/event: prepare upcoming teaching session");
-            notificationsLabel.setText("Notifications: class updates and learner messages");
-            tasksLabel.setText("Tasks: publish resources and validate assessments");
+            setStatusLabels(
+                    "Prepare the next teaching session and review assigned classes.",
+                    "Class updates and learner messages need regular review.",
+                    "Publish resources and validate pending assessments.");
             return;
         }
 
         if ("STUDENT".equals(role)) {
-            nextClassLabel.setText("Next class/event: check your timetable for today");
-            notificationsLabel.setText("Notifications: assignment reminders and announcements");
-            tasksLabel.setText("Tasks: complete pending exercises and forum follow-ups");
+            setStatusLabels(
+                    "Check today's timetable before starting your next class.",
+                    "Assignment reminders and announcements appear here.",
+                    "Complete pending exercises and forum follow-ups.");
             return;
         }
 
-        if ("PARTNER".equals(role)) {
-            nextClassLabel.setText("Next class/event: partnership coordination and planning");
-            notificationsLabel.setText("Notifications: partner updates and opportunities");
-            tasksLabel.setText("Tasks: review active collaborations");
+        if (isPartnerRole(role)) {
+            setStatusLabels(
+                    "Review active opportunities and candidate activity.",
+                    "Partner updates and opportunity changes appear here.",
+                    "Review active collaborations and applications.");
             return;
         }
 
-        nextClassLabel.setText("Next class/event: not scheduled");
-        notificationsLabel.setText("Notifications: 0 unread");
-        tasksLabel.setText("Tasks: no pending tasks");
+        setStatusLabels(
+                "No class or event is scheduled yet.",
+                "No unread notifications.",
+                "No pending tasks.");
+    }
+
+    private void updateCopyByRole(String role) {
+        if ("TEACHER".equals(role) || "TRAINER".equals(role)) {
+            setHeroCopy("Teaching, evaluation, community, room planning, and learner support in one workspace.");
+            setLearningCopy("Teaching Workspace", "Open assigned classes, courses, content, and learner progress.");
+            setEvaluationCopy("Build assessments, review results, and track schedule items.");
+            setMeetingsCopy("Class Meetings", "Manage class sessions and room availability.");
+            setCommunityCopy("Answer learner questions and follow discussions.");
+            setOpportunityCopy("Opportunities", "Review job offers, partnerships, and applications.");
+            setButtonText("Open My Classes", "Open My Classes", "Manage Meetings");
+            return;
+        }
+
+        if ("STUDENT".equals(role)) {
+            setHeroCopy("Classes, quizzes, timetable, discussions, and career opportunities in one workspace.");
+            setLearningCopy("My Learning", "Continue enrolled classes, courses, and learning resources.");
+            setEvaluationCopy("Review quizzes, grades, documents, and timetable items.");
+            setMeetingsCopy("Meetings", "Find class sessions from your learning workspace and room tools.");
+            setCommunityCopy("Ask questions, browse discussions, and share knowledge.");
+            setOpportunityCopy("Opportunities", "Browse job offers and track career opportunities.");
+            setButtonText("Continue Learning", "Open My Learning", "Find Meetings");
+            return;
+        }
+
+        if (isPartnerRole(role)) {
+            setHeroCopy("Opportunities, applications, community updates, and account tools in one workspace.");
+            setLearningCopy("Opportunity Workspace", "Open job offers and partnership collaboration tools.");
+            setEvaluationCopy("Open the evaluation workspace when academic coordination is needed.");
+            setMeetingsCopy("Rooms", "Check room availability and coordination tools.");
+            setCommunityCopy("Follow community discussions and partner updates.");
+            setOpportunityCopy("Partner Opportunities", "Manage opportunities, applications, and candidate activity.");
+            setButtonText("Open Opportunities", "Open Job Offers", "Open IArooms");
+            return;
+        }
+
+        setHeroCopy("Learning, evaluation, community, opportunities, and account tools in one place.");
+        setLearningCopy("Learning", "Continue classes, courses, and learning resources.");
+        setEvaluationCopy("Review grades, quizzes, documents, and timetable items.");
+        setMeetingsCopy("Meetings", "Access class sessions and room availability.");
+        setCommunityCopy("Ask questions, browse discussions, and share knowledge.");
+        setOpportunityCopy("Opportunities", "Explore job offers, applications, and partner opportunities.");
+        setButtonText("Continue Work", "Open Learning", "Open Meetings");
+    }
+
+    private void setHeroCopy(String text) {
+        if (heroSubtitleLabel != null) {
+            heroSubtitleLabel.setText(text);
+        }
+    }
+
+    private void setLearningCopy(String title, String description) {
+        if (learningTitleLabel != null) {
+            learningTitleLabel.setText(title);
+        }
+        if (learningDescriptionLabel != null) {
+            learningDescriptionLabel.setText(description);
+        }
+    }
+
+    private void setMeetingsCopy(String title, String description) {
+        if (meetingsTitleLabel != null) {
+            meetingsTitleLabel.setText(title);
+        }
+        if (meetingsDescriptionLabel != null) {
+            meetingsDescriptionLabel.setText(description);
+        }
+    }
+
+    private void setEvaluationCopy(String description) {
+        if (evaluationDescriptionLabel != null) {
+            evaluationDescriptionLabel.setText(description);
+        }
+    }
+
+    private void setCommunityCopy(String description) {
+        if (communityDescriptionLabel != null) {
+            communityDescriptionLabel.setText(description);
+        }
+    }
+
+    private void setOpportunityCopy(String title, String description) {
+        if (opportunitiesTitleLabel != null) {
+            opportunitiesTitleLabel.setText(title);
+        }
+        if (opportunitiesDescriptionLabel != null) {
+            opportunitiesDescriptionLabel.setText(description);
+        }
+    }
+
+    private void setButtonText(String primaryText, String coursesText, String meetingsText) {
+        if (primaryActionButton != null) {
+            primaryActionButton.setText(primaryText);
+        }
+        if (coursesButton != null) {
+            coursesButton.setText(coursesText);
+        }
+        if (meetingsButton != null) {
+            meetingsButton.setText(meetingsText);
+        }
+    }
+
+    private void setStatusLabels(String nextClass, String notifications, String tasks) {
+        if (nextClassLabel != null) {
+            nextClassLabel.setText(nextClass);
+        }
+        if (nextClassTileLabel != null) {
+            nextClassTileLabel.setText(nextClass);
+        }
+        if (notificationsLabel != null) {
+            notificationsLabel.setText(notifications);
+        }
+        if (notificationsTileLabel != null) {
+            notificationsTileLabel.setText(notifications);
+        }
+        if (tasksLabel != null) {
+            tasksLabel.setText(tasks);
+        }
     }
 
     private String toDisplayRole(String role) {
@@ -144,6 +332,17 @@ public class FrontOfficeHomeController implements Initializable {
         return normalized;
     }
 
+    private boolean isPartnerRole(String role) {
+        return "PARTNER".equals(role) || "BUSINESS_PARTNER".equals(role);
+    }
+
+    private String formatRoleLabel(String role) {
+        if (role == null || role.isBlank()) {
+            return "USER";
+        }
+        return role.replace('_', ' ');
+    }
+
     private String normalize(String value) {
         if (value == null) {
             return null;
@@ -151,14 +350,6 @@ public class FrontOfficeHomeController implements Initializable {
 
         String trimmed = value.trim();
         return trimmed.isEmpty() ? null : trimmed;
-    }
-
-    private void showInfo(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 
     private void playEntryAnimation() {
@@ -172,7 +363,7 @@ public class FrontOfficeHomeController implements Initializable {
         fadeTransition.play();
 
         int index = 0;
-        for (Node node : rootContainer.lookupAll(".stagger-card")) {
+        for (Node node : animatedNodes()) {
             node.setOpacity(0.0);
             node.setTranslateY(14);
 
@@ -190,5 +381,13 @@ public class FrontOfficeHomeController implements Initializable {
             cardSlide.play();
             index++;
         }
+    }
+
+    private Set<Node> animatedNodes() {
+        Set<Node> nodes = new LinkedHashSet<>();
+        nodes.addAll(rootContainer.lookupAll(".frontoffice-hero"));
+        nodes.addAll(rootContainer.lookupAll(".frontoffice-insight-card"));
+        nodes.addAll(rootContainer.lookupAll(".frontoffice-action-card"));
+        return nodes;
     }
 }

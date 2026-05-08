@@ -31,7 +31,6 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
-import netscape.javascript.JSObject;
 import repository.job_offer.CustomSkillRepository;
 import service.UserService;
 import services.job_offer.ServiceJobOffer;
@@ -613,8 +612,7 @@ public class JobOfferFormController implements Initializable {
         engine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
             if (newState == Worker.State.SUCCEEDED) {
                 javaBridge = new JavaBridge();
-                JSObject window = (JSObject) engine.executeScript("window");
-                window.setMember("javaConnector", javaBridge);
+                exposeJavaConnector(engine, javaBridge);
 
                 if (locationField != null) {
                     locationField.setOnAction(e -> {
@@ -1115,6 +1113,17 @@ public class JobOfferFormController implements Initializable {
 
     private String escapeForJavascript(String value) {
         return value.replace("\\", "\\\\").replace("'", "\\'");
+    }
+
+    private void exposeJavaConnector(WebEngine engine, Object connector) {
+        Object window = engine.executeScript("window");
+        try {
+            window.getClass()
+                    .getMethod("setMember", String.class, Object.class)
+                    .invoke(window, "javaConnector", connector);
+        } catch (ReflectiveOperationException exception) {
+            throw new IllegalStateException("Unable to expose Java connector to map view.", exception);
+        }
     }
 
     public class JavaBridge {

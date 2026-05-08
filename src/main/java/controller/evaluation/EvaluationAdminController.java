@@ -4,12 +4,15 @@ import entities.DocumentRequest;
 import entities.Reclamation;
 import entities.Schedule;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
@@ -23,13 +26,18 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import service.evaluation.EvaluationService;
 
+import java.awt.Desktop;
 import java.io.File;
+import java.io.IOException;
 import java.sql.Time;
+import java.sql.Timestamp;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
@@ -62,7 +70,7 @@ public class EvaluationAdminController {
     private Label pdfFileNameLabel;
 
     @FXML
-    private VBox schedulesCardsBox;
+    private VBox schedulesCardsBox; // Changed to VBox to match FXML and resolve loading error
     @FXML
     private ComboBox<String> schedulesSortBox;
     @FXML
@@ -154,9 +162,9 @@ public class EvaluationAdminController {
             String response = requireNotBlank(reclamationResponseArea.getText(), "Admin response");
             service.updateReclamationStatus(selectedReclamationId, status, response);
             refreshReclamations();
-            showFeedback("Complaint updated.");
+            showFeedback("Complaint updated.", false);
         } catch (Exception e) {
-            showFeedback("Complaint update failed: " + e.getMessage());
+            showFeedback("Complaint update failed: " + e.getMessage(), true);
         }
     }
 
@@ -170,9 +178,9 @@ public class EvaluationAdminController {
             String path = requireNotBlank(selectedDocumentPath, "Document path (browse or drag a PDF)");
             service.updateDocumentRequest(selectedDocumentId, status, path);
             refreshDocumentRequests();
-            showFeedback("Document request updated.");
+            showFeedback("Document request updated.", false);
         } catch (Exception e) {
-            showFeedback("Document request update failed: " + e.getMessage());
+            showFeedback("Document request update failed: " + e.getMessage(), true);
         }
     }
 
@@ -228,9 +236,9 @@ public class EvaluationAdminController {
                     room
             );
             refreshSchedules();
-            showFeedback("Schedule created.");
+            showFeedback("Schedule created.", false);
         } catch (Exception e) {
-            showFeedback("Create schedule failed: " + e.getMessage());
+            showFeedback("Create schedule failed: " + e.getMessage(), true);
         }
     }
 
@@ -241,15 +249,36 @@ public class EvaluationAdminController {
                 throw new IllegalArgumentException("Please select a schedule card first.");
             }
             if (!confirmDeletion("Delete selected schedule?")) {
-                showFeedback("Deletion cancelled.");
+                showFeedback("Deletion cancelled.", false);
                 return;
             }
             service.deleteSchedule(selectedScheduleId);
             clearSelectedSchedule();
             refreshSchedules();
-            showFeedback("Schedule deleted.");
+            showFeedback("Schedule deleted.", false);
         } catch (Exception e) {
-            showFeedback("Delete schedule failed: " + e.getMessage());
+            showFeedback("Delete schedule failed: " + e.getMessage(), true);
+        }
+    }
+
+    @FXML
+    private void onDownloadSchedule() {
+        try {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Save Academic Schedule");
+            fileChooser.setInitialFileName("Academic_Schedule.pdf");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
+            File file = fileChooser.showSaveDialog(feedbackLabel.getScene().getWindow());
+
+            if (file != null) {
+                service.downloadAcademicSchedule(file);
+                showFeedback("Schedule downloaded: " + file.getName(), false);
+                if (Desktop.isDesktopSupported()) {
+                    Desktop.getDesktop().open(file);
+                }
+            }
+        } catch (Exception e) {
+            showFeedback("Download schedule failed: " + e.getMessage(), true);
         }
     }
 
@@ -271,7 +300,7 @@ public class EvaluationAdminController {
             if (pdf != null) {
                 selectedDocumentPath = pdf.getAbsolutePath();
                 pdfFileNameLabel.setText(pdf.getName());
-                showFeedback("PDF selected: " + pdf.getName());
+                showFeedback("PDF selected: " + pdf.getName(), false);
                 success = true;
             }
         }
@@ -290,7 +319,7 @@ public class EvaluationAdminController {
         }
         selectedDocumentPath = pdf.getAbsolutePath();
         pdfFileNameLabel.setText(pdf.getName());
-        showFeedback("PDF selected: " + pdf.getName());
+        showFeedback("PDF selected: " + pdf.getName(), false);
     }
 
     private void refreshAll() {
@@ -336,36 +365,100 @@ public class EvaluationAdminController {
             schedulesCardsBox.getChildren().add(emptyCard("No schedules available"));
             return;
         }
-        for (Schedule row : rows) {
-            schedulesCardsBox.getChildren().add(createScheduleCard(row));
+
+        // Group by Day (Monday-Sunday)
+        Map<String, List<Schedule>> byDay = new LinkedHashMap<>();
+        String[] daysOrder = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+        for (String d : daysOrder) byDay.put(d, new ArrayList<>());
+
+        for (Schedule s : rows) {
+            String day = s.getDayOfWeek() == null ? "Monday" : s.getDayOfWeek().trim();
+            String normalized = day.substring(0, 1).toUpperCase() + day.substring(1).toLowerCase();
+            if (byDay.containsKey(normalized)) byDay.get(normalized).add(s);
         }
+
+        for (Map.Entry<String, List<Schedule>> entry : byDay.entrySet()) {
+            schedulesCardsBox.getChildren().add(createDayScheduleCard(entry.getKey(), entry.getValue()));
+        }
+    }
+
+    private VBox createDayScheduleCard(String dayName, List<Schedule> dayClasses) {
+        VBox dayCard = new VBox(10);
+        dayCard.getStyleClass().add("eval-data-card");
+        dayCard.setMinWidth(240);
+        dayCard.setPadding(new Insets(12));
+        dayCard.setStyle("-fx-background-color: rgba(30,60,120,0.35); -fx-border-color: rgba(56,139,255,0.2); -fx-background-radius: 16; -fx-border-radius: 16; -fx-border-width: 1;");
+
+        Label dayLabel = new Label(dayName.toUpperCase());
+        dayLabel.setStyle("-fx-font-weight: 900; -fx-text-fill: #7ec4ff; -fx-font-size: 14px;");
+        dayCard.getChildren().add(dayLabel);
+
+        if (dayClasses.isEmpty()) {
+            Label empty = new Label("No sessions");
+            empty.setStyle("-fx-text-fill: #94a3b8; -fx-font-style: italic;");
+            dayCard.getChildren().add(empty);
+        } else {
+            for (Schedule s : dayClasses) {
+                VBox item = new VBox(2);
+                item.setPadding(new Insets(8));
+                item.setStyle("-fx-background-color: #f8fafc; -fx-background-radius: 10; -fx-border-color: #f1f5f9;");
+
+                String course = s.getCourse() == null ? "Course" : service.resolveCourseTitle(s.getCourse().getId());
+                String classe = s.getClasse() == null ? "Class" : service.resolveClasseName(s.getClasse().getId());
+                String teacher = s.getUser() == null ? "TBA" : service.resolveUserDisplayName(s.getUser().getId());
+
+                Label title = new Label(course);
+                title.setStyle("-fx-font-weight: bold; -fx-font-size: 11px;");
+                Label sub = new Label(classe + " | " + teacher);
+                sub.setStyle("-fx-text-fill: #90c8ff; -fx-font-size: 10px;");
+                Label time = new Label("🕒 " + s.getStartTime() + " - " + s.getEndTime());
+                time.setStyle("-fx-text-fill: #64748b; -fx-font-size: 10px;");
+
+                Button sel = new Button("Select");
+                sel.getStyleClass().add("eval-ghost-btn");
+                sel.setPadding(new Insets(2, 6, 2, 6));
+                sel.setOnAction(e -> {
+                    selectedScheduleId = s.getId();
+                    selectedScheduleLabel.setText("Selected: " + course);
+                    if (deleteScheduleButton != null) deleteScheduleButton.setDisable(false);
+                });
+
+                item.getChildren().addAll(title, sub, time, sel);
+                dayCard.getChildren().add(item);
+            }
+        }
+        return dayCard;
     }
 
     private VBox createReclamationCard(Reclamation row) {
         VBox card = new VBox(8);
-        card.getStyleClass().addAll("home-card", "eval-card");
+        card.getStyleClass().add("eval-data-card");
 
         HBox header = new HBox(8);
         Label title = new Label(safe(row.getSubject()));
-        title.getStyleClass().add("card-title");
+        title.getStyleClass().add("eval-data-card-title");
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        Label status = new Label(safe(row.getStatus()));
+        Label status = new Label(safe(row.getStatus()).toUpperCase());
         status.getStyleClass().addAll("eval-status-badge", statusStyleClass(row.getStatus()));
         header.getChildren().addAll(title, spacer, status);
 
         String studentName = row.getUser() == null ? null : service.resolveUserDisplayName(row.getUser().getId());
-        Label studentLabel = new Label("Student: " + safe(studentName));
-        Label descriptionLabel = new Label("Description: " + safe(row.getDescription()));
+        Label studentLabel = new Label("STUDENT: " + safe(studentName));
+        studentLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #d0e8ff;");
+        Label descriptionLabel = new Label(safe(row.getDescription()));
         descriptionLabel.setWrapText(true);
-        Label responseLabel = new Label("Response: " + safe(row.getAdminResponse()));
-        responseLabel.setWrapText(true);
+        descriptionLabel.setStyle("-fx-text-fill: #64748b; -fx-font-style: italic;");
 
-        Button selectButton = new Button("Select");
-        selectButton.getStyleClass().add("ghost-button");
+        Label responseLabel = new Label("RESPONSE: " + safe(row.getAdminResponse()));
+        responseLabel.setWrapText(true);
+        responseLabel.setStyle("-fx-text-fill: #0ea5e9;");
+
+        Button selectButton = new Button("Review Complaint");
+        selectButton.getStyleClass().add("eval-ghost-btn");
         selectButton.setOnAction(event -> {
             selectedReclamationId = row.getId();
-            selectedReclamationLabel.setText("Selected complaint: " + safe(row.getSubject()));
+            selectedReclamationLabel.setText("Selected: " + safe(row.getSubject()));
             reclamationStatusCombo.getSelectionModel().select(safe(row.getStatus()).toLowerCase(Locale.ROOT));
             reclamationResponseArea.setText(row.getAdminResponse() == null ? "" : row.getAdminResponse());
         });
@@ -376,71 +469,42 @@ public class EvaluationAdminController {
 
     private VBox createDocumentRequestCard(DocumentRequest row) {
         VBox card = new VBox(8);
-        card.getStyleClass().addAll("home-card", "eval-card");
+        card.getStyleClass().add("eval-data-card");
 
         HBox header = new HBox(8);
-        Label title = new Label(safe(row.getDocumentType()));
-        title.getStyleClass().add("card-title");
+        Label title = new Label(safe(row.getDocumentType()).toUpperCase());
+        title.getStyleClass().add("eval-data-card-title");
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        Label status = new Label(safe(row.getStatus()));
+        Label status = new Label(safe(row.getStatus()).toUpperCase());
         status.getStyleClass().addAll("eval-status-badge", statusStyleClass(row.getStatus()));
         header.getChildren().addAll(title, spacer, status);
 
         String studentName = row.getUser() == null ? null : service.resolveUserDisplayName(row.getUser().getId());
-        Label studentLabel = new Label("Student: " + safe(studentName));
-        Label pathLabel = new Label("Path: " + safe(row.getDocumentPath()));
-        pathLabel.setWrapText(true);
-        Label infoLabel = new Label("Additional info: " + safe(row.getAdditionalInfo()));
-        infoLabel.setWrapText(true);
+        Label studentLabel = new Label("STUDENT: " + safe(studentName));
+        studentLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #d0e8ff;");
 
-        Button selectButton = new Button("Select");
-        selectButton.getStyleClass().add("ghost-button");
+        Label infoLabel = new Label("DETAILS: " + safe(row.getAdditionalInfo()));
+        infoLabel.setWrapText(true);
+        infoLabel.setStyle("-fx-text-fill: #64748b;");
+
+        Button selectButton = new Button("Fulfill Request");
+        selectButton.getStyleClass().add("eval-ghost-btn");
         selectButton.setOnAction(event -> {
             selectedDocumentId = row.getId();
-            selectedDocumentLabel.setText("Selected request: " + safe(row.getDocumentType()));
+            selectedDocumentLabel.setText("Selected: " + safe(row.getDocumentType()));
             documentStatusCombo.getSelectionModel().select(safe(row.getStatus()).toLowerCase(Locale.ROOT));
             selectedDocumentPath = row.getDocumentPath();
             pdfFileNameLabel.setText(selectedDocumentPath == null || selectedDocumentPath.isBlank() ? "No file selected" : new File(selectedDocumentPath).getName());
         });
 
-        card.getChildren().addAll(header, studentLabel, infoLabel, pathLabel, selectButton);
-        return card;
-    }
-
-    private VBox createScheduleCard(Schedule row) {
-        VBox card = new VBox(8);
-        card.getStyleClass().addAll("home-card", "eval-card");
-
-        String className = row.getClasse() == null ? null : service.resolveClasseName(row.getClasse().getId());
-        String courseTitle = row.getCourse() == null ? null : service.resolveCourseTitle(row.getCourse().getId());
-        String teacherName = row.getUser() == null ? null : service.resolveUserDisplayName(row.getUser().getId());
-
-        Label title = new Label(safe(row.getDayOfWeek()));
-        title.getStyleClass().add("card-title");
-        Label timeLabel = new Label("Time: " + row.getStartTime() + " - " + row.getEndTime());
-        Label classLabel = new Label("Class: " + safe(className));
-        Label courseLabel = new Label("Course: " + safe(courseTitle));
-        Label teacherLabel = new Label("Teacher: " + safe(teacherName));
-        Label roomLabel = new Label("Room: " + safe(row.getRoom()));
-
-        Button selectButton = new Button("Select");
-        selectButton.getStyleClass().add("ghost-button");
-        selectButton.setOnAction(event -> {
-            selectedScheduleId = row.getId();
-            selectedScheduleLabel.setText("Selected schedule: " + safe(courseTitle) + " / " + safe(className));
-            if (deleteScheduleButton != null) {
-                deleteScheduleButton.setDisable(false);
-            }
-        });
-
-        card.getChildren().addAll(title, timeLabel, classLabel, courseLabel, teacherLabel, roomLabel, selectButton);
+        card.getChildren().addAll(header, studentLabel, infoLabel, selectButton);
         return card;
     }
 
     private VBox emptyCard(String message) {
         VBox card = new VBox(8);
-        card.getStyleClass().addAll("home-card", "eval-card");
+        card.getStyleClass().add("eval-empty-card");
         card.getChildren().add(new Label(message));
         return card;
     }
@@ -451,12 +515,10 @@ public class EvaluationAdminController {
             return;
         }
         if ("OLD".equals(mode)) {
-            rows.sort(Comparator.comparing(Reclamation::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
-                    .thenComparing(Reclamation::getId, Comparator.nullsLast(Comparator.naturalOrder())));
+            rows.sort(Comparator.comparing(Reclamation::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder())));
             return;
         }
-        rows.sort(Comparator.comparing(Reclamation::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder()))
-                .thenComparing(Reclamation::getId, Comparator.nullsLast(Comparator.reverseOrder())));
+        rows.sort(Comparator.comparing(Reclamation::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())));
     }
 
     private void sortDocumentRequests(List<DocumentRequest> rows, String mode) {
@@ -465,25 +527,14 @@ public class EvaluationAdminController {
             return;
         }
         if ("OLD".equals(mode)) {
-            rows.sort(Comparator.comparing(DocumentRequest::getRequestedAt, Comparator.nullsLast(Comparator.naturalOrder()))
-                    .thenComparing(DocumentRequest::getId, Comparator.nullsLast(Comparator.naturalOrder())));
+            rows.sort(Comparator.comparing(DocumentRequest::getRequestedAt, Comparator.nullsLast(Comparator.naturalOrder())));
             return;
         }
-        rows.sort(Comparator.comparing(DocumentRequest::getRequestedAt, Comparator.nullsLast(Comparator.reverseOrder()))
-                .thenComparing(DocumentRequest::getId, Comparator.nullsLast(Comparator.reverseOrder())));
+        rows.sort(Comparator.comparing(DocumentRequest::getRequestedAt, Comparator.nullsLast(Comparator.reverseOrder())));
     }
 
     private void sortSchedules(List<Schedule> rows, String mode) {
-        if ("A-Z".equals(mode)) {
-            rows.sort(Comparator.comparing((Schedule s) -> safeForSort(s.getCourse() == null ? null : service.resolveCourseTitle(s.getCourse().getId())))
-                    .thenComparing((Schedule s) -> safeForSort(s.getClasse() == null ? null : service.resolveClasseName(s.getClasse().getId()))));
-            return;
-        }
-        if ("OLD".equals(mode)) {
-            rows.sort(Comparator.comparing(Schedule::getId, Comparator.nullsLast(Comparator.naturalOrder())));
-            return;
-        }
-        rows.sort(Comparator.comparing(Schedule::getId, Comparator.nullsLast(Comparator.reverseOrder())));
+        rows.sort(Comparator.comparing(Schedule::getStartTime, Comparator.nullsLast(java.sql.Time::compareTo)));
     }
 
     private String selectedSort(ComboBox<String> comboBox) {
@@ -516,7 +567,7 @@ public class EvaluationAdminController {
 
     private void clearSelectedSchedule() {
         selectedScheduleId = null;
-        selectedScheduleLabel.setText("Selected schedule: none");
+        selectedScheduleLabel.setText("Selected: none");
         if (deleteScheduleButton != null) {
             deleteScheduleButton.setDisable(true);
         }
@@ -562,6 +613,10 @@ public class EvaluationAdminController {
         return rawValue.trim();
     }
 
+    private String formatDate(Timestamp value) {
+        return value == null ? "-" : value.toLocalDateTime().toLocalDate().toString();
+    }
+
     private String safe(String value) {
         return value == null || value.isBlank() ? "-" : value;
     }
@@ -570,8 +625,14 @@ public class EvaluationAdminController {
         return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
     }
 
-    private void showFeedback(String text) {
+    private void showFeedback(String text, boolean isError) {
         feedbackLabel.setText(text);
+        feedbackLabel.getStyleClass().removeAll("eval-feedback", "eval-feedback-error");
+        if (isError) {
+            feedbackLabel.getStyleClass().add("eval-feedback-error");
+        } else {
+            feedbackLabel.getStyleClass().add("eval-feedback");
+        }
     }
 
     private boolean hasPdfFile(List<File> files) {
