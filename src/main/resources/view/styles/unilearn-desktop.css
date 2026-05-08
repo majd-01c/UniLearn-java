@@ -124,29 +124,32 @@
 
 /* ----- Side Rail Buttons ----- */
 .side-button {
-    -fx-background-color: -ul-btn-side;
+    -fx-background-color: linear-gradient(to bottom right, derive(-ul-btn-side, 8%), -ul-btn-side);
     -fx-text-fill: #e8f2fb;
-    -fx-background-radius: 10;
-    -fx-border-radius: 10;
-    -fx-border-color: transparent;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: rgba(255, 255, 255, 0.08);
     -fx-border-width: 1;
-    -fx-padding: 10 12;
-    -fx-font-weight: 600;
+    -fx-padding: 11 13;
+    -fx-font-weight: 700;
     -fx-font-size: 13px;
     -fx-cursor: hand;
     -fx-alignment: CENTER-LEFT;
+    -fx-background-insets: 0;
 }
 
 .side-button:hover {
-    -fx-background-color: -ul-btn-side-hover;
-    -fx-border-color: #7fb2d9;
+    -fx-background-color: linear-gradient(to bottom right, derive(-ul-btn-side-hover, 8%), -ul-btn-side-hover);
+    -fx-border-color: rgba(127, 178, 217, 0.62);
+    -fx-effect: dropshadow(gaussian, rgba(20, 90, 140, 0.28), 10, 0.22, 0, 3);
 }
 
 .side-button:pressed,
 .side-button-active {
-    -fx-background-color: -ul-btn-side-active;
-    -fx-border-color: #98c7ea;
+    -fx-background-color: linear-gradient(to right, -ul-front-primary, -ul-front-secondary);
+    -fx-border-color: rgba(255, 255, 255, 0.32);
     -fx-text-fill: #ffffff;
+    -fx-effect: dropshadow(gaussian, rgba(8, 145, 178, 0.34), 12, 0.24, 0, 4);
 }
 
 .side-sub-button {
@@ -205,22 +208,24 @@
 }
 
 .side-danger-button {
-    -fx-background-color: -ul-danger;
+    -fx-background-color: linear-gradient(to bottom right, derive(-ul-danger, 8%), -ul-danger);
     -fx-text-fill: #ffffff;
-    -fx-background-radius: 10;
-    -fx-border-radius: 10;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
     -fx-border-color: rgba(255, 255, 255, 0.2);
     -fx-border-width: 1;
-    -fx-padding: 10 12;
+    -fx-padding: 11 13;
     -fx-font-weight: 700;
     -fx-font-size: 13px;
     -fx-cursor: hand;
     -fx-alignment: CENTER-LEFT;
+    -fx-background-insets: 0;
 }
 
 .side-danger-button:hover {
-    -fx-background-color: -ul-danger-hover;
+    -fx-background-color: linear-gradient(to bottom right, derive(-ul-danger-hover, 8%), -ul-danger-hover);
     -fx-border-color: rgba(255, 255, 255, 0.32);
+    -fx-effect: dropshadow(gaussian, rgba(192, 57, 43, 0.30), 10, 0.22, 0, 3);
 }
 
 .side-danger-button:pressed {
@@ -380,53 +385,91 @@
 
 /* ----- Buttons ----- */
 .primary-button {
-    -fx-background-color: -ul-primary;
+    -fx-background-color: linear-gradient(to right, -ul-front-primary, -ul-front-secondary);
     -fx-text-fill: #ffffff;
-    -fx-background-radius: 10;
-    -fx-padding: 9 16;
-    -fx-font-weight: 700;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: transparent;
+    -fx-border-width: 1;
+    -fx-background-insets: 0;
+    -fx-padding: 10 16;
+    -fx-font-weight: 800;
     -fx-font-size: 13px;
     -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(8, 145, 178, 0.24), 10, 0.2, 0, 3);
 }
 
 .primary-button:hover {
-    -fx-background-color: -ul-primary-hover;
+    -fx-background-color: linear-gradient(to right, derive(-ul-front-primary, 8%), derive(-ul-front-secondary, 8%));
+    -fx-effect: dropshadow(gaussian, rgba(8, 145, 178, 0.34), 14, 0.24, 0, 4);
+}
+
+.primary-button:pressed {
+    -fx-background-color: linear-gradient(to right, derive(-ul-front-primary, -8%), derive(-ul-front-secondary, -8%));
+    -fx-effect: dropshadow(gaussian, rgba(8, 145, 178, 0.16), 7, 0.18, 0, 2);
+}
+
+.primary-button:focused {
+    -fx-border-color: rgba(255, 255, 255, 0.72);
 }
 
 .ghost-button {
-    -fx-background-color: -ul-ghost-bg;
-    -fx-text-fill: -ul-ghost-fg;
-    -fx-background-radius: 10;
-    -fx-padding: 9 12;
-    -fx-font-weight: 700;
+    -fx-background-color: rgba(8, 145, 178, 0.08);
+    -fx-text-fill: -ul-front-primary;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: rgba(8, 145, 178, 0.30);
+    -fx-border-width: 1;
+    -fx-background-insets: 0;
+    -fx-padding: 10 14;
+    -fx-font-weight: 800;
     -fx-font-size: 13px;
     -fx-cursor: hand;
 }
 
 .ghost-button:hover {
-    -fx-background-color: -ul-ghost-hover;
+    -fx-background-color: rgba(8, 145, 178, 0.15);
+    -fx-border-color: derive(-ul-front-primary, 10%);
+}
+
+.ghost-button:pressed {
+    -fx-background-color: rgba(8, 145, 178, 0.22);
+}
+
+.ghost-button:focused {
+    -fx-border-color: derive(-ul-front-primary, 8%);
+    -fx-effect: dropshadow(gaussian, rgba(8, 145, 178, 0.18), 8, 0.18, 0, 0);
 }
 
 .danger-button {
-    -fx-background-color: -ul-danger;
+    -fx-background-color: linear-gradient(to right, derive(-ul-danger, 8%), -ul-danger);
     -fx-text-fill: #ffffff;
-    -fx-background-radius: 10;
-    -fx-padding: 9 12;
-    -fx-font-weight: 700;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: transparent;
+    -fx-border-width: 1;
+    -fx-background-insets: 0;
+    -fx-padding: 10 14;
+    -fx-font-weight: 800;
     -fx-font-size: 13px;
     -fx-cursor: hand;
 }
 
 .danger-button:hover {
-    -fx-background-color: -ul-danger-hover;
+    -fx-background-color: linear-gradient(to right, derive(-ul-danger-hover, 8%), -ul-danger-hover);
+    -fx-effect: dropshadow(gaussian, rgba(192, 57, 43, 0.28), 12, 0.22, 0, 3);
 }
 
 .success-button {
-    -fx-background-color: -ul-success;
+    -fx-background-color: linear-gradient(to right, derive(-ul-success, 8%), -ul-success);
     -fx-text-fill: #ffffff;
-    -fx-background-radius: 10;
-    -fx-padding: 9 12;
-    -fx-font-weight: 700;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: transparent;
+    -fx-border-width: 1;
+    -fx-background-insets: 0;
+    -fx-padding: 10 14;
+    -fx-font-weight: 800;
     -fx-font-size: 13px;
     -fx-cursor: hand;
 }

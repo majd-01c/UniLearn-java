@@ -20,6 +20,7 @@ public final class AppNavigator {
     private AppNavigator() {}
 
     public static void registerShell(AppShellController controller) { appShellController = controller; }
+    public static void navigateTo(String moduleId) { if (appShellController != null) appShellController.navigateTo(moduleId); }
 
     // Auth
     public static void showLogin() { if (appShellController != null) appShellController.showLoginView(); }
