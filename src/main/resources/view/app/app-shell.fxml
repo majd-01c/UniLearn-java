@@ -79,11 +79,11 @@
                 <Insets top="14.0" right="18.0" bottom="14.0" left="18.0"/>
             </padding>
             <children>
-                <VBox spacing="2.0">
+                <VBox spacing="2.0" managed="false" visible="false">
                     <children>
-                        <Label fx:id="headerTitleLabel" text="UniLearn Desktop" styleClass="header-title"/>
-                        <Label fx:id="headerSubtitleLabel" text="Sign in to continue" styleClass="header-subtitle"/>
-                        <Label fx:id="breadcrumbsLabel" text="Login" styleClass="header-breadcrumbs"/>
+                        <Label fx:id="headerTitleLabel" text="" styleClass="header-title"/>
+                        <Label fx:id="headerSubtitleLabel" text="" styleClass="header-subtitle"/>
+                        <Label fx:id="breadcrumbsLabel" text="" styleClass="header-breadcrumbs"/>
                     </children>
                 </VBox>
                 <Region HBox.hgrow="ALWAYS"/>
