@@ -470,7 +470,7 @@ SMS_SENDER=UniLearn              # Sender name shown on SMS
 | **Program** | PIDEV (Projet Intégré de Développement) |
 | **Year** | 3rd Year (3A) |
 | **Academic Year** | 2025–2026 |
-| **Branch** | `communication` – Gestion Communication module |
+
 
 ---
 
