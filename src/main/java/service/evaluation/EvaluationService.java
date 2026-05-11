@@ -352,7 +352,7 @@ public class EvaluationService {
                 .orElseThrow(() -> new IllegalArgumentException("Document request not found: " + requestId));
 
         target.setStatus(status);
-        target.setDocumentPath(path);
+        target.setDocumentPath(resolveStoredDocumentPath(path));
         if ("delivered".equalsIgnoreCase(status)) {
             target.setDeliveredAt(Timestamp.valueOf(LocalDateTime.now()));
         }
@@ -646,6 +646,23 @@ public class EvaluationService {
             // Fallback kept simple for portability.
         }
         return "application/octet-stream";
+    }
+
+    private String resolveStoredDocumentPath(String path) {
+        if (path == null || path.isBlank()) {
+            return null;
+        }
+
+        File candidate = new File(path.trim());
+        if (!candidate.exists() || !candidate.isFile()) {
+            return path.trim();
+        }
+
+        try {
+            return fileUploadService.saveEvaluationDocument(candidate, candidate.getName());
+        } catch (Exception exception) {
+            throw new IllegalStateException("Document upload failed: " + exception.getMessage(), exception);
+        }
     }
 
     private int nextGradeId() {

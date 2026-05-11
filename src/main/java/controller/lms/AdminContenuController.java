@@ -5,7 +5,7 @@ import service.lms.ContenuService;import util.AppNavigator;import java.net.URL;i
 public class AdminContenuController implements Initializable {
     @FXML private TextField searchField;@FXML private ComboBox<String> typeFilter;@FXML private TableView<Contenu> table;
     @FXML private TableColumn<Contenu,String> colId,colTitle,colType,colPublished,colFile,colActions;
-    private final ContenuService svc=new ContenuService();private FilteredList<Contenu> filtered;
+    private final ContenuService svc=new ContenuService();private final service.lms.FileUploadService fileUploadService=new service.lms.FileUploadService();private FilteredList<Contenu> filtered;
     @Override public void initialize(URL u,ResourceBundle r){
         typeFilter.setItems(FXCollections.observableArrayList("All","VIDEO","QUIZ","TEXT","EXERCICE","COURS"));typeFilter.setValue("All");
         colId.setCellValueFactory(c->new SimpleStringProperty(String.valueOf(c.getValue().getId())));
@@ -15,7 +15,7 @@ public class AdminContenuController implements Initializable {
         colPublished.setCellValueFactory(c->new SimpleStringProperty(c.getValue().getPublished()==1?"Published":"Draft"));
         colPublished.setCellFactory(col->new TableCell<>(){@Override protected void updateItem(String i,boolean e){super.updateItem(i,e);if(e||i==null){setGraphic(null);setText(null);return;}Label b=new Label(i);b.getStyleClass().addAll("badge","Published".equals(i)?"badge-published":"badge-draft");setGraphic(b);setText(null);}});
         colFile.setCellValueFactory(c->new SimpleStringProperty(
-            c.getValue().getFileName()!=null && !c.getValue().getFileName().isBlank() ? c.getValue().getFileName()
+            c.getValue().getFileName()!=null && !c.getValue().getFileName().isBlank() ? fileUploadService.extractDisplayName(c.getValue().getFileName())
                 : c.getValue().getContentHtml()!=null && !c.getValue().getContentHtml().isBlank() ? "In-app content"
                 : "—"));
         colActions.setCellFactory(col->new TableCell<>(){final Button ed=new Button("Edit"),dl=new Button("Delete");final HBox bx=new HBox(6,ed,dl);{ed.getStyleClass().add("ghost-button");dl.getStyleClass().add("danger-button");ed.setOnAction(e->AppNavigator.showContenuForm(getTableView().getItems().get(getIndex())));dl.setOnAction(e->onDel(getTableView().getItems().get(getIndex())));}@Override protected void updateItem(String i,boolean e){super.updateItem(i,e);setGraphic(e?null:bx);setText(null);}});

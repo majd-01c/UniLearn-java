@@ -17,10 +17,10 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import security.UserSession;
 import service.evaluation.EvaluationService;
+import service.lms.FileUploadService;
 
 import java.awt.Desktop;
 import java.io.File;
-import java.net.URI;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -82,6 +82,7 @@ public class EvaluationStudentController {
     private Label feedbackLabel;
 
     private final EvaluationService service = new EvaluationService();
+    private final FileUploadService fileUploadService = new FileUploadService();
     private final DecimalFormat df = new DecimalFormat("0.00");
 
     @FXML
@@ -279,7 +280,7 @@ public class EvaluationStudentController {
                     "Request #" + row.getId(),
                     "Type: " + safe(row.getDocumentType()),
                     "Status: " + safe(row.getStatus()),
-                    "Path: " + safe(documentPath)
+                    "File: " + safe(displayFileName(documentPath))
             );
             if (documentPath != null && !documentPath.isBlank()) {
                 Button downloadButton = new Button("Download / Open");
@@ -494,23 +495,22 @@ public class EvaluationStudentController {
                 throw new IllegalStateException("Desktop actions are not supported on this system.");
             }
 
-            String normalized = documentPath.trim();
+            File file = fileUploadService.getFile(documentPath.trim());
+            if (file == null || !file.exists()) {
+                throw new IllegalArgumentException("Document file not found.");
+            }
             Desktop desktop = Desktop.getDesktop();
-
-            if (normalized.startsWith("http://") || normalized.startsWith("https://")) {
-                desktop.browse(URI.create(normalized));
-                showFeedback("Opened document URL.");
-                return;
-            }
-
-            File file = new File(normalized);
-            if (!file.exists()) {
-                throw new IllegalArgumentException("Document file not found: " + normalized);
-            }
             desktop.open(file);
             showFeedback("Opened document file.");
         } catch (Exception exception) {
             showFeedback("Unable to open document: " + exception.getMessage());
         }
+    }
+
+    private String displayFileName(String documentPath) {
+        if (documentPath == null || documentPath.isBlank()) {
+            return null;
+        }
+        return fileUploadService.extractDisplayName(documentPath);
     }
 }

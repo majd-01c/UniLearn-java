@@ -73,7 +73,7 @@ public class AdminContenuFormController implements Initializable {
             publishedCheck.setSelected(c.getPublished() == 1);
             contentEditor.setHtmlText(c.getContentHtml() == null ? "" : c.getContentHtml());
             if (c.getFileName() != null && !c.getFileName().isBlank()) {
-                fileLabel.setText(c.getFileName());
+                fileLabel.setText(fus.extractDisplayName(c.getFileName()));
                 uploadRadio.setSelected(true);
             } else {
                 fileLabel.setText("No file selected");

@@ -22,6 +22,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import service.evaluation.EvaluationService;
+import service.lms.FileUploadService;
 
 import java.io.File;
 import java.sql.Time;
@@ -97,6 +98,7 @@ public class EvaluationAdminController {
     private Label feedbackLabel;
 
     private final EvaluationService service = new EvaluationService();
+    private final FileUploadService fileUploadService = new FileUploadService();
     private Integer selectedReclamationId;
     private Integer selectedDocumentId;
     private Integer selectedScheduleId;
@@ -389,7 +391,7 @@ public class EvaluationAdminController {
 
         String studentName = row.getUser() == null ? null : service.resolveUserDisplayName(row.getUser().getId());
         Label studentLabel = new Label("Student: " + safe(studentName));
-        Label pathLabel = new Label("Path: " + safe(row.getDocumentPath()));
+        Label pathLabel = new Label("File: " + displayFileName(row.getDocumentPath()));
         pathLabel.setWrapText(true);
         Label infoLabel = new Label("Additional info: " + safe(row.getAdditionalInfo()));
         infoLabel.setWrapText(true);
@@ -401,7 +403,7 @@ public class EvaluationAdminController {
             selectedDocumentLabel.setText("Selected request: " + safe(row.getDocumentType()));
             documentStatusCombo.getSelectionModel().select(safe(row.getStatus()).toLowerCase(Locale.ROOT));
             selectedDocumentPath = row.getDocumentPath();
-            pdfFileNameLabel.setText(selectedDocumentPath == null || selectedDocumentPath.isBlank() ? "No file selected" : new File(selectedDocumentPath).getName());
+            pdfFileNameLabel.setText(displayFileName(selectedDocumentPath));
         });
 
         card.getChildren().addAll(header, studentLabel, infoLabel, pathLabel, selectButton);
@@ -568,6 +570,13 @@ public class EvaluationAdminController {
 
     private String safeForSort(String value) {
         return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private String displayFileName(String path) {
+        if (path == null || path.isBlank()) {
+            return "No file selected";
+        }
+        return fileUploadService.extractDisplayName(path);
     }
 
     private void showFeedback(String text) {

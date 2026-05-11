@@ -67,7 +67,7 @@ public class StudentContenuViewController implements Initializable {
         if (hasFile) {
             fileSection.setVisible(true);
             fileSection.setManaged(true);
-            fileInfo.setText("File: " + c.getFileName() + (c.getFileSize() != null ? " (" + formatSize(c.getFileSize()) + ")" : ""));
+            fileInfo.setText("File: " + fus.extractDisplayName(c.getFileName()) + (c.getFileSize() != null ? " (" + formatSize(c.getFileSize()) + ")" : ""));
             downloadBtn.setDisable(false);
         } else {
             fileSection.setVisible(false);
@@ -116,15 +116,15 @@ public class StudentContenuViewController implements Initializable {
             return;
         }
 
-        File f = fus.getFile(c.getFileName());
-        if (f != null && f.exists()) {
-            try {
+        try {
+            File f = fus.getFile(c.getFileName());
+            if (f != null && f.exists()) {
                 Desktop.getDesktop().open(f);
-            } catch (Exception e) {
-                new Alert(Alert.AlertType.ERROR, "Cannot open file: " + e.getMessage()).showAndWait();
+            } else {
+                new Alert(Alert.AlertType.WARNING, "File not found.").showAndWait();
             }
-        } else {
-            new Alert(Alert.AlertType.WARNING, "File not found on disk.").showAndWait();
+        } catch (Exception e) {
+            new Alert(Alert.AlertType.ERROR, "Cannot open file: " + e.getMessage()).showAndWait();
         }
     }
 
