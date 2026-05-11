@@ -1,124 +1,382 @@
-I have everything I need. Here is the full README for the Java project:
-
-text
 # UniLearn – University Learning Management System (Java Desktop)
 
 <div align="center">
 
-[![Last Commit](https://img.shields.io/github/last-commit/majd-01c/UniLearn-java)](https://github.com/majd-01c/UniLearn-java/commits/main)
-[![Commit Activity](https://img.shields.io/github/commit-activity/t/majd-01c/UniLearn-java)](https://github.com/majd-01c/UniLearn-java/commits/main)
+[![Last Commit](https://img.shields.io/github/last-commit/majd-01c/UniLearn-java/communication)](https://github.com/majd-01c/UniLearn-java/commits/communication)
+[![Commit Activity](https://img.shields.io/github/commit-activity/t/majd-01c/UniLearn-java)](https://github.com/majd-01c/UniLearn-java/commits/communication)
 [![Contributors](https://img.shields.io/github/contributors/majd-01c/UniLearn-java)](https://github.com/majd-01c/UniLearn-java/graphs/contributors)
 [![Forks](https://img.shields.io/github/forks/majd-01c/UniLearn-java?style=social)](https://github.com/majd-01c/UniLearn-java/network/members)
 [![Stars](https://img.shields.io/github/stars/majd-01c/UniLearn-java?style=social)](https://github.com/majd-01c/UniLearn-java/stargazers)
 [![Repo Size](https://img.shields.io/github/repo-size/majd-01c/UniLearn-java)](https://github.com/majd-01c/UniLearn-java)
 [![Issues](https://img.shields.io/github/issues/majd-01c/UniLearn-java)](https://github.com/majd-01c/UniLearn-java/issues)
+[![Java](https://img.shields.io/badge/Java-17-orange?logo=java)](https://www.oracle.com/java/)
+[![JavaFX](https://img.shields.io/badge/JavaFX-17-blue?logo=java)](https://openjfx.io/)
+[![Maven](https://img.shields.io/badge/Maven-3.8+-C71A36?logo=apachemaven)](https://maven.apache.org/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![Hibernate](https://img.shields.io/badge/Hibernate-6-59666C?logo=hibernate)](https://hibernate.org/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![License](https://img.shields.io/badge/License-Academic-green)](https://github.com/majd-01c/UniLearn-java)
+
+<br/>
+
+> 🌿 **Active branch:** `communication` — Communication & Community Module  
+> 🎓 **PIDEV 3A** · Esprit School of Engineering · 2025–2026
 
 </div>
 
+---
+
+## 📖 Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+  - [Authentication & Security](#-authentication--security)
+  - [User Management](#-user-management)
+  - [Evaluation System](#-evaluation-system)
+  - [Communication Module](#-communication-module-this-branch)
+  - [LMS](#-lms-learning-management-system)
+  - [Job Offers](#-job-offers)
+- [Tech Stack](#-tech-stack)
+- [Project Architecture](#-project-architecture)
+- [Role-Based View Routing](#-role-based-view-routing)
+- [Getting Started](#-getting-started)
+- [Environment Configuration](#-environment-configuration)
+- [Default Accounts](#-default-accounts)
+- [Contributors](#-contributors)
+- [Academic Context](#-academic-context)
+- [Related Project](#-related-project)
+- [Acknowledgments](#-acknowledgments)
+
+---
+
 ## Overview
 
-This project was developed as part of the **PIDEV – 3rd Year Engineering Program** at **Esprit School of Engineering** (Academic Year 2025–2026).
+UniLearn Desktop is a **JavaFX desktop application** built as part of the **PIDEV – 3rd Year Engineering Program** at **Esprit School of Engineering** (Academic Year 2025–2026).
 
-UniLearn Desktop is a **JavaFX desktop application** that mirrors the UniLearn web platform. It connects to the same MySQL database as the Symfony web application, enabling administrators, teachers, and students to manage academic programs, evaluations, grades, schedules, complaints, document requests, forums, and more — all through a native desktop interface.
+It mirrors the UniLearn web platform and connects to the **same shared MySQL database** as the Symfony web application. This enables seamless data synchronization between the desktop and web clients — administrators, teachers, and students can operate from either interface without data inconsistency.
+
+The desktop app provides full management of:
+- Academic programs, modules, courses, and schedules
+- Evaluations, grades, assessments, and quizzes
+- Complaints, document requests, and administrative workflows
+- **Forums, events, messaging, and community features** *(this branch)*
+- AI-assisted room management (IArooms)
+- Job offers and student career support
+
+---
 
 ## Features
 
-- **Authentication** – Secure login with role-based access (Admin, Teacher, Student), password reset via email, and Face ID biometric login
-- **User Management** – Admin panel for creating, editing, and managing users with profile pictures
-- **Evaluation System** – Role-aware evaluation module:
-  - 🎓 **Student** – View grades, schedules, submit complaints, request documents
-  - 👨‍🏫 **Teacher** – Create assessments, enter grades, view class schedules
-  - 🛡 **Admin** – Manage complaints, process document requests (PDF upload), create schedules
-- **Forum** – Browse and participate in forum topics and comments
-- **LMS** – Learning Management System module for course and program management
-- **Face ID Login** – Biometric face verification for secure authentication
-- **Email Notifications** – Password reset and verification via Google SMTP
-- **Role-Based Navigation** – Dynamic UI that adapts automatically based on logged-in user role
+### 🔐 Authentication & Security
 
-## Tech Stack
+| Feature | Description | Implementation |
+|---------|-------------|----------------|
+| Role-Based Login | Secure login with Admin / Teacher / Student roles | `LoginController.java` |
+| Password Reset | OTP code sent via Google SMTP email | `PasswordResetController.java`, `PasswordResetRequestController.java` |
+| SMS Verification | Two-factor authentication via SMS OTP | `SmsVerificationController.java` |
+| Face ID Login | Biometric face recognition for passwordless login | `LoginController.java` + Face API |
+| Change Password | Authenticated users can update their password | `ChangePasswordController.java` |
+| Session Management | Singleton `UserSession` tracks logged-in user across views | `security/UserSession.java` |
 
-### Desktop Application
-- **Java 17** – Core language
-- **JavaFX 17** – UI framework (FXML + CSS)
-- **Hibernate ORM 6** – Database abstraction and entity management
-- **MySQL 8.0** – Shared relational database (with the Symfony web project)
-- **Maven** – Dependency management and build tool
+---
 
-### External Services
-- **Google SMTP** – Email notifications (password reset, verification)
-- **Face API** – Biometric face recognition login
+### 👥 User Management
 
-### DevOps & Tools
-- **Docker** – Containerized database environment
-- **IntelliJ IDEA / NetBeans** – Recommended IDEs
-- **Scene Builder** – JavaFX FXML visual designer
+| Feature | Description | Role |
+|---------|-------------|------|
+| User List | Paginated, searchable user table with filters | Admin |
+| Create / Edit User | Full user form with profile picture upload | Admin |
+| User Details | Read-only user profile viewer | Admin |
+| User Profile | Self-service profile editing with photo update | All |
+| Role Assignment | Assign STUDENT / TEACHER / ADMIN roles | Admin |
+| User Status | Enable / Disable accounts (`UserStatus` enum) | Admin |
 
-## Architecture
-UniLearn-java/
-├── src/main/java/
-│ ├── controller/ # JavaFX controllers
-│ │ ├── AppShellController # Main app shell & navigation
-│ │ ├── LoginController # Authentication
-│ │ ├── evaluation/ # Evaluation module (Admin/Teacher/Student)
-│ │ ├── forum/ # Forum module
-│ │ └── lms/ # LMS module
-│ ├── entities/ # Hibernate ORM entities (shared with Symfony DB)
-│ ├── service/ # Business logic services
-│ ├── repository/ # Database access layer (Hibernate)
-│ ├── security/ # UserSession, role management
-│ └── util/ # AppNavigator, helpers
-├── src/main/resources/
-│ └── view/
-│ ├── evaluation/
-│ │ ├── student/ # Student evaluation FXML
-│ │ ├── teacher/ # Teacher evaluation FXML
-│ │ └── admin/ # Admin evaluation FXML
-│ ├── forum/ # Forum FXML views
-│ ├── lms/ # LMS FXML views
-│ └── styles/ # evaluation.css, app.css
-└── pom.xml # Maven build config
+---
+
+### 📋 Evaluation System
+
+Fully role-aware evaluation module that loads different views based on the authenticated user's role:
+
+| Role | Capabilities |
+|------|-------------|
+| 🎓 **Student** | View personal grades, class schedule, submit complaints (`Reclamation`), request official documents (`DocumentRequest`) |
+| 👨‍🏫 **Teacher** | Create and manage assessments, enter and update student grades, view class schedules |
+| 🛡️ **Admin** | Manage all complaints, process document requests (generate PDF responses), create and manage schedules for all classes |
+
+- **Entities:** `Assessment`, `Grade`, `Schedule`, `Reclamation`, `DocumentRequest`
+- **Controllers:** `controller/evaluation/` (split by role: `student/`, `teacher/`, `admin/`)
+
+---
+
+### 💬 Communication Module *(this branch)*
+
+The `communication` branch introduces the full **Communication & Community** feature set — the module developed by **Majd Labidi** for the PIDEV project.
+
+---
+
+#### 🗣️ Forum
+
+A fully functional academic discussion forum:
+
+- **Topics** – Any user can create a forum topic with a title and content body
+- **Comments** – Users can post, edit, and delete comments on any topic
+- **Moderation** – Admins can delete any topic or comment
+- **Role-Aware UI** – Interface adapts based on whether the user is the author or an admin
+- **Full CRUD** – Create, Read, Update, Delete for both topics and comments
+controller/forum/
+entities/forum/ ← Topic, Comment, ForumPost entities
+view/forum/ ← FXML views for topic list, topic detail, comment form
 
 text
 
-## Role-Based View Routing
+---
 
-The app automatically loads the correct UI based on the logged-in user's role:
+#### 📅 Events
 
-| Role | Evaluation View | Access |
-|------|----------------|--------|
-| `STUDENT` | Grades, Schedule, Complaints, Documents | Read + Submit |
-| `TEACHER` | Assessments, Grades Entry, Schedule | Create + Manage |
-| `ADMIN` | Complaints Management, Document Requests, Schedules | Full Control |
+University event management with participation tracking:
 
-## Contributors
+- **Event Creation** – Admins can create events with title, description, date, location, and capacity
+- **Event Listing** – All users can browse upcoming and past events
+- **Participation** – Students and teachers can register for events
+- **Participation Management** – Admins can view and manage all registrations
+- **Status Tracking** – Events track registration count vs. capacity
 
-| Name | GitHub | Module | Role |
-|------|--------|--------|------|
-| Alaa Salem | [@alaasalem-blip](https://github.com/alaasalem-blip) | Gestion User | Full-Stack Developer |
-| Majd Labidi | [@majd-01c](https://github.com/majd-01c) | Gestion Communication | Full-Stack Developer |
-| Khalil Fekih | [@khalil-feki](https://github.com/khalil-feki) | Gestion Evaluation | Full-Stack Developer |
-| Haroun Chaabane | [@harounchaabane](https://github.com/harounchaabane) | Gestion Program | Full-Stack Developer |
-| Dhia Amri | [@dhia573](https://github.com/dhia573) | Gestion Job Offre | Full-Stack Developer |
+```java
+// Key entities
+Event.java              ← title, description, date, location, capacity, organizer
+EventParticipation.java ← user ↔ event many-to-many registration
+```
 
-## Academic Context
+---
 
-Developed at **Esprit School of Engineering – Tunisia**
-PIDEV – 3A | 2025–2026
+#### 💌 Messaging
 
-- **Degree:** Engineering in Computer Science
-- **Course:** PIDEV (Projet Intégré de Développement)
-- **Year:** 3rd Year (3A)
-- **Academic Year:** 2025–2026
+Two messaging systems for internal communication:
 
-## Getting Started
+**Messenger (Direct Messages)**
+- User-to-user private messaging
+- Persisted via `MessengerMessages` entity
+- Accessible from user profile / contact views
+
+**Program Chat (Group Chat)**
+- Group chat scoped to an academic program
+- All students and teachers enrolled in a program can post
+- Persisted via `ProgramChatMessage` entity
+
+```java
+MessengerMessages.java   ← sender, recipient, content, timestamp
+ProgramChatMessage.java  ← program, author, content, timestamp
+```
+
+---
+
+#### 📱 SMS Verification
+
+Two-factor authentication flow:
+
+1. User logs in with email + password
+2. System sends a **6-digit OTP** via SMS to the registered phone number
+3. User enters the OTP in `SmsVerificationController`
+4. On success → session is established; on failure → access denied
+
+- SMS gateway configured via `.env` (`SMS_API_KEY`, `SMS_SENDER`)
+- `SmsVerificationController.java` handles OTP generation, sending, and validation
+
+---
+
+#### 🤖 IArooms (AI-Powered Room Management)
+
+Intelligent room/resource scheduling assistant:
+
+- AI-assisted **room suggestion** based on class size, equipment needs, and availability
+- **Room booking management** for classes and events
+- Integrates with the `IArooms/` Python/AI service directory (separate process)
+- JavaFX frontend communicates with the AI backend via REST or socket
+IArooms/ ← AI service (Python/ML model)
+controller/iarooms/ ← JavaFX controllers for room management UI
+entities/iarooms/ ← Room, Booking, RoomRequest entities
+
+text
+
+---
+
+### 📚 LMS (Learning Management System)
+
+| Feature | Entities |
+|---------|---------|
+| Programs | `Program`, `ProgramModule`, `BuildProgram` |
+| Modules | `Module`, `ModuleCourse` |
+| Courses | `Course`, `CourseContenu`, `CourseDocument` |
+| Classes | `Classe`, `ClasseModule`, `ClasseCourse`, `ClasseContenu` |
+| Content | `Contenu` |
+| Quizzes | `Quiz`, `Question`, `Choice`, `Answer`, `UserAnswer` |
+| Meetings | `ClassMeeting` |
+
+---
+
+### 💼 Job Offers
+
+- Students can browse job and internship offers
+- Admins can create and manage offers
+- Controllers: `controller/job_offer/`
+- Entities: `entities/job_offer/`
+
+---
+
+## 🛠 Tech Stack
+
+### Desktop Application
+
+| Technology | Version | Role |
+|---|---|---|
+| **Java** | 17 | Core language |
+| **JavaFX** | 17 | UI framework — FXML layouts + CSS styling |
+| **Hibernate ORM** | 6 | Entity mapping, HQL queries, session management |
+| **MySQL** | 8.0 | Shared relational database (also used by Symfony web app) |
+| **Maven** | 3.8+ | Build tool, dependency management, JavaFX plugin |
+
+### External Services & APIs
+
+| Service | Purpose | Config Key |
+|---|---|---|
+| **Google SMTP** | Email OTP for password reset & verification | `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS` |
+| **Face API** | Biometric face recognition login | `FACE_API_KEY`, `FACE_API_URL` |
+| **SMS Gateway** | Two-factor SMS OTP delivery | `SMS_API_KEY`, `SMS_SENDER` |
+| **IArooms AI** | Room suggestion engine | Internal service (`IArooms/`) |
+
+### DevOps & Tools
+
+| Tool | Purpose |
+|---|---|
+| **Docker Compose** | MySQL container — `docker-compose.yml` |
+| **IntelliJ IDEA** | Recommended IDE |
+| **Scene Builder** | JavaFX FXML visual designer |
+| **NetBeans** | Alternative IDE |
+
+---
+
+## 📁 Project Architecture
+UniLearn-java/
+├── src/
+│ ├── main/
+│ │ ├── java/
+│ │ │ ├── controller/ # JavaFX MVC controllers
+│ │ │ │ ├── AppShellController.java # App shell, sidebar nav, role routing
+│ │ │ │ ├── BackOfficeHomeController.java # Admin dashboard home
+│ │ │ │ ├── FrontOfficeHomeController.java# Student/Teacher dashboard home
+│ │ │ │ ├── LoginController.java # Auth: email/pass + Face ID
+│ │ │ │ ├── SmsVerificationController.java# 2FA SMS OTP verification
+│ │ │ │ ├── PasswordResetController.java # Password reset with token
+│ │ │ │ ├── PasswordResetRequestController.java
+│ │ │ │ ├── ChangePasswordController.java
+│ │ │ │ ├── UserListController.java # Admin: paginated user list
+│ │ │ │ ├── UserFormController.java # Admin: create/edit user
+│ │ │ │ ├── UserDetailsController.java # Admin: view user details
+│ │ │ │ ├── UserProfileController.java # All: self-service profile
+│ │ │ │ ├── HomeController.java
+│ │ │ │ ├── evaluation/ # Evaluation module
+│ │ │ │ │ ├── admin/ # Admin: complaints, docs, schedules
+│ │ │ │ │ ├── teacher/ # Teacher: assessments, grades
+│ │ │ │ │ └── student/ # Student: grades, schedule, requests
+│ │ │ │ ├── forum/ # 💬 Forum: topics & comments
+│ │ │ │ ├── iarooms/ # 🤖 AI room management
+│ │ │ │ ├── job_offer/ # 💼 Job offers
+│ │ │ │ └── lms/ # 📚 LMS: courses, programs, quizzes
+│ │ │ │
+│ │ │ ├── entities/ # Hibernate ORM entity classes
+│ │ │ │ ├── User.java # Core user (24KB — richly annotated)
+│ │ │ │ ├── Role.java # STUDENT / TEACHER / ADMIN enum
+│ │ │ │ ├── UserStatus.java # ACTIVE / INACTIVE enum
+│ │ │ │ ├── Profile.java # Extended user profile
+│ │ │ │ ├── ResetToken.java # Password reset token
+│ │ │ │ ├── FaceVerificationLog.java # Face ID log
+│ │ │ │ ├── Event.java # 📅 University event
+│ │ │ │ ├── EventParticipation.java # 📅 Event registration join
+│ │ │ │ ├── MessengerMessages.java # 💌 Direct messages
+│ │ │ │ ├── ProgramChatMessage.java # 💌 Program group chat
+│ │ │ │ ├── Reclamation.java # Student complaint
+│ │ │ │ ├── DocumentRequest.java # Official document request
+│ │ │ │ ├── Schedule.java # Class schedule
+│ │ │ │ ├── Assessment.java # Exam / assessment
+│ │ │ │ ├── Grade.java # Student grade
+│ │ │ │ ├── Quiz.java / Question.java / Choice.java / Answer.java / UserAnswer.java
+│ │ │ │ ├── Program.java / ProgramModule.java / BuildProgram.java
+│ │ │ │ ├── Module.java / ModuleCourse.java
+│ │ │ │ ├── Course.java / CourseContenu.java / CourseDocument.java
+│ │ │ │ ├── Classe.java / ClasseModule.java / ClasseCourse.java / ClasseContenu.java
+│ │ │ │ ├── ClassMeeting.java
+│ │ │ │ ├── StudentClasse.java / TeacherClasse.java
+│ │ │ │ ├── Contenu.java
+│ │ │ │ ├── CustomSkill.java
+│ │ │ │ ├── MessengerMessages.java
+│ │ │ │ ├── forum/ # Forum entities (Topic, Comment)
+│ │ │ │ ├── iarooms/ # IArooms entities
+│ │ │ │ └── job_offer/ # Job offer entities
+│ │ │ │
+│ │ │ ├── service/ # Core business logic services
+│ │ │ ├── services/ # Additional service layer
+│ │ │ ├── repository/ # Hibernate DAO / repository layer
+│ │ │ ├── security/ # UserSession singleton, auth helpers
+│ │ │ ├── util/ # AppNavigator, FXML loader helpers
+│ │ │ ├── dto/ # Data Transfer Objects
+│ │ │ ├── Utils/ # Utility classes
+│ │ │ └── validation/ # Input validation (form validators)
+│ │ │
+│ │ └── resources/
+│ │ ├── hibernate.cfg.xml # Hibernate + MySQL config
+│ │ └── view/ # All FXML layout files
+│ │ ├── evaluation/
+│ │ │ ├── student/ # Grades, schedule, complaints FXML
+│ │ │ ├── teacher/ # Assessment, grade entry FXML
+│ │ │ └── admin/ # Complaints, doc requests, schedules FXML
+│ │ ├── forum/ # Forum list, topic detail, comment FXML
+│ │ ├── lms/ # Courses, programs, quiz FXML
+│ │ └── styles/ # app.css, evaluation.css
+│ │
+│ └── test/ # Unit tests
+│
+├── IArooms/ # AI room management service (Python)
+├── lib/ # Local JAR dependencies
+├── uploads/ # User-uploaded files (profile pics, docs)
+├── docs/ # Project documentation
+├── backup/ # Database backup scripts
+├── docker-compose.yml # MySQL 8.0 Docker container
+├── pom.xml # Maven build configuration
+└── .env # Environment variables (git-ignored)
+
+text
+
+---
+
+## 🔀 Role-Based View Routing
+
+The `AppShellController` automatically routes the user to the correct views upon login:
+
+| Module | STUDENT | TEACHER | ADMIN |
+|--------|---------|---------|-------|
+| **Dashboard** | FrontOffice Home | FrontOffice Home | BackOffice Home |
+| **Evaluation** | Grades, Schedule, Complaints, Doc Requests | Assessments, Grade Entry, Schedule | Complaints Mgmt, Doc Processing, Schedule Builder |
+| **Forum** | Browse, Post, Comment | Browse, Post, Comment | Browse, Post, Comment, **Moderate** |
+| **Events** | Browse, Register | Browse, Register | **Create, Edit, Delete**, View Registrations |
+| **Messaging** | DMs, Program Chat | DMs, Program Chat | DMs, Program Chat, **Full Access** |
+| **IArooms** | View available rooms | View available rooms | **Create, Book, Manage** rooms |
+| **LMS** | View courses & content | Manage courses & content | Full LMS management |
+| **Job Offers** | Browse offers | Browse offers | **Create & manage** offers |
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
 
-- Java 17+
-- Maven 3.8+
-- MySQL 8.0+
-- Docker (optional, for DB container)
-- JavaFX 17 SDK
+| Requirement | Version | Notes |
+|---|---|---|
+| Java JDK | 17+ | [Download](https://www.oracle.com/java/technologies/downloads/) |
+| Maven | 3.8+ | [Download](https://maven.apache.org/download.cgi) |
+| MySQL | 8.0+ | Or use Docker (recommended) |
+| Docker + Compose | Latest | For containerized DB |
+| JavaFX SDK | 17 | [Download OpenJFX](https://openjfx.io/) |
+| Scene Builder | 17+ | Optional, for FXML editing |
 
 ### Installation
 
@@ -127,38 +385,110 @@ PIDEV – 3A | 2025–2026
 git clone https://github.com/majd-01c/UniLearn-java.git
 cd UniLearn-java
 
-# 2. Start the database (Docker)
+# 2. Switch to the communication branch
+git checkout communication
+
+# 3. Start MySQL via Docker
 docker compose up -d
+# Verify: docker ps → should show mysql:8.0 container running
 
-# 3. Configure database connection
+# 4. Configure environment variables
+cp .env.example .env   # if example exists, otherwise edit .env directly
+# See "Environment Configuration" section below
+
+# 5. Configure Hibernate
 # Edit src/main/resources/hibernate.cfg.xml
-# Set your MySQL host, username, and password
+# Set connection.url, connection.username, connection.password
 
-# 4. Build the project
-mvn clean package
+# 6. Build the project
+mvn clean package -DskipTests
 
-# 5. Run the application
+# 7. Run the application
 mvn javafx:run
 ```
 
-### Default Accounts
+> ⚠️ **Important:** The Symfony web project must be set up first to create and populate the shared MySQL database schema. See the [related project](#-related-project).
 
-| Email | Password | Role |
-|-------|----------|------|
-| admin@unilearn.com | admin123 | ADMIN |
-| student1@unilearn.com | student123 | STUDENT |
-| teacher@unilearn.com | teacher123 | TEACHER |
+---
 
-> ℹ️ The same database is shared with the Symfony web project. Run the web project setup first to populate the database.
+## ⚙️ Environment Configuration
 
-## Related Project
+The `.env` file at the project root holds all sensitive credentials. **Never commit this file.**
+
+```env
+# ── Database ─────────────────────────────────────
+DB_HOST=localhost
+DB_PORT=3306
+DB_NAME=unilearn
+DB_USER=root
+DB_PASSWORD=your_password
+
+# ── Google SMTP (Email) ───────────────────────────
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_app_password       # Use Gmail App Password, not your main password
+
+# ── Face API ─────────────────────────────────────
+FACE_API_KEY=your_face_api_key
+FACE_API_URL=https://api.example.com/face
+
+# ── SMS Gateway ──────────────────────────────────
+SMS_API_KEY=your_sms_api_key
+SMS_SENDER=UniLearn              # Sender name shown on SMS
+```
+
+---
+
+## 🔑 Default Accounts
+
+| Email | Password | Role | Access Level |
+|-------|----------|------|--------------|
+| `admin@unilearn.com` | `admin123` | `ADMIN` | Full system access |
+| `teacher@unilearn.com` | `teacher123` | `TEACHER` | Teaching tools + forum |
+| `student1@unilearn.com` | `student123` | `STUDENT` | Learning + community |
+
+> ℹ️ These accounts are seeded by the Symfony web project's database fixtures. Run the web app setup first.
+
+---
+## 👥 Contributors
+
+| Name | GitHub | LinkedIn | Module | Responsibilities |
+|------|--------|----------|--------|------------------|
+| **Alaa Salem** | [@alaasalem-blip](https://github.com/alaasalem-blip) | — | Gestion User | Authentication, user CRUD, Face ID, profile management |
+| **Majd Labidi** | [@majd-01c](https://github.com/majd-01c) | [LABIDI Majdedine](https://www.linkedin.com/in/labidi-majdedine-9a49b632a) | Gestion Communication | Forum, Events, Messaging, SMS Verification, IArooms |
+| **Khalil Fekih** | [@khalil-feki](https://github.com/khalil-feki) | [Feki Khalil](https://www.linkedin.com/in/feki-khalil/) | Gestion Evaluation | Assessments, grades, complaints, schedules, document requests |
+| **Haroun Chaabane** | [@harounchaabane](https://github.com/harounchaabane) | [Haroun Chaabane](https://www.linkedin.com/in/haroun-chaabane-208716261/) | Gestion Program | LMS, programs, modules, courses, quizzes |
+| **Dhia Amri** | [@dhia573](https://github.com/dhia573) | [Dhia Amri](https://www.linkedin.com/in/dhia-amri-167230243/) | Gestion Job Offre | Job offer listings, applications |
+---
+
+## 🎓 Academic Context
+
+| Field | Value |
+|-------|-------|
+| **Institution** | Esprit School of Engineering – Tunisia |
+| **Degree** | Engineering in Computer Science |
+| **Program** | PIDEV (Projet Intégré de Développement) |
+| **Year** | 3rd Year (3A) |
+| **Academic Year** | 2025–2026 |
+| **Branch** | `communication` – Gestion Communication module |
+
+---
+
+## 🔗 Related Project
 
 This desktop app shares its database with the UniLearn Symfony web application:
-👉 [Esprit-PIDEV-3A57--2026-UniLearn](https://github.com/majd-01c/Esprit-PIDEV-3A57--2026-UniLearn)
 
-## Acknowledgments
+👉 **[Esprit-PIDEV-3A57--2026-UniLearn](https://github.com/majd-01c/Esprit-PIDEV-3A57--2026-UniLearn)** — the web platform counterpart
 
-- **Esprit School of Engineering** for the academic framework and guidance
-- **JavaFX & OpenJFX** open-source community
-- **Hibernate ORM** for seamless database integration
-- All open-source libraries that made this project possible
+> Both projects must use the **same MySQL database** for data to be consistent across desktop and web interfaces.
+
+---
+
+## 🙏 Acknowledgments
+
+- **Esprit School of Engineering** — for the academic framework, guidance, and PIDEV program structure
+- **OpenJFX / JavaFX Community** — for the open-source UI framework
+- **Hibernate ORM Team** — for seamless Java-to-database entity mapping
+- **Docker** — for simplifying local development database setup
+- All open-source library authors whose tools made this project possible
