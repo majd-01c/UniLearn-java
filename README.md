@@ -129,23 +129,6 @@ view/forum/ ← FXML views for topic list, topic detail, comment form
 
 text
 
----
-
-#### 📅 Events
-
-University event management with participation tracking:
-
-- **Event Creation** – Admins can create events with title, description, date, location, and capacity
-- **Event Listing** – All users can browse upcoming and past events
-- **Participation** – Students and teachers can register for events
-- **Participation Management** – Admins can view and manage all registrations
-- **Status Tracking** – Events track registration count vs. capacity
-
-```java
-// Key entities
-Event.java              ← title, description, date, location, capacity, organizer
-EventParticipation.java ← user ↔ event many-to-many registration
-```
 
 ---
 
@@ -356,7 +339,6 @@ The `AppShellController` automatically routes the user to the correct views upon
 | **Dashboard** | FrontOffice Home | FrontOffice Home | BackOffice Home |
 | **Evaluation** | Grades, Schedule, Complaints, Doc Requests | Assessments, Grade Entry, Schedule | Complaints Mgmt, Doc Processing, Schedule Builder |
 | **Forum** | Browse, Post, Comment | Browse, Post, Comment | Browse, Post, Comment, **Moderate** |
-| **Events** | Browse, Register | Browse, Register | **Create, Edit, Delete**, View Registrations |
 | **Messaging** | DMs, Program Chat | DMs, Program Chat | DMs, Program Chat, **Full Access** |
 | **IArooms** | View available rooms | View available rooms | **Create, Book, Manage** rooms |
 | **LMS** | View courses & content | Manage courses & content | Full LMS management |
