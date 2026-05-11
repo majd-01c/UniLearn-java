@@ -344,8 +344,6 @@ UniLearn-java/
 ├── pom.xml # Maven build configuration
 └── .env # Environment variables (git-ignored)
 
-text
-
 ---
 
 ## 🔀 Role-Based View Routing
