@@ -254,98 +254,98 @@ text
 | **NetBeans** | Alternative IDE |
 
 ---
-text
-
 ## 📁 Project Architecture
+
+### Source Structure
+
+```text
 UniLearn-java/
 ├── src/
-│ ├── main/
-│ │ ├── java/
-│ │ │ ├── controller/ # JavaFX MVC controllers
-│ │ │ │ ├── AppShellController.java # App shell, sidebar nav, role routing
-│ │ │ │ ├── BackOfficeHomeController.java # Admin dashboard home
-│ │ │ │ ├── FrontOfficeHomeController.java# Student/Teacher dashboard home
-│ │ │ │ ├── LoginController.java # Auth: email/pass + Face ID
-│ │ │ │ ├── SmsVerificationController.java# 2FA SMS OTP verification
-│ │ │ │ ├── PasswordResetController.java # Password reset with token
-│ │ │ │ ├── PasswordResetRequestController.java
-│ │ │ │ ├── ChangePasswordController.java
-│ │ │ │ ├── UserListController.java # Admin: paginated user list
-│ │ │ │ ├── UserFormController.java # Admin: create/edit user
-│ │ │ │ ├── UserDetailsController.java # Admin: view user details
-│ │ │ │ ├── UserProfileController.java # All: self-service profile
-│ │ │ │ ├── HomeController.java
-│ │ │ │ ├── evaluation/ # Evaluation module
-│ │ │ │ │ ├── admin/ # Admin: complaints, docs, schedules
-│ │ │ │ │ ├── teacher/ # Teacher: assessments, grades
-│ │ │ │ │ └── student/ # Student: grades, schedule, requests
-│ │ │ │ ├── forum/ # 💬 Forum: topics & comments
-│ │ │ │ ├── iarooms/ # 🤖 AI room management
-│ │ │ │ ├── job_offer/ # 💼 Job offers
-│ │ │ │ └── lms/ # 📚 LMS: courses, programs, quizzes
-│ │ │ │
-│ │ │ ├── entities/ # Hibernate ORM entity classes
-│ │ │ │ ├── User.java # Core user (24KB — richly annotated)
-│ │ │ │ ├── Role.java # STUDENT / TEACHER / ADMIN enum
-│ │ │ │ ├── UserStatus.java # ACTIVE / INACTIVE enum
-│ │ │ │ ├── Profile.java # Extended user profile
-│ │ │ │ ├── ResetToken.java # Password reset token
-│ │ │ │ ├── FaceVerificationLog.java # Face ID log
-│ │ │ │ ├── Event.java # 📅 University event
-│ │ │ │ ├── EventParticipation.java # 📅 Event registration join
-│ │ │ │ ├── MessengerMessages.java # 💌 Direct messages
-│ │ │ │ ├── ProgramChatMessage.java # 💌 Program group chat
-│ │ │ │ ├── Reclamation.java # Student complaint
-│ │ │ │ ├── DocumentRequest.java # Official document request
-│ │ │ │ ├── Schedule.java # Class schedule
-│ │ │ │ ├── Assessment.java # Exam / assessment
-│ │ │ │ ├── Grade.java # Student grade
-│ │ │ │ ├── Quiz.java / Question.java / Choice.java / Answer.java / UserAnswer.java
-│ │ │ │ ├── Program.java / ProgramModule.java / BuildProgram.java
-│ │ │ │ ├── Module.java / ModuleCourse.java
-│ │ │ │ ├── Course.java / CourseContenu.java / CourseDocument.java
-│ │ │ │ ├── Classe.java / ClasseModule.java / ClasseCourse.java / ClasseContenu.java
-│ │ │ │ ├── ClassMeeting.java
-│ │ │ │ ├── StudentClasse.java / TeacherClasse.java
-│ │ │ │ ├── Contenu.java
-│ │ │ │ ├── CustomSkill.java
-│ │ │ │ ├── MessengerMessages.java
-│ │ │ │ ├── forum/ # Forum entities (Topic, Comment)
-│ │ │ │ ├── iarooms/ # IArooms entities
-│ │ │ │ └── job_offer/ # Job offer entities
-│ │ │ │
-│ │ │ ├── service/ # Core business logic services
-│ │ │ ├── services/ # Additional service layer
-│ │ │ ├── repository/ # Hibernate DAO / repository layer
-│ │ │ ├── security/ # UserSession singleton, auth helpers
-│ │ │ ├── util/ # AppNavigator, FXML loader helpers
-│ │ │ ├── dto/ # Data Transfer Objects
-│ │ │ ├── Utils/ # Utility classes
-│ │ │ └── validation/ # Input validation (form validators)
-│ │ │
-│ │ └── resources/
-│ │ ├── hibernate.cfg.xml # Hibernate + MySQL config
-│ │ └── view/ # All FXML layout files
-│ │ ├── evaluation/
-│ │ │ ├── student/ # Grades, schedule, complaints FXML
-│ │ │ ├── teacher/ # Assessment, grade entry FXML
-│ │ │ └── admin/ # Complaints, doc requests, schedules FXML
-│ │ ├── forum/ # Forum list, topic detail, comment FXML
-│ │ ├── lms/ # Courses, programs, quiz FXML
-│ │ └── styles/ # app.css, evaluation.css
-│ │
-│ └── test/ # Unit tests
-│
-├── IArooms/ # AI room management service (Python)
-├── lib/ # Local JAR dependencies
-├── uploads/ # User-uploaded files (profile pics, docs)
-├── docs/ # Project documentation
-├── backup/ # Database backup scripts
-├── docker-compose.yml # MySQL 8.0 Docker container
-├── pom.xml # Maven build configuration
-└── .env # Environment variables (git-ignored)
-text
----
+│   ├── main/
+│   │   ├── java/
+│   │   │   ├── controller/
+│   │   │   ├── entities/
+│   │   │   ├── service/
+│   │   │   ├── services/
+│   │   │   ├── repository/
+│   │   │   ├── security/
+│   │   │   ├── util/
+│   │   │   ├── dto/
+│   │   │   ├── Utils/
+│   │   │   └── validation/
+│   │   └── resources/
+│   │       ├── hibernate.cfg.xml
+│   │       └── view/
+│   └── test/
+├── IArooms/
+├── lib/
+├── uploads/
+├── docs/
+├── backup/
+├── docker-compose.yml
+├── pom.xml
+└── .env
+```
+
+### Main Packages
+
+| Package | Purpose |
+|---------|---------|
+| `controller/` | JavaFX MVC controllers for authentication, dashboards, forum, LMS, evaluation, job offers, and IA rooms |
+| `entities/` | Hibernate ORM entities mapped to the shared MySQL database |
+| `service/` / `services/` | Business logic and module services |
+| `repository/` | Data access layer using Hibernate |
+| `security/` | Session handling and authentication helpers |
+| `util/` / `Utils/` | Navigation, loaders, and utility helpers |
+| `validation/` | Input validation and form rules |
+| `resources/view/` | FXML pages and CSS styles |
+
+### Controller Modules
+
+- `AppShellController.java` — main shell, sidebar, and role-based navigation
+- `LoginController.java` — authentication with email/password and Face ID
+- `SmsVerificationController.java` — SMS OTP verification
+- `UserListController.java` / `UserFormController.java` — admin user management
+- `evaluation/` — complaints, grades, schedules, document requests
+- `forum/` — topics and comments
+- `iarooms/` — AI-assisted room management
+- `job_offer/` — internship and job offers
+- `lms/` — programs, courses, and quizzes
+
+### Entity Domains
+
+**User & Security**
+- `User`, `Role`, `UserStatus`, `Profile`, `ResetToken`, `FaceVerificationLog`
+
+**Communication**
+- `Event`, `EventParticipation`, `MessengerMessages`, `ProgramChatMessage`, `forum/`
+
+**Evaluation**
+- `Reclamation`, `DocumentRequest`, `Schedule`, `Assessment`, `Grade`
+
+**LMS**
+- `Program`, `ProgramModule`, `BuildProgram`
+- `Module`, `ModuleCourse`
+- `Course`, `CourseContenu`, `CourseDocument`
+- `Classe`, `ClasseModule`, `ClasseCourse`, `ClasseContenu`
+- `Quiz`, `Question`, `Choice`, `Answer`, `UserAnswer`
+- `ClassMeeting`, `StudentClasse`, `TeacherClasse`, `Contenu`
+
+### Resources
+
+- `hibernate.cfg.xml` — Hibernate + MySQL configuration
+- `view/evaluation/` — FXML interfaces by role: student, teacher, admin
+- `view/forum/` — forum interfaces
+- `view/lms/` — LMS interfaces
+- `view/styles/` — global CSS files
+
+### Other Directories
+
+- `IArooms/` — AI room management service
+- `lib/` — local dependencies
+- `uploads/` — uploaded profile pictures and documents
+- `docs/` — project documentation
+- `backup/` — backup scripts
 
 ## 🔀 Role-Based View Routing
 
