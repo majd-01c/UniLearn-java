@@ -254,6 +254,7 @@ text
 | **NetBeans** | Alternative IDE |
 
 ---
+text
 
 ## 📁 Project Architecture
 UniLearn-java/
@@ -343,7 +344,7 @@ UniLearn-java/
 ├── docker-compose.yml # MySQL 8.0 Docker container
 ├── pom.xml # Maven build configuration
 └── .env # Environment variables (git-ignored)
-
+text
 ---
 
 ## 🔀 Role-Based View Routing
