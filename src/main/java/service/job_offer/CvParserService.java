@@ -1,6 +1,5 @@
 package service.job_offer;
 
-import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 
@@ -24,7 +23,7 @@ public class CvParserService {
             throw new IOException("Only PDF CV files are supported.");
         }
 
-        try (PDDocument document = Loader.loadPDF(pdfFile)) {
+        try (PDDocument document = PDDocument.load(pdfFile)) {
             PDFTextStripper stripper = new PDFTextStripper();
             String rawText = stripper.getText(document);
             return cleanExtractedText(rawText);

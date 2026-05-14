@@ -36,6 +36,7 @@ public class UserAnswer  implements java.io.Serializable {
      private Timestamp completedAt;
      private byte isPassed;
      private byte cheatFlag;
+     private int tabSwitchCount;
      private Set<Answer> answers = new HashSet<Answer>(0);
 
     public UserAnswer() {
@@ -49,7 +50,7 @@ public class UserAnswer  implements java.io.Serializable {
         this.isPassed = isPassed;
         this.cheatFlag = cheatFlag;
     }
-    public UserAnswer(int id, User user, Quiz quiz, Integer score, Integer totalPoints, Timestamp startedAt, Timestamp completedAt, byte isPassed, byte cheatFlag, Set<Answer> answers) {
+    public UserAnswer(int id, User user, Quiz quiz, Integer score, Integer totalPoints, Timestamp startedAt, Timestamp completedAt, byte isPassed, byte cheatFlag, int tabSwitchCount, Set<Answer> answers) {
        this.id = id;
        this.user = user;
        this.quiz = quiz;
@@ -59,6 +60,7 @@ public class UserAnswer  implements java.io.Serializable {
        this.completedAt = completedAt;
        this.isPassed = isPassed;
        this.cheatFlag = cheatFlag;
+       this.tabSwitchCount = tabSwitchCount;
        this.answers = answers;
     }
    
@@ -151,6 +153,19 @@ public class UserAnswer  implements java.io.Serializable {
 
     public void setCheatFlag(byte cheatFlag) {
         this.cheatFlag = cheatFlag;
+    }
+
+    @Column(name="tab_switch_count", nullable=false)
+    public int getTabSwitchCount() {
+        return this.tabSwitchCount;
+    }
+
+    public void setTabSwitchCount(int tabSwitchCount) {
+        this.tabSwitchCount = tabSwitchCount;
+    }
+
+    public void incrementTabSwitchCount() {
+        this.tabSwitchCount++;
     }
 
 @OneToMany(fetch=FetchType.LAZY, mappedBy="userAnswer")

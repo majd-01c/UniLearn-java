@@ -15,7 +15,7 @@ public class ServiceUserAnswer extends ServiceSupport implements IService<UserAn
 
     @Override
     public void add(UserAnswer userAnswer) {
-        String sql = "INSERT INTO user_answer (user_id, quiz_id, score, total_points, started_at, completed_at, is_passed, cheat_flag) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO user_answer (user_id, quiz_id, score, total_points, started_at, completed_at, is_passed, cheat_flag, tab_switch_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, userAnswer.getUser().getId());
             statement.setInt(2, userAnswer.getQuiz().getId());
@@ -25,6 +25,7 @@ public class ServiceUserAnswer extends ServiceSupport implements IService<UserAn
             setNullableTimestamp(statement, 6, userAnswer.getCompletedAt());
             statement.setByte(7, userAnswer.getIsPassed());
             statement.setByte(8, userAnswer.getCheatFlag());
+            statement.setInt(9, userAnswer.getTabSwitchCount());
             statement.executeUpdate();
         } catch (SQLException e) {
             System.out.println("Error adding UserAnswer: " + e.getMessage());
@@ -33,7 +34,7 @@ public class ServiceUserAnswer extends ServiceSupport implements IService<UserAn
 
     @Override
     public void update(UserAnswer userAnswer) {
-        String sql = "UPDATE user_answer SET user_id = ?, quiz_id = ?, score = ?, total_points = ?, started_at = ?, completed_at = ?, is_passed = ?, cheat_flag = ? WHERE id = ?";
+        String sql = "UPDATE user_answer SET user_id = ?, quiz_id = ?, score = ?, total_points = ?, started_at = ?, completed_at = ?, is_passed = ?, cheat_flag = ?, tab_switch_count = ? WHERE id = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, userAnswer.getUser().getId());
             statement.setInt(2, userAnswer.getQuiz().getId());
@@ -43,7 +44,8 @@ public class ServiceUserAnswer extends ServiceSupport implements IService<UserAn
             setNullableTimestamp(statement, 6, userAnswer.getCompletedAt());
             statement.setByte(7, userAnswer.getIsPassed());
             statement.setByte(8, userAnswer.getCheatFlag());
-            statement.setInt(9, userAnswer.getId());
+            statement.setInt(9, userAnswer.getTabSwitchCount());
+            statement.setInt(10, userAnswer.getId());
             statement.executeUpdate();
         } catch (SQLException e) {
             System.out.println("Error updating UserAnswer: " + e.getMessage());
@@ -185,6 +187,7 @@ public class ServiceUserAnswer extends ServiceSupport implements IService<UserAn
         userAnswer.setCompletedAt(resultSet.getTimestamp("completed_at"));
         userAnswer.setIsPassed(resultSet.getByte("is_passed"));
         userAnswer.setCheatFlag(resultSet.getByte("cheat_flag"));
+        userAnswer.setTabSwitchCount(resultSet.getInt("tab_switch_count"));
         
         return userAnswer;
     }

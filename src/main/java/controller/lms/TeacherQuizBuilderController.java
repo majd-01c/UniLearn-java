@@ -79,8 +79,8 @@ public class TeacherQuizBuilderController implements Initializable {
         Label qLabel = new Label("Question " + index);
         qLabel.setStyle("-fx-font-weight: bold;");
         
-        ComboBox<String> typeBox = new ComboBox<>(FXCollections.observableArrayList("MULTIPLE_CHOICE", "TEXT"));
-        typeBox.setValue("MULTIPLE_CHOICE");
+        ComboBox<String> typeBox = new ComboBox<>(FXCollections.observableArrayList("MCQ", "TEXT"));
+        typeBox.setValue("MCQ");
         
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -117,7 +117,7 @@ public class TeacherQuizBuilderController implements Initializable {
         addChoiceBtn.setOnAction(e -> addChoiceToContainer(choicesContainer));
 
         Runnable updateTypeUI = () -> {
-            if ("MULTIPLE_CHOICE".equals(typeBox.getValue())) {
+            if ("MCQ".equals(typeBox.getValue())) {
                 choicesContainer.setVisible(true);
                 choicesContainer.setManaged(true);
                 addChoiceBtn.setVisible(true);
@@ -221,14 +221,35 @@ public class TeacherQuizBuilderController implements Initializable {
                 .findFirst().orElseThrow(() -> new Exception("Failed to retrieve saved quiz."));
 
             // 4. Save Questions and Choices
+            // NOTE: We traverse children by structure instead of using lookup()
+            // because lookup("#id") searches the entire scene graph and returns
+            // the wrong node when multiple question editors share the same IDs.
             int qPosition = 1;
             for (Node qNode : questionsContainer.getChildren()) {
                 VBox qBox = (VBox) qNode;
-                
-                String qType = ((ComboBox<String>) ((HBox) qBox.getChildren().get(0)).getChildren().get(2)).getValue();
-                String qText = ((TextField) qBox.lookup("#qText")).getText();
-                String qPointsStr = ((TextField) qBox.lookup("#qPoints")).getText();
-                String qExplanation = ((TextField) qBox.lookup("#qExplanation")).getText();
+
+                // qBox children layout (from createQuestionEditor):
+                //   0: header HBox  (contains: Label, Label, ComboBox, Region, Button)
+                //   1: Label "Question Text:"
+                //   2: TextField (question text)       — was #qText
+                //   3: HBox (contains: Label, TextField) — points field is child[1] — was #qPoints
+                //   4: Label "Explanation:"
+                //   5: TextField (explanation)          — was #qExplanation
+                //   6: VBox (choicesContainer)          — was #choicesContainer
+                //   7: Button "+ Add Choice"
+
+                HBox header = (HBox) qBox.getChildren().get(0);
+                String qType = ((ComboBox<String>) header.getChildren().get(2)).getValue();
+
+                TextField questionTextField = (TextField) qBox.getChildren().get(2);
+                String qText = questionTextField.getText();
+
+                HBox pointsRow = (HBox) qBox.getChildren().get(3);
+                TextField pointsField = (TextField) pointsRow.getChildren().get(1);
+                String qPointsStr = pointsField.getText();
+
+                TextField explanationField = (TextField) qBox.getChildren().get(5);
+                String qExplanation = explanationField.getText();
 
                 if (qText == null || qText.isBlank()) throw new Exception("Question text cannot be blank.");
                 int points = 1;
@@ -249,14 +270,15 @@ public class TeacherQuizBuilderController implements Initializable {
                     .filter(q -> q.getQuiz() != null && q.getQuiz().getId() == savedQuiz.getId() && q.getPosition() == currentQPosition)
                     .findFirst().orElseThrow(() -> new Exception("Failed to save question."));
 
-                if ("MULTIPLE_CHOICE".equals(qType)) {
-                    VBox choicesContainer = (VBox) qBox.lookup("#choicesContainer");
+                if ("MCQ".equals(qType)) {
+                    VBox choicesContainer = (VBox) qBox.getChildren().get(6);
                     int cPosition = 1;
                     boolean hasCorrect = false;
                     for (Node cNode : choicesContainer.getChildren()) {
                         HBox cBox = (HBox) cNode;
-                        boolean isCorrect = ((RadioButton) cBox.lookup("#cCorrect")).isSelected();
-                        String cText = ((TextField) cBox.lookup("#cText")).getText();
+                        // Choice HBox children: RadioButton, TextField, Button
+                        boolean isCorrect = ((RadioButton) cBox.getChildren().get(0)).isSelected();
+                        String cText = ((TextField) cBox.getChildren().get(1)).getText();
                         if (cText == null || cText.isBlank()) throw new Exception("Choice text cannot be blank.");
 
                         Choice choice = new Choice();

@@ -24,7 +24,7 @@ class QuizGradingServiceTest {
         // Setup entity directly
         Question entityQ = new Question();
         entityQ.setId(1);
-        entityQ.setType("MULTIPLE_CHOICE");
+        entityQ.setType("MCQ");
         entityQ.setPoints(10);
         
         Choice entityC1 = new Choice();
@@ -50,7 +50,7 @@ class QuizGradingServiceTest {
     void testGradeMultipleChoiceIncorrect() {
         Question entityQ = new Question();
         entityQ.setId(1);
-        entityQ.setType("MULTIPLE_CHOICE");
+        entityQ.setType("MCQ");
         entityQ.setPoints(10);
         
         Choice entityC1 = new Choice();

@@ -318,8 +318,12 @@ public class StudentQuizService {
             UserAnswer ua = userAnswerService.getParFiltreInt(userAnswerId);
             if (ua != null && ua.getCheatFlag() == 0) {
                 ua.setCheatFlag((byte) 1);
+                ua.incrementTabSwitchCount();
                 userAnswerService.update(ua);
                 logger.warn("User attempt " + userAnswerId + " flagged as cheated.");
+            } else if (ua != null) {
+                ua.incrementTabSwitchCount();
+                userAnswerService.update(ua);
             }
         } catch (Exception e) {
             logger.error("Error flagging cheat: " + e.getMessage(), e);
