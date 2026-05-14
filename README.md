@@ -436,7 +436,7 @@ SMS_SENDER=UniLearn              # Sender name shown on SMS
 
 | Name | GitHub | LinkedIn | Module | Responsibilities |
 |------|--------|----------|--------|------------------|
-| **Alaa Salem** | [@alaasalem-blip](https://github.com/alaasalem-blip) | — | Gestion User | Authentication, user CRUD, Face ID, profile management |
+| **Alaa Salem** | [@alaasalem-blip](https://github.com/alaasalem-blip) | [Alaa Salem](https://www.linkedin.com/in/salem-alaa-27a92728b/) | Gestion User | Authentication, user CRUD, Face ID, profile management |
 | **Majd Labidi** | [@majd-01c](https://github.com/majd-01c) | [LABIDI Majdedine](https://www.linkedin.com/in/labidi-majdedine-9a49b632a) | Gestion Communication | Forum, Events, Messaging, SMS Verification, IArooms |
 | **Khalil Fekih** | [@khalil-feki](https://github.com/khalil-feki) | [Feki Khalil](https://www.linkedin.com/in/feki-khalil/) | Gestion Evaluation | Assessments, grades, complaints, schedules, document requests |
 | **Haroun Chaabane** | [@harounchaabane](https://github.com/harounchaabane) | [Haroun Chaabane](https://www.linkedin.com/in/haroun-chaabane-208716261/) | Gestion Program | LMS, programs, modules, courses, quizzes |
